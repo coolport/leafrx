@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TextInput, TouchableOpacity, SafeAreaView, StatusBar, Alert } from 'react-native';
+import { ScrollView, View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // Consolidated import
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
 import { myPlants } from '../../constants/mockData';
@@ -8,6 +9,8 @@ import { AddPlantModal } from '../../components/leafrx/AddPlantModal'; // Import
 import { Link } from 'expo-router';
 
 export default function TrackingScreen() {
+    const insets = useSafeAreaInsets(); // Get safe area insets
+
     const [isAddModalVisible, setAddModalVisible] = useState(false);
 
     const handleSaveNewPlant = (plantName: string, plantType: string, plantLocation: string) => {
@@ -19,7 +22,7 @@ export default function TrackingScreen() {
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" />
             <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-                <View style={[styles.pageHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+                <View style={[styles.pageHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: insets.top /* Apply paddingTop */ }]}>
                     <View>
                         <Text style={styles.pageTitle}>Plant Tracking</Text>
                         <Text style={styles.pageSubtitle}>Monitor growth over time</Text>
