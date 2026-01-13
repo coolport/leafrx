@@ -33,4 +33,7 @@ export type Disease = {
     severity: string;
     color: string;
     textColor: string;
+    description: string;
+    symptoms: string[];
+    treatment: string[];
 };
