@@ -1,25 +1,18 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TextInput, TouchableOpacity, SafeAreaView, StatusBar, Modal } from 'react-native';
+import { ScrollView, View, Text, TextInput, TouchableOpacity, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
 import { myPlants } from '../../constants/mockData';
 import { PlantCard } from '../../components/leafrx/PlantCard';
+import { AddPlantModal } from '../../components/leafrx/AddPlantModal'; // Import the new modal component
 import { Link } from 'expo-router';
 
 export default function TrackingScreen() {
     const [isAddModalVisible, setAddModalVisible] = useState(false);
-    const [newPlantName, setNewPlantName] = useState('');
-    const [newPlantType, setNewPlantType] = useState('');
-    const [newPlantLocation, setNewPlantLocation] = useState('');
 
-    const handleAddPlant = () => {
-        // Here you would typically add logic to save the new plant
-        // For now, we'll just log the data and close the modal
-        console.log('Adding plant:', { newPlantName, newPlantType, newPlantLocation });
-        setAddModalVisible(false);
-        setNewPlantName('');
-        setNewPlantType('');
-        setNewPlantLocation('');
+    const handleSaveNewPlant = (plantName: string, plantType: string, plantLocation: string) => {
+        Alert.alert('Plant Added', `Name: ${plantName}, Type: ${plantType}, Location: ${plantLocation}`);
+        // Here you would typically add logic to save the new plant to your data source
     };
 
     return (
@@ -62,50 +55,11 @@ export default function TrackingScreen() {
                 </View>
             </ScrollView>
 
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={isAddModalVisible}
-                onRequestClose={() => setAddModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Add New Plant</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Plant Name"
-                            value={newPlantName}
-                            onChangeText={setNewPlantName}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Plant Type"
-                            value={newPlantType}
-                            onChangeText={setNewPlantType}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Location"
-                            value={newPlantLocation}
-                            onChangeText={setNewPlantLocation}
-                        />
-                        <View style={styles.modalButtonContainer}>
-                            <TouchableOpacity
-                                style={[styles.modalButton, { backgroundColor: '#e5e7eb' }]}
-                                onPress={() => setAddModalVisible(false)}
-                            >
-                                <Text style={[styles.modalButtonText, styles.modalButtonSecondaryText]}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.modalButton, { backgroundColor: '#22c55e' }]}
-                                onPress={handleAddPlant}
-                            >
-                                <Text style={styles.modalButtonText}>Add Plant</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+            <AddPlantModal
+                isVisible={isAddModalVisible}
+                onClose={() => setAddModalVisible(false)}
+                onSave={handleSaveNewPlant}
+            />
         </SafeAreaView>
     );
 }
