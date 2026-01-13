@@ -7,6 +7,7 @@ export type Plant = {
     status: 'healthy' | 'warning' | 'critical';
     location: string;
     entries: number;
+    healthTrend: number[];
 };
 
 export type Scan = {

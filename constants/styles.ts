@@ -439,6 +439,7 @@ export const styles = StyleSheet.create({
       gap: 8,
       marginBottom: 16,
     },
+
     barContainer: {
       flex: 1,
       alignItems: 'center',
@@ -589,5 +590,97 @@ export const styles = StyleSheet.create({
     navTextActive: {
       color: '#22c55e',
     },
+
+    // Settings
+    settingsSection: {
+      backgroundColor: '#fff',
+      borderWidth: 1,
+      borderColor: '#e5e7eb',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      marginBottom: 16,
+    },
+    settingsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 16,
+    },
+    settingsRowNotLast: {
+      borderBottomWidth: 1,
+      borderBottomColor: '#f3f4f6',
+    },
+    settingsRowInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 16,
+    },
+    settingsIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    settingsLabel: {
+      fontSize: 16,
+      color: '#1f2937',
+    },
+    settingsDescription: {
+      fontSize: 12,
+      color: '#6b7280',
+      marginTop: 2,
+    },
+
+    // Modal
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+      backgroundColor: '#fff',
+      borderRadius: 16,
+      padding: 24,
+      width: '90%',
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: '#1f2937',
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: '#e5e7eb',
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+      fontSize: 16,
+      color: '#374151',
+    },
+    modalButtonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginTop: 16,
+    },
+    modalButton: {
+      flex: 1,
+      padding: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginHorizontal: 8,
+    },
+    modalButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#fff',
+    },
+    modalButtonSecondaryText: {
+      color: '#374151',
+    }
   });
+  
   

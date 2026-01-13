@@ -1,7 +1,7 @@
 export const myPlants = [
-    { id: 1, name: 'Mango Tree #1', type: 'Mango', health: 85, lastChecked: '2 days ago', status: 'healthy', location: 'North Field', entries: 15 },
-    { id: 2, name: 'Banana Grove A', type: 'Banana', health: 62, lastChecked: '1 day ago', status: 'warning', location: 'West Section', entries: 8 },
-    { id: 3, name: 'Guava Tree #2', type: 'Guava', health: 45, lastChecked: '3 hours ago', status: 'critical', location: 'South Garden', entries: 12 },
+    { id: 1, name: 'Mango Tree #1', type: 'Mango', health: 85, lastChecked: '2 days ago', status: 'healthy', location: 'North Field', entries: 15, healthTrend: [70, 75, 80, 82, 85, 83, 85] },
+    { id: 2, name: 'Banana Grove A', type: 'Banana', health: 62, lastChecked: '1 day ago', status: 'warning', location: 'West Section', entries: 8, healthTrend: [60, 65, 62, 68, 65, 63, 62] },
+    { id: 3, name: 'Guava Tree #2', type: 'Guava', health: 45, lastChecked: '3 hours ago', status: 'critical', location: 'South Garden', entries: 12, healthTrend: [50, 48, 45, 47, 43, 40, 45] },
   ];
   
   export const recentScans = [
@@ -16,7 +16,7 @@ export const myPlants = [
     { date: '3 days ago', time: '3:45 PM', health: 70, status: 'healthy', note: 'Healthy growth, no issues' },
   ];
   
-  export const chartData = [45, 52, 58, 62, 59, 65, 85];
+  export const chartData = [45, 52, 58, 62, 59, 65, 85]; // Kept as a standalone for potential default/other uses
   export const chartLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   export const diseases = [

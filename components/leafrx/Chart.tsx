@@ -1,9 +1,15 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { styles } from '../../constants/styles';
-import { chartData, chartLabels } from '../../constants/mockData';
 
-export function Chart() {
+type ChartProps = {
+    data: number[]; // e.g., [70, 75, 80, ...] (percentages)
+    labels: string[];
+};
+
+export function Chart({ data, labels }: ChartProps) {
+    const chartHeight = 200; // Corresponds to styles.chart.height
+
     return (
         <View style={styles.chartContainer}>
             <View style={styles.chartHeader}>
@@ -13,10 +19,15 @@ export function Chart() {
                 </View>
             </View>
             <View style={styles.chart}>
-                {chartData.map((height, i) => (
+                {data.map((value, i) => (
                     <View key={i} style={styles.barContainer}>
-                        <View style={[styles.bar, { height: `${height}%` }]} />
-                        <Text style={styles.barLabel}>{chartLabels[i]}</Text>
+                        <View
+                            style={[
+                                styles.bar,
+                                { height: (value / 100) * chartHeight }, // Calculate actual pixel height
+                            ]}
+                        />
+                        <Text style={styles.barLabel}>{labels[i]}</Text>
                     </View>
                 ))}
             </View>
