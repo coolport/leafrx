@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, SafeAreaView, StatusBar, Modal, Image, Alert } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // Consolidated import
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
 import * as ImagePicker from 'expo-image-picker';
@@ -9,6 +10,8 @@ import { Plant } from '../../components/leafrx/types'; // Import Plant type
 import { myPlants } from '../../constants/mockData'; // Import mock plants for assignment
 
 export default function ScanScreen() {
+    const insets = useSafeAreaInsets(); // Get safe area insets
+
     const [isResultsModalVisible, setResultsModalVisible] = useState(false);
     const [isAddPlantModalVisible, setAddPlantModalVisible] = useState(false);
     const [isAssignPlantModalVisible, setAssignPlantModalVisible] = useState(false);
@@ -22,7 +25,7 @@ export default function ScanScreen() {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Reverted to original working version
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
@@ -41,7 +44,7 @@ export default function ScanScreen() {
 
     const takePhoto = async () => {
         let result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Reverted to original working version
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
@@ -83,7 +86,7 @@ export default function ScanScreen() {
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" />
             <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-                <View style={styles.pageHeader}>
+                <View style={[styles.pageHeader, { paddingTop: insets.top /* Apply paddingTop */ }]}>
                     <Text style={styles.pageTitle}>Scan Leaf</Text>
                     <Text style={styles.pageSubtitle}>Take or upload a photo of the leaf</Text>
                 </View>

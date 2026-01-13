@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // Consolidated import
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
 import { myPlants, recentScans } from '../../constants/mockData';
@@ -10,11 +11,13 @@ import { RecentScanItem } from '../../components/leafrx/RecentScanItem';
 import { Link } from 'expo-router';
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets(); // Get safe area insets
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top }]}> {/* Apply paddingTop */}
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.headerTitle}>Hello, Juan!</Text>
