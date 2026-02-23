@@ -59,6 +59,20 @@ export default function DetailScreen() {
         }
     };
 
+    const pickImageForEntry = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+
+        if (!result.canceled) {
+            setEntryImageUri(result.assets[0].uri);
+            mutation.mutate(result.assets[0].uri);
+        }
+    };
+
     const handleSaveEntry = () => {
         if (!analysisResult) return;
 
@@ -167,20 +181,32 @@ export default function DetailScreen() {
 
                     <Timeline scans={plantScans} />
 
-                    <TouchableOpacity
-                        style={[styles.btnPrimary, { marginTop: 16, marginBottom: 100, backgroundColor: getStatusColor(selectedPlant.status) }]}
-                        onPress={takePhotoForEntry}
-                        disabled={mutation.isPending}
-                    >
-                        {mutation.isPending ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <>
-                                <Feather name="plus" size={20} color="#fff" />
-                                <Text style={styles.btnPrimaryText}>New Scan Entry</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
+                    <View style={{ marginTop: 16, marginBottom: 100 }}>
+                        <TouchableOpacity
+                            style={[styles.btnPrimary, { backgroundColor: getStatusColor(selectedPlant.status) }]}
+                            onPress={takePhotoForEntry}
+                            disabled={mutation.isPending}
+                        >
+                            {mutation.isPending ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <Feather name="camera" size={20} color="#fff" />
+                                    <Text style={styles.btnPrimaryText}>Take Photo Scan</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.btnSecondary, { marginTop: 12, borderColor: getStatusColor(selectedPlant.status) }]}
+                            onPress={pickImageForEntry}
+                            disabled={mutation.isPending}
+                        >
+                            <Text style={[styles.btnSecondaryText, { color: getStatusColor(selectedPlant.status) }]}>
+                                Upload from Gallery
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </ScrollView>
 
