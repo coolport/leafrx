@@ -3,6 +3,9 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { initDatabase } from '../services/database';
+import { usePlantStore } from '../store/usePlantStore';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -10,6 +13,19 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const initializeStore = usePlantStore(state => state.initialize);
+
+  useEffect(() => {
+    async function setup() {
+      try {
+        await initDatabase();
+        await initializeStore();
+      } catch (error) {
+        console.error("Initialization error:", error);
+      }
+    }
+    setup();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
