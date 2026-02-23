@@ -36,3 +36,14 @@ React Native (Expo SDK 54+) w/ TypeScript, Expo Router, Zustand, TanStack Query 
 npm install -g expo-cli 
 npm install
 npx expo start
+
+```
+
+## Build
+
+```BASH
+npx expo prebuild
+cd android && ./gradlew assembleRelease
+adb install android/app/build/outputs/apk/release/app-release.apk # or just cp this to device
+
+```
