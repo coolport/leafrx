@@ -1,50 +1,38 @@
-# Welcome to your Expo app 👋
+# LeafRx
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+LeafRx is a mobile app that helps users monitor plant health using AI-powered leaf analysis. Users can scan leaves to detect diseases, track plant health over time, and access a built-in library of plant diseases and treatments.
 
-1. Install dependencies
+- **AI Leaf Scanning** – Disease detection and health scoring from leaf photos  
+- **Plant Tracking** – Monitor individual plants with health history and scan records  
+- **Disease Library** – Browse symptoms, descriptions, and treatment recommendations  
+- **Clean UI** – Simple, intuitive plant management experience  
+- **Local Storage** – Secure SQLite-based data persistence  
 
-   ```bash
-   npm install
-   ```
+## Technical Stack
 
-2. Start the app
+React Native (Expo SDK 54+) w/ TypeScript, Expo Router, Zustand, TanStack Query (React Query), Axios, Expo SQLite, Expo ImagePicker, Flask-based RiceRx AI backend API.
 
-   ```bash
-   npx expo start
-   ```
+## Project Structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+.
+├── app/                  # Application screens and routing (Expo Router)
+│   ├── (tabs)/           # Main tab-based navigation
+│   ├── disease/          # Dynamic route for disease details
+│   └── plant/            # Dynamic route for individual plant details
+├── assets/               # Static assets (images, fonts)
+├── components/           # Reusable UI components (PlantCard, Chart, Modals, etc.)
+├── constants/            # Application-wide constants (styles, theme)
+├── hooks/                # Custom React hooks
+├── services/             # API integration (api.ts) and local database operations (database.ts)
+└── store/                # Zustand stores for client-side state management (usePlantStore.ts)
+└── ... (other configuration files like package.json, tsconfig.json, eas.json)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm install -g expo-cli 
+npm install
+npx expo start
