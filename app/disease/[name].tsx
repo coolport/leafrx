@@ -1,6 +1,5 @@
 import React from 'react';
 import { ScrollView, View, Text, TouchableOpacity, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { styles } from '../../constants/styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

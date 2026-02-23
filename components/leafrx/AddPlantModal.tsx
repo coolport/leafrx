@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { styles } from '../../constants/styles';
-import { Feather } from '@expo/vector-icons';
 
 type AddPlantModalProps = {
     isVisible: boolean;

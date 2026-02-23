@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { styles } from '../../constants/styles';
 import { Feather } from '@expo/vector-icons';
 import { Plant } from './types';

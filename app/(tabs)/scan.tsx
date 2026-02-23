@@ -89,8 +89,6 @@ export default function ScanScreen() {
     const onAddPlantSave = (name: string, type: string, location: string) => {
         if (!analysisResult) return;
 
-        const newPlantId = Math.random().toString(36).substring(7);
-        
         // Add the plant
         addPlant({
             name,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, TextInput, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -62,7 +62,7 @@ export default function DetailScreen() {
     const handleSaveEntry = () => {
         if (!analysisResult) return;
 
-        const [_, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
+        const [plantPrefix, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
 
         const scanRecord: ScanResult = {
             id: analysisResult.image_id || Math.random().toString(),
