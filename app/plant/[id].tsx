@@ -19,7 +19,7 @@ export default function DetailScreen() {
     const { id } = useLocalSearchParams();
     const plantId = Array.isArray(id) ? id[0] : id;
     
-    const { plants, getPlantScans, addScan } = usePlantStore();
+    const { plants, getPlantScans, addScan, deletePlant } = usePlantStore();
     const selectedPlant = plants.find(p => p.id === plantId);
     const plantScans = getPlantScans(plantId);
 
@@ -73,7 +73,7 @@ export default function DetailScreen() {
         }
     };
 
-    const handleSaveEntry = () => {
+    const handleSaveEntry = async () => {
         if (!analysisResult) return;
 
         const [plantPrefix, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
@@ -89,7 +89,7 @@ export default function DetailScreen() {
             predictions: analysisResult.predictions || [],
         };
 
-        addScan(scanRecord);
+        await addScan(scanRecord);
         setNewEntryModalVisible(false);
         setAnalysisResult(null);
         setEntryImageUri(null);
@@ -142,7 +142,7 @@ export default function DetailScreen() {
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.detailTitle, { color: '#fff' }]}>{selectedPlant.name}</Text>
-                            <Text style={[styles.detailMeta, { color: '#f3f4f6' }]}>{selectedPlant.type} • {selectedPlant.location}</Text>
+                            <Text style={[styles.detailMeta, { color: '#f3f4f6' }]}>{selectedPlant.type}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
                             <Text style={[styles.detailScore, { color: '#fff' }]}>{Math.round(selectedPlant.health)}%</Text>
@@ -204,6 +204,34 @@ export default function DetailScreen() {
                         >
                             <Text style={[styles.btnSecondaryText, { color: getStatusColor(selectedPlant.status) }]}>
                                 Upload from Gallery
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.btnSecondary, { marginTop: 24, borderColor: '#ef4444' }]}
+                            onPress={() => {
+                                Alert.alert(
+                                    "Delete Plant",
+                                    `Are you sure you want to delete ${selectedPlant.name}? This cannot be undone.`,
+                                    [
+                                        {
+                                            text: "Cancel",
+                                            style: "cancel"
+                                        },
+                                        { 
+                                            text: "Delete", 
+                                            onPress: async () => {
+                                                await deletePlant(plantId);
+                                                router.replace('/(tabs)/tracking');
+                                            },
+                                            style: "destructive"
+                                        }
+                                    ]
+                                );
+                            }}
+                        >
+                            <Text style={[styles.btnSecondaryText, { color: '#ef4444' }]}>
+                                Delete Plant
                             </Text>
                         </TouchableOpacity>
                     </View>
