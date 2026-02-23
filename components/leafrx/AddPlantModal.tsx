@@ -5,7 +5,7 @@ import { styles } from '../../constants/styles';
 type AddPlantModalProps = {
     isVisible: boolean;
     onClose: () => void;
-    onSave: (plantName: string, plantType: string, plantLocation: string) => void;
+    onSave: (plantName: string, plantType: string) => void;
 };
 
 export function AddPlantModal({ isVisible, onClose, onSave }: AddPlantModalProps) {
@@ -18,8 +18,7 @@ export function AddPlantModal({ isVisible, onClose, onSave }: AddPlantModalProps
             Alert.alert('Error', 'Please enter a plant name.');
             return;
         }
-        // Location is removed from UI but kept in signature for compatibility, passing empty string
-        onSave(plantName, plantType, '');
+        onSave(plantName, plantType);
         setPlantName('');
         setPlantType('Mango');
         onClose();

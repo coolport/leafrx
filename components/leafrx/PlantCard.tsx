@@ -22,7 +22,7 @@ export function PlantCard({ plant }: PlantCardProps) {
                 </View>
                 <View style={styles.plantInfo}>
                     <Text style={styles.plantName}>{plant.name}</Text>
-                    <Text style={styles.plantMeta}>{plant.type} • {plant.location}</Text>
+                    <Text style={styles.plantMeta}>{plant.type}</Text>
                 </View>
                 <View style={styles.plantHealth}>
                     <Text style={[

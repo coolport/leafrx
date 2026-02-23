@@ -5,7 +5,6 @@ export type Plant = {
     health: number;
     lastChecked: string;
     status: 'healthy' | 'warning' | 'critical';
-    location: string;
     entries: number;
     healthTrend: number[];
 };
