@@ -86,35 +86,32 @@ export default function ScanScreen() {
         setAssignPlantModalVisible(true);
     };
 
-    const onAddPlantSave = (name: string, type: string, location: string) => {
+    const onAddPlantSave = async (name: string, type: string) => {
         if (!analysisResult) return;
 
         // Add the plant
-        addPlant({
+        await addPlant({
             name,
             type,
-            location,
             health: analysisResult.overall_health_score || 0,
             lastChecked: new Date().toISOString(),
             status: analysisResult.status || 'warning',
         });
 
-        // The addPlant in the store generates a new ID, but here we'll just link the scan
-        // In a real app we'd get the ID back or use a more deterministic approach
-        // For now, let's just save the scan globally
-        saveScanToStore();
+        // Save the scan globally
+        await saveScanToStore();
         
         setAddPlantModalVisible(false);
         Alert.alert('Success', `${name} has been added and the scan result linked.`);
     };
 
-    const onSelectExistingPlant = (plant: any) => {
-        saveScanToStore(plant.id, plant.name);
+    const onSelectExistingPlant = async (plant: any) => {
+        await saveScanToStore(plant.id, plant.name);
         setAssignPlantModalVisible(false);
         Alert.alert('Success', `Scan result assigned to ${plant.name}.`);
     };
 
-    const saveScanToStore = (plantId?: string, plantName?: string) => {
+    const saveScanToStore = async (plantId?: string, plantName?: string) => {
         if (!analysisResult) return;
 
         const [plant, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
@@ -130,7 +127,7 @@ export default function ScanScreen() {
             predictions: analysisResult.predictions || [],
         };
 
-        addScan(scanRecord);
+        await addScan(scanRecord);
     };
 
     const getStatusColor = (status?: string) => {
