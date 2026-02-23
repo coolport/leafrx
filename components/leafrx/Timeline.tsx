@@ -1,40 +1,63 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { styles } from '../../constants/styles';
-import { timelineData } from '../../constants/mockData';
+import { ScanResult } from './types';
 
-export function Timeline() {
+interface TimelineProps {
+    scans?: ScanResult[];
+}
+
+export function Timeline({ scans = [] }: TimelineProps) {
+    if (scans.length === 0) {
+        return (
+            <View style={styles.timeline}>
+                <Text style={styles.sectionTitle}>Timeline</Text>
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ color: '#9ca3af', fontStyle: 'italic' }}>No scan history yet.</Text>
+                </View>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.timeline}>
             <Text style={styles.sectionTitle}>Timeline</Text>
 
-            {timelineData.map((entry, i) => (
-                <View key={i} style={styles.timelineItem}>
-                    <View style={styles.timelineDotContainer}>
-                        <View style={[
-                            styles.timelineDot,
-                            { backgroundColor: entry.status === 'healthy' ? '#22c55e' : '#eab308' }
-                        ]} />
-                        {i < timelineData.length - 1 && <View style={styles.timelineLine} />}
-                    </View>
-                    <View style={styles.timelineContent}>
-                        <View style={styles.timelineHeader}>
-                            <Text style={styles.timelineDate}>{entry.date}</Text>
-                            <Text style={styles.timelineTime}>{entry.time}</Text>
+            {scans.map((scan, i) => {
+                const date = new Date(scan.date);
+                const status = scan.healthScore >= 80 ? 'healthy' : scan.healthScore >= 60 ? 'warning' : 'critical';
+                const statusColor = status === 'healthy' ? '#22c55e' : status === 'warning' ? '#eab308' : '#ef4444';
+                
+                return (
+                    <View key={scan.id} style={styles.timelineItem}>
+                        <View style={styles.timelineDotContainer}>
+                            <View style={[
+                                styles.timelineDot,
+                                { backgroundColor: statusColor }
+                            ]} />
+                            {i < scans.length - 1 && <View style={styles.timelineLine} />}
                         </View>
-                        <View style={styles.timelineCard}>
-                            <View style={styles.timelineCardHeader}>
-                                <Text style={styles.timelineCardLabel}>Health Score</Text>
-                                <Text style={[
-                                    styles.timelineCardScore,
-                                    { color: entry.status === 'healthy' ? '#22c55e' : '#eab308' }
-                                ]}>{entry.health}%</Text>
+                        <View style={styles.timelineContent}>
+                            <View style={styles.timelineHeader}>
+                                <Text style={styles.timelineDate}>{date.toLocaleDateString()}</Text>
+                                <Text style={styles.timelineTime}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                             </View>
-                            <Text style={styles.timelineCardNote}>{entry.note}</Text>
+                            <View style={styles.timelineCard}>
+                                <View style={styles.timelineCardHeader}>
+                                    <Text style={styles.timelineCardLabel}>{scan.disease.toUpperCase()}</Text>
+                                    <Text style={[
+                                        styles.timelineCardScore,
+                                        { color: statusColor }
+                                    ]}>{Math.round(scan.healthScore)}%</Text>
+                                </View>
+                                <Text style={styles.timelineCardNote}>
+                                    Severity: {scan.severity}. Detected {scan.predictions.length} leaf areas.
+                                </Text>
+                            </View>
                         </View>
                     </View>
-                </View>
-            ))}
+                );
+            })}
         </View>
     );
 }

@@ -1,101 +1,189 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, TextInput } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { styles } from '../../constants/styles';
-import { myPlants, chartLabels } from '../../constants/mockData';
 import { Chart } from '../../components/leafrx/Chart';
 import { StatCard } from '../../components/leafrx/StatCard';
 import { Timeline } from '../../components/leafrx/Timeline';
 import * as ImagePicker from 'expo-image-picker';
+import { usePlantStore } from '../../store/usePlantStore';
+import { useMutation } from '@tanstack/react-query';
+import { apiService } from '../../services/api';
+import { AnalysisResponse, ScanResult } from '../../components/leafrx/types';
 
 export default function DetailScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
     const { id } = useLocalSearchParams();
-    const selectedPlant = myPlants.find(p => p.id.toString() === id);
+    const plantId = Array.isArray(id) ? id[0] : id;
+    
+    const { plants, getPlantScans, addScan } = usePlantStore();
+    const selectedPlant = plants.find(p => p.id === plantId);
+    const plantScans = getPlantScans(plantId);
 
     const [isNewEntryModalVisible, setNewEntryModalVisible] = useState(false);
-    const [newEntryImageUri, setNewEntryImageUri] = useState<string | null>(null);
-    const [newEntryNotes, setNewEntryNotes] = useState('');
+    const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
+    const [entryImageUri, setEntryImageUri] = useState<string | null>(null);
+
+    const mutation = useMutation({
+        mutationFn: (uri: string) => apiService.analyzeImage(uri, selectedPlant?.type),
+        onSuccess: (data) => {
+            if (data.success) {
+                setAnalysisResult(data);
+                setNewEntryModalVisible(true);
+            } else {
+                Alert.alert('Analysis Failed', data.error || 'Check image quality');
+            }
+        },
+    });
 
     const takePhotoForEntry = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Camera access is required.');
+            return;
+        }
+
         let result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
-            quality: 1,
+            quality: 0.7,
         });
 
         if (!result.canceled) {
-            setNewEntryImageUri(result.assets[0].uri);
-            setNewEntryModalVisible(true);
+            setEntryImageUri(result.assets[0].uri);
+            mutation.mutate(result.assets[0].uri);
         }
     };
 
     const handleSaveEntry = () => {
-        Alert.alert('New Entry Added', `Health Score: 86%, Notes: ${newEntryNotes}. Image: ${newEntryImageUri ? 'Yes' : 'No'}`);
-        // Here you would typically save the new entry data to the plant's timeline
+        if (!analysisResult) return;
+
+        const [_, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
+
+        const scanRecord: ScanResult = {
+            id: analysisResult.image_id || Math.random().toString(),
+            plantId: plantId,
+            plantName: selectedPlant?.name || '',
+            disease: disease || 'Unknown',
+            severity: analysisResult.predictions?.[0]?.severity || 'Unknown',
+            date: new Date().toISOString(),
+            healthScore: analysisResult.overall_health_score || 0,
+            predictions: analysisResult.predictions || [],
+        };
+
+        addScan(scanRecord);
         setNewEntryModalVisible(false);
-        setNewEntryImageUri(null);
-        setNewEntryNotes('');
+        setAnalysisResult(null);
+        setEntryImageUri(null);
+        Alert.alert('Success', 'Plant status updated.');
     };
 
     if (!selectedPlant) {
         return (
             <SafeAreaView style={styles.container}>
-                <Text>Plant not found.</Text>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={styles.pageSubtitle}>Plant not found.</Text>
+                    <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
+                        <Text style={styles.backBtn}>← Go Back</Text>
+                    </TouchableOpacity>
+                </View>
             </SafeAreaView>
         );
     }
+
+    const chartLabels = plantScans.slice(-6).map(s => {
+        const date = new Date(s.date);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+    });
+    
+    // Ensure at least some data for the chart
+    const trendData = selectedPlant.healthTrend.length > 0 ? selectedPlant.healthTrend : [100];
+    const displayLabels = chartLabels.length > 0 ? chartLabels : ['Start'];
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'healthy': return '#10b981';
+            case 'warning': return '#f59e0b';
+            case 'critical': return '#ef4444';
+            default: return '#6b7280';
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" />
             <Stack.Screen options={{ headerShown: false }} />
             <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-                <View style={[styles.detailHeader, { paddingTop: insets.top }]}>
+                <View style={[styles.detailHeader, { paddingTop: insets.top, backgroundColor: getStatusColor(selectedPlant.status) }]}>
                     <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
-                        <Text style={styles.backBtn}>← Back</Text>
+                        <Text style={[styles.backBtn, { color: '#fff' }]}>← Back</Text>
                     </TouchableOpacity>
                     <View style={styles.detailTop}>
                         <View style={styles.detailIcon}>
                             <Text style={{ fontSize: 32 }}>🌿</Text>
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
-                            <Text style={styles.detailMeta}>{selectedPlant.type} • {selectedPlant.location}</Text>
+                            <Text style={[styles.detailTitle, { color: '#fff' }]}>{selectedPlant.name}</Text>
+                            <Text style={[styles.detailMeta, { color: '#f3f4f6' }]}>{selectedPlant.type} • {selectedPlant.location}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={styles.detailScore}>{selectedPlant.health}%</Text>
-                            <Text style={styles.detailLabel}>Health</Text>
+                            <Text style={[styles.detailScore, { color: '#fff' }]}>{Math.round(selectedPlant.health)}%</Text>
+                            <Text style={[styles.detailLabel, { color: '#f3f4f6' }]}>Health</Text>
                         </View>
                     </View>
                 </View>
 
                 <View style={styles.section}>
-                    <Chart data={selectedPlant.healthTrend} labels={chartLabels} />
+                    {mutation.isPending && (
+                        <View style={{ position: 'absolute', top: -40, left: 0, right: 0, zIndex: 10, alignItems: 'center' }}>
+                            <View style={{ backgroundColor: '#fff', padding: 12, borderRadius: 20, elevation: 5, flexDirection: 'row', alignItems: 'center' }}>
+                                <ActivityIndicator size="small" color="#10b981" />
+                                <Text style={{ marginLeft: 8, color: '#374151', fontWeight: '500' }}>Analyzing Leaf...</Text>
+                            </View>
+                        </View>
+                    )}
+
+                    <Chart data={trendData} labels={displayLabels} />
 
                     <View style={styles.statsGrid}>
-                        <StatCard icon="trending-up" label="Days Tracked" value="45" color='#22c55e' />
-                        <StatCard icon="calendar" label="Total Scans" value="23" color='#3b82f6' />
-                        <StatCard icon="alert-triangle" label="Alerts" value="3" color='#eab308' />
+                        <StatCard 
+                            icon="calendar" 
+                            label="Last Check" 
+                            value={new Date(selectedPlant.lastChecked).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
+                            color='#3b82f6' 
+                        />
+                        <StatCard icon="clipboard" label="Total Scans" value={selectedPlant.entries.toString()} color='#10b981' />
+                        <StatCard 
+                            icon="alert-triangle" 
+                            label="Current Status" 
+                            value={selectedPlant.status.charAt(0).toUpperCase() + selectedPlant.status.slice(1)} 
+                            color={getStatusColor(selectedPlant.status)} 
+                        />
                     </View>
 
-                    <Timeline />
+                    <Timeline scans={plantScans} />
 
                     <TouchableOpacity
-                        style={[styles.btnPrimary, { marginTop: 16, marginBottom: 100 }]}
+                        style={[styles.btnPrimary, { marginTop: 16, marginBottom: 100, backgroundColor: getStatusColor(selectedPlant.status) }]}
                         onPress={takePhotoForEntry}
+                        disabled={mutation.isPending}
                     >
-                        <Feather name="camera" size={20} color="#fff" />
-                        <Text style={styles.btnPrimaryText}>Add New Entry</Text>
+                        {mutation.isPending ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <>
+                                <Feather name="plus" size={20} color="#fff" />
+                                <Text style={styles.btnPrimaryText}>New Scan Entry</Text>
+                            </>
+                        )}
                     </TouchableOpacity>
                 </View>
             </ScrollView>
 
-            {/* New Entry Modal */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -104,34 +192,34 @@ export default function DetailScreen() {
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Add New Entry</Text>
-                        {newEntryImageUri && (
+                        <Text style={styles.modalTitle}>New Scan Results</Text>
+                        {entryImageUri && (
                             <Image
-                                source={{ uri: newEntryImageUri }}
-                                style={{ width: '100%', height: 200, borderRadius: 8, marginBottom: 16 }}
+                                source={{ uri: entryImageUri }}
+                                style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 16 }}
                             />
                         )}
-                        <Text style={{ fontSize: 16, marginBottom: 16 }}>Health Score: 86%</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Notes (e.g., observed yellowing)"
-                            value={newEntryNotes}
-                            onChangeText={setNewEntryNotes}
-                            multiline
-                            numberOfLines={3}
-                        />
+                        <View style={{ marginBottom: 16 }}>
+                            <Text style={{ fontSize: 16, color: '#374151', fontWeight: '600' }}>
+                                Detection: {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
+                            </Text>
+                            <Text style={{ fontSize: 14, color: getStatusColor(analysisResult?.status || ''), marginTop: 4 }}>
+                                Health Score: {analysisResult?.overall_health_score}%
+                            </Text>
+                        </View>
+                        
                         <View style={styles.modalButtonContainer}>
                             <TouchableOpacity
                                 style={[styles.modalButton, { backgroundColor: '#e5e7eb' }]}
                                 onPress={() => setNewEntryModalVisible(false)}
                             >
-                                <Text style={[styles.modalButtonText, styles.modalButtonSecondaryText]}>Cancel</Text>
+                                <Text style={[styles.modalButtonText, styles.modalButtonSecondaryText]}>Discard</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.modalButton, { backgroundColor: '#22c55e' }]}
+                                style={[styles.modalButton, { backgroundColor: '#10b981' }]}
                                 onPress={handleSaveEntry}
                             >
-                                <Text style={styles.modalButtonText}>Save Entry</Text>
+                                <Text style={styles.modalButtonText}>Update Plant</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
