@@ -20,6 +20,7 @@ export default function ScanScreen() {
     const [isAssignPlantModalVisible, setAssignPlantModalVisible] = useState(false);
     const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
+    const [conditionsExpanded, setConditionsExpanded] = useState(false);
 
     const mutation = useMutation({
         mutationFn: ({ uri, type }: { uri: string, type?: string }) => apiService.analyzeImage(uri, type),
@@ -202,52 +203,259 @@ export default function ScanScreen() {
                 onRequestClose={() => setResultsModalVisible(false)}
             >
                 <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <View style={[styles.modalContent, { maxHeight: '92%', padding: 0 }]}>
+                        
+                        {/* Header */}
+                        <View style={{ 
+                            flexDirection: 'row', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            padding: 16,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#f3f4f6'
+                        }}>
                             <Text style={styles.modalTitle}>Analysis Results</Text>
                             <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
                                 <Feather name="x" size={24} color="#6b7280" />
                             </TouchableOpacity>
                         </View>
 
-                        {selectedImageUri && (
-                            <Image
-                                source={{ uri: selectedImageUri }}
-                                style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 16 }}
-                            />
-                        )}
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16 }}>
 
+                            {/* Scanned Image */}
+                            {selectedImageUri && (
+                                <Image
+                                    source={{ uri: selectedImageUri }}
+                                    style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 16 }}
+                                    resizeMode="cover"
+                                />
+                            )}
+
+                            {/* Health Score Banner */}
+                            <View style={{ 
+                                backgroundColor: getStatusColor(analysisResult?.status) + '18',
+                                borderRadius: 12,
+                                padding: 16,
+                                marginBottom: 16,
+                                borderLeftWidth: 4,
+                                borderLeftColor: getStatusColor(analysisResult?.status)
+                            }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>Primary Finding</Text>
+                                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937' }}>
+                                            {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
+                                        </Text>
+                                        <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+                                            Plant: {analysisResult?.primary_disease?.split('_')[0] || 'Unknown'}
+                                        </Text>
+                                    </View>
+                                    {/* Health Score Circle */}
+                                    <View style={{
+                                        width: 72,
+                                        height: 72,
+                                        borderRadius: 36,
+                                        backgroundColor: getStatusColor(analysisResult?.status) + '25',
+                                        borderWidth: 3,
+                                        borderColor: getStatusColor(analysisResult?.status),
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: getStatusColor(analysisResult?.status) }}>
+                                            {analysisResult?.overall_health_score}%
+                                        </Text>
+                                        <Text style={{ fontSize: 9, color: '#6b7280' }}>HEALTH</Text>
+                                    </View>
+                                </View>
+
+                                {/* Health Bar */}
+                                <View style={{ marginTop: 12 }}>
+                                    <View style={{ height: 6, backgroundColor: '#e5e7eb', borderRadius: 3 }}>
+                                        <View style={{
+                                            height: 6,
+                                            width: `${analysisResult?.overall_health_score || 0}%` as any,
+                                            backgroundColor: getStatusColor(analysisResult?.status),
+                                            borderRadius: 3
+                                        }} />
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Detected Conditions */}
+                            {analysisResult?.predictions && analysisResult.predictions.length > 0 && (() => {
+                                const sorted = [...analysisResult.predictions].sort((a: any, b: any) => b.confidence - a.confidence);
+                                const primary = sorted[0];
+                                const rest = sorted.slice(1);
+
+                                return (
+                                    <View style={{ marginBottom: 16 }}>
+                                        <Text style={{ fontSize: 15, fontWeight: '700', color: '#374151', marginBottom: 10 }}>
+                                            Detected Condition
+                                        </Text>
+
+                                        {/* Primary Card */}
+                                        <View style={{
+                                            backgroundColor: '#f9fafb',
+                                            borderRadius: 10,
+                                            padding: 12,
+                                            borderWidth: 1,
+                                            borderColor: '#e5e7eb'
+                                        }}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                                <Text style={{ fontSize: 15, fontWeight: '700', color: '#1f2937', flex: 1 }}>
+                                                    {primary.disease || primary.label || 'Unknown'}
+                                                </Text>
+                                                <View style={{ flexDirection: 'row', gap: 6 }}>
+                                                    {primary.confidence !== undefined && (
+                                                        <View style={{ backgroundColor: '#dbeafe', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
+                                                            <Text style={{ fontSize: 11, color: '#2563eb', fontWeight: '700' }}>
+                                                                {Math.round(primary.confidence * 100)}% conf.
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                    {primary.severity && (
+                                                        <View style={{
+                                                            backgroundColor: primary.severity === 'severe' ? '#fee2e2' : primary.severity === 'moderate' ? '#fef3c7' : '#d1fae5',
+                                                            paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 11, fontWeight: '700',
+                                                                color: primary.severity === 'severe' ? '#dc2626' : primary.severity === 'moderate' ? '#d97706' : '#059669'
+                                                            }}>
+                                                                {primary.severity?.toUpperCase()}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </View>
+
+                                            {primary.description && (
+                                                <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 8, lineHeight: 18 }}>
+                                                    {primary.description}
+                                                </Text>
+                                            )}
+
+                                            {primary.recommendations?.length > 0 && (
+                                                <>
+                                                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 4 }}>
+                                                        Recommendations:
+                                                    </Text>
+                                                    {primary.recommendations.map((rec: string, j: number) => (
+                                                        <View key={j} style={{ flexDirection: 'row', marginBottom: 3 }}>
+                                                            <Text style={{ color: '#10b981', marginRight: 6, fontSize: 13 }}>•</Text>
+                                                            <Text style={{ fontSize: 13, color: '#4b5563', flex: 1, lineHeight: 18 }}>{rec}</Text>
+                                                        </View>
+                                                    ))}
+                                                </>
+                                            )}
+
+                                            {/* Expand toggle */}
+                                            {rest.length > 0 && (
+                                                <TouchableOpacity
+                                                    onPress={() => setConditionsExpanded(prev => !prev)}
+                                                    style={{
+                                                        marginTop: 12,
+                                                        paddingTop: 10,
+                                                        borderTopWidth: 1,
+                                                        borderTopColor: '#e5e7eb',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: 4
+                                                    }}
+                                                >
+                                                    <Text style={{ fontSize: 13, color: '#6b7280', fontWeight: '600' }}>
+                                                        {conditionsExpanded ? 'Hide' : `+${rest.length} other condition${rest.length > 1 ? 's' : ''}`}
+                                                    </Text>
+                                                    <Feather name={conditionsExpanded ? 'chevron-up' : 'chevron-down'} size={14} color="#6b7280" />
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+
+                                        {/* Expanded: other conditions as compact rows */}
+                                        {conditionsExpanded && rest.map((pred: any, i: number) => (
+                                            <View key={i} style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                backgroundColor: '#f9fafb',
+                                                borderRadius: 8,
+                                                padding: 10,
+                                                marginTop: 6,
+                                                borderWidth: 1,
+                                                borderColor: '#e5e7eb'
+                                            }}>
+                                                <Text style={{ fontSize: 13, color: '#374151', fontWeight: '500', flex: 1 }}>
+                                                    {pred.disease || pred.label || `Condition ${i + 2}`}
+                                                </Text>
+                                                <View style={{ flexDirection: 'row', gap: 6 }}>
+                                                    {pred.confidence !== undefined && (
+                                                        <Text style={{ fontSize: 12, color: '#9ca3af' }}>
+                                                            {Math.round(pred.confidence * 100)}%
+                                                        </Text>
+                                                    )}
+                                                    {pred.severity && (
+                                                        <View style={{
+                                                            backgroundColor: pred.severity === 'severe' ? '#fee2e2' : pred.severity === 'moderate' ? '#fef3c7' : '#d1fae5',
+                                                            paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 11, fontWeight: '600',
+                                                                color: pred.severity === 'severe' ? '#dc2626' : pred.severity === 'moderate' ? '#d97706' : '#059669'
+                                                            }}>
+                                                                {pred.severity?.toUpperCase()}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        ))}
+                                    </View>
+                                );
+                            })()}
+
+                            {/* Scan Metadata */}
+                            <View style={{ 
+                                backgroundColor: '#f9fafb', 
+                                borderRadius: 10, 
+                                padding: 12, 
+                                marginBottom: 20,
+                                borderWidth: 1,
+                                borderColor: '#e5e7eb'
+                            }}>
+                                <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 }}>Scan Info</Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <Text style={{ fontSize: 12, color: '#9ca3af' }}>Scan ID</Text>
+                                    <Text style={{ fontSize: 12, color: '#4b5563', fontFamily: 'monospace' }}>
+                                        {analysisResult?.image_id?.slice(0, 16) || '—'}...
+                                    </Text>
+                                </View>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <Text style={{ fontSize: 12, color: '#9ca3af' }}>Date</Text>
+                                    <Text style={{ fontSize: 12, color: '#4b5563' }}>
+                                        {new Date().toLocaleString()}
+                                    </Text>
+                                </View>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text style={{ fontSize: 12, color: '#9ca3af' }}>Conditions Found</Text>
+                                    <Text style={{ fontSize: 12, color: '#4b5563' }}>
+                                        {analysisResult?.predictions?.length || 0}
+                                    </Text>
+                                </View>
+                            </View>
+
+                        </ScrollView>
+
+                        {/* Sticky Footer Buttons */}
                         <View style={{ 
-                            backgroundColor: getStatusColor(analysisResult?.status) + '15', 
-                            padding: 12, 
-                            borderRadius: 8, 
-                            marginBottom: 16,
-                            borderLeftWidth: 4,
-                            borderLeftColor: getStatusColor(analysisResult?.status)
+                            padding: 16, 
+                            borderTopWidth: 1, 
+                            borderTopColor: '#f3f4f6',
+                            flexDirection: 'row',
+                            gap: 10
                         }}>
-                            <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Primary Finding:</Text>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1f2937' }}>
-                                {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
-                            </Text>
-                            <Text style={{ fontSize: 14, color: getStatusColor(analysisResult?.status), fontWeight: '600' }}>
-                                Overall Health Score: {analysisResult?.overall_health_score}%
-                            </Text>
-                        </View>
-
-                        <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#374151' }}>
-                            Recommendations:
-                        </Text>
-                        <View style={{ maxHeight: 150 }}>
-                            <ScrollView nestedScrollEnabled={true}>
-                                {analysisResult?.predictions?.[0]?.recommendations.map((rec, i) => (
-                                    <Text key={i} style={{ fontSize: 14, color: '#4b5563', marginBottom: 6 }}>• {rec}</Text>
-                                ))}
-                            </ScrollView>
-                        </View>
-
-                        <View style={[styles.modalButtonContainer, { marginTop: 16 }]}>
                             <TouchableOpacity
-                                style={[styles.modalButton, { backgroundColor: '#3b82f6', flex: 1, marginRight: 8 }]}
+                                style={[styles.modalButton, { backgroundColor: '#3b82f6', flex: 1 }]}
                                 onPress={handleAssignToPlant}
                             >
                                 <Text style={styles.modalButtonText}>Assign to Plant</Text>
@@ -256,9 +464,10 @@ export default function ScanScreen() {
                                 style={[styles.modalButton, { backgroundColor: '#10b981', flex: 1 }]}
                                 onPress={handleSaveAsNewPlant}
                             >
-                                <Text style={styles.modalButtonText}>Save New</Text>
+                                <Text style={styles.modalButtonText}>Save as New</Text>
                             </TouchableOpacity>
                         </View>
+
                     </View>
                 </View>
             </Modal>
