@@ -41,7 +41,7 @@ export const dbService = {
   savePlant: async (plant: Plant) => {
     const db = await SQLite.openDatabaseAsync(DB_NAME);
     await db.runAsync(
-      'INSERT OR REPLACE INTO plants (id, name, type, health, lastChecked, status, entries, healthTrend) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT OR REPLACE INTO plants (id, name, type, health, lastChecked, status, entries, healthTrend) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       // [plant.id, plant.name, plant.type, plant.health, plant.lastChecked, plant.status, plant.location || '', plant.entries, JSON.stringify(plant.healthTrend)]
       [plant.id, plant.name, plant.type, plant.health, plant.lastChecked, plant.status, plant.entries, JSON.stringify(plant.healthTrend)]
     );
