@@ -161,8 +161,12 @@ export default function ScanScreen() {
         }
     };
 
-    const filteredPlantsForAssignment = selectedPlantClass
-        ? plants.filter(p => p.type === selectedPlantClass)
+    // Determine the single source of truth for the plant type to be used in filtering
+    const detectedPlantType = analysisResult?.primary_disease?.split('_')[0];
+    const filterType = selectedPlantClass || detectedPlantType;
+
+    const filteredPlantsForAssignment = filterType
+        ? plants.filter(p => p.type.toLowerCase() === filterType.toLowerCase())
         : plants;
 
     return (
