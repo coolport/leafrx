@@ -680,7 +680,32 @@ export const styles = StyleSheet.create({
     },
     modalButtonSecondaryText: {
       color: '#374151',
-    }
+    },
+    // Chip
+    chip: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        backgroundColor: '#f3f4f6',
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+    },
+    chipSelected: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        backgroundColor: '#10b981',
+        borderWidth: 1,
+        borderColor: '#10b981',
+    },
+    chipText: {
+        color: '#4b5563',
+        fontWeight: '500',
+    },
+    chipTextSelected: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
   });
   
   

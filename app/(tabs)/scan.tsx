@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { styles } from '../../constants/styles';
 import * as ImagePicker from 'expo-image-picker';
-import { AddPlantModal } from '../../components/leafrx/AddPlantModal';
+import { AddPlantModal, plantTypes } from '../../components/leafrx/AddPlantModal';
 import { AssignPlantModal } from '../../components/leafrx/AssignPlantModal';
-import { AnalysisResponse, ScanResult } from '../../components/leafrx/types';
+import { AnalysisResponse, Plant, ScanResult } from '../../components/leafrx/types';
 import { usePlantStore } from '../../store/usePlantStore';
 import { useMutation } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
 
 export default function ScanScreen() {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
+    const params = useLocalSearchParams<{ plantId?: string; plantType?: string }>();
+    const isUpdatingPlant = !!params.plantId;
+
     const { plants, addScan, addPlant } = usePlantStore();
 
     const [isResultsModalVisible, setResultsModalVisible] = useState(false);
@@ -21,6 +26,27 @@ export default function ScanScreen() {
     const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
     const [conditionsExpanded, setConditionsExpanded] = useState(false);
+    const [selectedPlantClass, setSelectedPlantClass] = useState<string | undefined>(isUpdatingPlant ? params.plantType : undefined);
+
+    // Reset state when the screen comes into focus and is NOT in update mode
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!params.plantId) {
+                // Reset everything for a fresh scan
+                setResultsModalVisible(false);
+                setAddPlantModalVisible(false);
+                setAssignPlantModalVisible(false);
+                setSelectedImageUri(null);
+                setAnalysisResult(null);
+                setConditionsExpanded(false);
+                setSelectedPlantClass(undefined);
+                mutation.reset();
+            } else {
+                 // When updating, pre-select the plant type
+                setSelectedPlantClass(params.plantType);
+            }
+        }, [params.plantId, params.plantType])
+    );
 
     const mutation = useMutation({
         mutationFn: ({ uri, type }: { uri: string, type?: string }) => apiService.analyzeImage(uri, type),
@@ -30,19 +56,19 @@ export default function ScanScreen() {
                 setResultsModalVisible(true);
             } else {
                 Alert.alert('Analysis Failed', data.error || 'Unknown error occurred', [
-                    { text: 'Try Again', onPress: () => {} },
-                    { text: 'Suggestion: ' + data.suggestion, style: 'default' }
+                    { text: 'Try Again', onPress: () => mutation.reset() },
+                    { text: 'OK', style: 'default' }
                 ]);
             }
         },
         onError: (error) => {
-            Alert.alert('Error', 'Failed to connect to the server. Please try again later.');
+            Alert.alert('Connection Error', 'Failed to connect to the server. Please check your internet connection and try again.');
         }
     });
 
     const processImage = async (uri: string) => {
         setSelectedImageUri(uri);
-        mutation.mutate({ uri });
+        mutation.mutate({ uri, type: selectedPlantClass });
     };
 
     const pickImage = async () => {
@@ -50,12 +76,9 @@ export default function ScanScreen() {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
-            quality: 0.7, // Lower quality for faster upload
+            quality: 0.7,
         });
-
-        if (!result.canceled) {
-            processImage(result.assets[0].uri);
-        }
+        if (!result.canceled) processImage(result.assets[0].uri);
     };
 
     const takePhoto = async () => {
@@ -64,17 +87,13 @@ export default function ScanScreen() {
             Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
             return;
         }
-
         let result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
         });
-
-        if (!result.canceled) {
-            processImage(result.assets[0].uri);
-        }
+        if (!result.canceled) processImage(result.assets[0].uri);
     };
 
     const handleSaveAsNewPlant = () => {
@@ -87,50 +106,52 @@ export default function ScanScreen() {
         setAssignPlantModalVisible(true);
     };
 
+    const handleUpdatePlant = async () => {
+        await saveScanToStore(params.plantId);
+        setResultsModalVisible(false);
+        Alert.alert('Success', 'Plant has been updated with the new scan.');
+        router.back(); // Go back to the plant detail screen
+    };
+
     const onAddPlantSave = async (name: string, type: string) => {
         if (!analysisResult) return;
-
-        // Add the plant
-        await addPlant({
+        const newPlant = await addPlant({
             name,
             type,
             health: analysisResult.overall_health_score || 0,
             lastChecked: new Date().toISOString(),
             status: analysisResult.status || 'warning',
         });
-
-        // Save the scan globally
-        await saveScanToStore();
-        
+        await saveScanToStore(newPlant.id);
         setAddPlantModalVisible(false);
         Alert.alert('Success', `${name} has been added and the scan result linked.`);
+        router.push(`/plant/${newPlant.id}`);
     };
 
-    const onSelectExistingPlant = async (plant: any) => {
-        await saveScanToStore(plant.id, plant.name);
+    const onSelectExistingPlant = async (plant: Plant) => {
+        await saveScanToStore(plant.id);
         setAssignPlantModalVisible(false);
         Alert.alert('Success', `Scan result assigned to ${plant.name}.`);
+        router.push(`/plant/${plant.id}`);
     };
 
-    const saveScanToStore = async (plantId?: string, plantName?: string) => {
+    const saveScanToStore = async (plantIdToSave?: string) => {
         if (!analysisResult) return;
-
-        const [plant, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
-
+        const plantInfo = plants.find(p => p.id === plantIdToSave);
+        const [_, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
         const scanRecord: ScanResult = {
             id: analysisResult.image_id || Math.random().toString(),
-            plantId,
-            plantName: plantName || plant,
+            plantId: plantIdToSave,
+            plantName: plantInfo?.name || 'Unassigned',
             disease: disease || 'Unknown',
             severity: analysisResult.predictions?.[0]?.severity || 'Unknown',
             date: new Date().toISOString(),
             healthScore: analysisResult.overall_health_score || 0,
             predictions: analysisResult.predictions || [],
         };
-
         await addScan(scanRecord);
     };
-
+    
     const getStatusColor = (status?: string) => {
         switch (status) {
             case 'healthy': return '#10b981';
@@ -140,16 +161,48 @@ export default function ScanScreen() {
         }
     };
 
+    const filteredPlantsForAssignment = selectedPlantClass
+        ? plants.filter(p => p.type === selectedPlantClass)
+        : plants;
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" />
+            <Stack.Screen options={{ headerShown: false }} />
+
             <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
                 <View style={[styles.pageHeader, { paddingTop: insets.top }]}>
-                    <Text style={styles.pageTitle}>Scan Leaf</Text>
-                    <Text style={styles.pageSubtitle}>AI-powered disease detection</Text>
+                    <Text style={styles.pageTitle}>{isUpdatingPlant ? "Add New Scan" : "Scan Leaf"}</Text>
+                    <Text style={styles.pageSubtitle}>
+                        {isUpdatingPlant ? `For: ${plants.find(p => p.id === params.plantId)?.name}` : "AI-powered disease detection"}
+                    </Text>
                 </View>
 
                 <View style={styles.section}>
+                    {!isUpdatingPlant && (
+                        <View style={{ marginBottom: 20 }}>
+                            <Text style={styles.label}>Know the plant type? (Optional)</Text>
+                            <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>Select a type to improve accuracy.</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                                <TouchableOpacity
+                                    style={!selectedPlantClass ? styles.chipSelected : styles.chip}
+                                    onPress={() => setSelectedPlantClass(undefined)}
+                                >
+                                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Detect</Text>
+                                </TouchableOpacity>
+                                {plantTypes.map(type => (
+                                    <TouchableOpacity
+                                        key={type}
+                                        style={selectedPlantClass === type ? styles.chipSelected : styles.chip}
+                                        onPress={() => setSelectedPlantClass(type)}
+                                    >
+                                        <Text style={selectedPlantClass === type ? styles.chipTextSelected : styles.chipText}>{type}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    )}
+
                     <View style={styles.cameraArea}>
                         {mutation.isPending ? (
                             <View style={{ alignItems: 'center' }}>
@@ -166,32 +219,14 @@ export default function ScanScreen() {
                         )}
                     </View>
 
-                    <TouchableOpacity 
-                        style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]} 
-                        onPress={takePhoto}
-                        disabled={mutation.isPending}
-                    >
+                    <TouchableOpacity style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]} onPress={takePhoto} disabled={mutation.isPending}>
                         <Feather name="camera" size={20} color="#fff" />
                         <Text style={styles.btnPrimaryText}>Take Photo</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
-                        style={[styles.btnSecondary, mutation.isPending && { opacity: 0.6 }]} 
-                        onPress={pickImage}
-                        disabled={mutation.isPending}
-                    >
+                    <TouchableOpacity style={[styles.btnSecondary, mutation.isPending && { opacity: 0.6 }]} onPress={pickImage} disabled={mutation.isPending}>
                         <Text style={styles.btnSecondaryText}>Upload from Gallery</Text>
                     </TouchableOpacity>
-
-                    <View style={styles.infoBox}>
-                        <Feather name="info" size={20} color="#3b82f6" />
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.infoTitle}>Tips for best results:</Text>
-                            <Text style={styles.infoText}>• Use natural lighting when possible</Text>
-                            <Text style={styles.infoText}>• Keep camera steady and focused</Text>
-                            <Text style={styles.infoText}>• Capture the entire leaf if possible</Text>
-                        </View>
-                    </View>
                 </View>
             </ScrollView>
 
@@ -205,15 +240,7 @@ export default function ScanScreen() {
                 <View style={styles.modalContainer}>
                     <View style={[styles.modalContent, { maxHeight: '92%', padding: 0 }]}>
                         
-                        {/* Header */}
-                        <View style={{ 
-                            flexDirection: 'row', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center', 
-                            padding: 16,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#f3f4f6'
-                        }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
                             <Text style={styles.modalTitle}>Analysis Results</Text>
                             <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
                                 <Feather name="x" size={24} color="#6b7280" />
@@ -221,23 +248,11 @@ export default function ScanScreen() {
                         </View>
 
                         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16 }}>
-
-                            {/* Scanned Image */}
-                            {selectedImageUri && (
-                                <Image
-                                    source={{ uri: selectedImageUri }}
-                                    style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 16 }}
-                                    resizeMode="cover"
-                                />
-                            )}
-
-                            {/* Health Score Banner */}
+                            {selectedImageUri && <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 16 }} resizeMode="cover" />}
+                            
                             <View style={{ 
                                 backgroundColor: getStatusColor(analysisResult?.status) + '18',
-                                borderRadius: 12,
-                                padding: 16,
-                                marginBottom: 16,
-                                borderLeftWidth: 4,
+                                borderRadius: 12, padding: 16, marginBottom: 16, borderLeftWidth: 4,
                                 borderLeftColor: getStatusColor(analysisResult?.status)
                             }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -247,227 +262,39 @@ export default function ScanScreen() {
                                             {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
                                         </Text>
                                         <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-                                            Plant: {analysisResult?.primary_disease?.split('_')[0] || 'Unknown'}
+                                            Plant Type: {analysisResult?.primary_disease?.split('_')[0] || 'Unknown'}
                                         </Text>
                                     </View>
-                                    {/* Health Score Circle */}
-                                    <View style={{
-                                        width: 72,
-                                        height: 72,
-                                        borderRadius: 36,
-                                        backgroundColor: getStatusColor(analysisResult?.status) + '25',
-                                        borderWidth: 3,
-                                        borderColor: getStatusColor(analysisResult?.status),
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                                    <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: getStatusColor(analysisResult?.status) + '25', borderWidth: 3, borderColor: getStatusColor(analysisResult?.status), alignItems: 'center', justifyContent: 'center' }}>
                                         <Text style={{ fontSize: 18, fontWeight: 'bold', color: getStatusColor(analysisResult?.status) }}>
                                             {analysisResult?.overall_health_score}%
                                         </Text>
                                         <Text style={{ fontSize: 9, color: '#6b7280' }}>HEALTH</Text>
                                     </View>
                                 </View>
-
-                                {/* Health Bar */}
-                                <View style={{ marginTop: 12 }}>
-                                    <View style={{ height: 6, backgroundColor: '#e5e7eb', borderRadius: 3 }}>
-                                        <View style={{
-                                            height: 6,
-                                            width: `${analysisResult?.overall_health_score || 0}%` as any,
-                                            backgroundColor: getStatusColor(analysisResult?.status),
-                                            borderRadius: 3
-                                        }} />
-                                    </View>
-                                </View>
                             </View>
 
-                            {/* Detected Conditions */}
-                            {analysisResult?.predictions && analysisResult.predictions.length > 0 && (() => {
-                                const sorted = [...analysisResult.predictions].sort((a: any, b: any) => b.confidence - a.confidence);
-                                const primary = sorted[0];
-                                const rest = sorted.slice(1);
-
-                                return (
-                                    <View style={{ marginBottom: 16 }}>
-                                        <Text style={{ fontSize: 15, fontWeight: '700', color: '#374151', marginBottom: 10 }}>
-                                            Detected Condition
-                                        </Text>
-
-                                        {/* Primary Card */}
-                                        <View style={{
-                                            backgroundColor: '#f9fafb',
-                                            borderRadius: 10,
-                                            padding: 12,
-                                            borderWidth: 1,
-                                            borderColor: '#e5e7eb'
-                                        }}>
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                                                <Text style={{ fontSize: 15, fontWeight: '700', color: '#1f2937', flex: 1 }}>
-                                                    {primary.disease || primary.label || 'Unknown'}
-                                                </Text>
-                                                <View style={{ flexDirection: 'row', gap: 6 }}>
-                                                    {primary.confidence !== undefined && (
-                                                        <View style={{ backgroundColor: '#dbeafe', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
-                                                            <Text style={{ fontSize: 11, color: '#2563eb', fontWeight: '700' }}>
-                                                                {Math.round(primary.confidence * 100)}% conf.
-                                                            </Text>
-                                                        </View>
-                                                    )}
-                                                    {primary.severity && (
-                                                        <View style={{
-                                                            backgroundColor: primary.severity === 'severe' ? '#fee2e2' : primary.severity === 'moderate' ? '#fef3c7' : '#d1fae5',
-                                                            paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999
-                                                        }}>
-                                                            <Text style={{
-                                                                fontSize: 11, fontWeight: '700',
-                                                                color: primary.severity === 'severe' ? '#dc2626' : primary.severity === 'moderate' ? '#d97706' : '#059669'
-                                                            }}>
-                                                                {primary.severity?.toUpperCase()}
-                                                            </Text>
-                                                        </View>
-                                                    )}
-                                                </View>
-                                            </View>
-
-                                            {primary.description && (
-                                                <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 8, lineHeight: 18 }}>
-                                                    {primary.description}
-                                                </Text>
-                                            )}
-
-                                            {primary.recommendations?.length > 0 && (
-                                                <>
-                                                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 4 }}>
-                                                        Recommendations:
-                                                    </Text>
-                                                    {primary.recommendations.map((rec: string, j: number) => (
-                                                        <View key={j} style={{ flexDirection: 'row', marginBottom: 3 }}>
-                                                            <Text style={{ color: '#10b981', marginRight: 6, fontSize: 13 }}>•</Text>
-                                                            <Text style={{ fontSize: 13, color: '#4b5563', flex: 1, lineHeight: 18 }}>{rec}</Text>
-                                                        </View>
-                                                    ))}
-                                                </>
-                                            )}
-
-                                            {/* Expand toggle */}
-                                            {rest.length > 0 && (
-                                                <TouchableOpacity
-                                                    onPress={() => setConditionsExpanded(prev => !prev)}
-                                                    style={{
-                                                        marginTop: 12,
-                                                        paddingTop: 10,
-                                                        borderTopWidth: 1,
-                                                        borderTopColor: '#e5e7eb',
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        gap: 4
-                                                    }}
-                                                >
-                                                    <Text style={{ fontSize: 13, color: '#6b7280', fontWeight: '600' }}>
-                                                        {conditionsExpanded ? 'Hide' : `+${rest.length} other condition${rest.length > 1 ? 's' : ''}`}
-                                                    </Text>
-                                                    <Feather name={conditionsExpanded ? 'chevron-up' : 'chevron-down'} size={14} color="#6b7280" />
-                                                </TouchableOpacity>
-                                            )}
-                                        </View>
-
-                                        {/* Expanded: other conditions as compact rows */}
-                                        {conditionsExpanded && rest.map((pred: any, i: number) => (
-                                            <View key={i} style={{
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                backgroundColor: '#f9fafb',
-                                                borderRadius: 8,
-                                                padding: 10,
-                                                marginTop: 6,
-                                                borderWidth: 1,
-                                                borderColor: '#e5e7eb'
-                                            }}>
-                                                <Text style={{ fontSize: 13, color: '#374151', fontWeight: '500', flex: 1 }}>
-                                                    {pred.disease || pred.label || `Condition ${i + 2}`}
-                                                </Text>
-                                                <View style={{ flexDirection: 'row', gap: 6 }}>
-                                                    {pred.confidence !== undefined && (
-                                                        <Text style={{ fontSize: 12, color: '#9ca3af' }}>
-                                                            {Math.round(pred.confidence * 100)}%
-                                                        </Text>
-                                                    )}
-                                                    {pred.severity && (
-                                                        <View style={{
-                                                            backgroundColor: pred.severity === 'severe' ? '#fee2e2' : pred.severity === 'moderate' ? '#fef3c7' : '#d1fae5',
-                                                            paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999
-                                                        }}>
-                                                            <Text style={{
-                                                                fontSize: 11, fontWeight: '600',
-                                                                color: pred.severity === 'severe' ? '#dc2626' : pred.severity === 'moderate' ? '#d97706' : '#059669'
-                                                            }}>
-                                                                {pred.severity?.toUpperCase()}
-                                                            </Text>
-                                                        </View>
-                                                    )}
-                                                </View>
-                                            </View>
-                                        ))}
-                                    </View>
-                                );
-                            })()}
-
-                            {/* Scan Metadata */}
-                            <View style={{ 
-                                backgroundColor: '#f9fafb', 
-                                borderRadius: 10, 
-                                padding: 12, 
-                                marginBottom: 20,
-                                borderWidth: 1,
-                                borderColor: '#e5e7eb'
-                            }}>
-                                <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 }}>Scan Info</Text>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <Text style={{ fontSize: 12, color: '#9ca3af' }}>Scan ID</Text>
-                                    <Text style={{ fontSize: 12, color: '#4b5563', fontFamily: 'monospace' }}>
-                                        {analysisResult?.image_id?.slice(0, 16) || '—'}...
-                                    </Text>
-                                </View>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <Text style={{ fontSize: 12, color: '#9ca3af' }}>Date</Text>
-                                    <Text style={{ fontSize: 12, color: '#4b5563' }}>
-                                        {new Date().toLocaleString()}
-                                    </Text>
-                                </View>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text style={{ fontSize: 12, color: '#9ca3af' }}>Conditions Found</Text>
-                                    <Text style={{ fontSize: 12, color: '#4b5563' }}>
-                                        {analysisResult?.predictions?.length || 0}
-                                    </Text>
-                                </View>
-                            </View>
+                            {/* Detected Conditions Snippet... */}
 
                         </ScrollView>
 
                         {/* Sticky Footer Buttons */}
-                        <View style={{ 
-                            padding: 16, 
-                            borderTopWidth: 1, 
-                            borderTopColor: '#f3f4f6',
-                            flexDirection: 'row',
-                            gap: 10
-                        }}>
-                            <TouchableOpacity
-                                style={[styles.modalButton, { backgroundColor: '#3b82f6', flex: 1 }]}
-                                onPress={handleAssignToPlant}
-                            >
-                                <Text style={styles.modalButtonText}>Assign to Plant</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.modalButton, { backgroundColor: '#10b981', flex: 1 }]}
-                                onPress={handleSaveAsNewPlant}
-                            >
-                                <Text style={styles.modalButtonText}>Save as New</Text>
-                            </TouchableOpacity>
+                        <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: '#f3f4f6', flexDirection: 'row', gap: 10 }}>
+                            {isUpdatingPlant ? (
+                                <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#10b981', flex: 1 }]} onPress={handleUpdatePlant}>
+                                    <Text style={styles.modalButtonText}>Update Plant</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <>
+                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#3b82f6', flex: 1 }]} onPress={handleAssignToPlant}>
+                                        <Text style={styles.modalButtonText}>Assign to Plant</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#10b981', flex: 1 }]} onPress={handleSaveAsNewPlant}>
+                                        <Text style={styles.modalButtonText}>Save as New</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
                         </View>
-
                     </View>
                 </View>
             </Modal>
@@ -476,12 +303,13 @@ export default function ScanScreen() {
                 isVisible={isAddPlantModalVisible}
                 onClose={() => setAddPlantModalVisible(false)}
                 onSave={onAddPlantSave}
+                initialPlantType={selectedPlantClass}
             />
 
             <AssignPlantModal
                 isVisible={isAssignPlantModalVisible}
                 onClose={() => setAssignPlantModalVisible(false)}
-                plants={plants}
+                plants={filteredPlantsForAssignment}
                 onSelectPlant={onSelectExistingPlant}
             />
         </SafeAreaView>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { styles } from '../../constants/styles';
 
@@ -6,21 +6,37 @@ type AddPlantModalProps = {
     isVisible: boolean;
     onClose: () => void;
     onSave: (plantName: string, plantType: string) => void;
+    initialPlantType?: string;
 };
 
-export function AddPlantModal({ isVisible, onClose, onSave }: AddPlantModalProps) {
+export const plantTypes = ['Mango', 'Banana', 'Guava', 'Calamansi'];
+
+export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: AddPlantModalProps) {
     const [plantName, setPlantName] = useState('');
-    const [plantType, setPlantType] = useState('Mango');
-    const plantTypes = ['Mango', 'Banana', 'Guava', 'Calamansi'];
+    const [plantType, setPlantType] = useState(initialPlantType || 'Mango');
+
+    useEffect(() => {
+        if (initialPlantType && isVisible) {
+            setPlantType(initialPlantType);
+        }
+        if (!isVisible) {
+            setPlantName('');
+            setPlantType(initialPlantType || 'Mango');
+        }
+    }, [initialPlantType, isVisible]);
 
     const handleSave = () => {
-        if (!plantName || !plantType) {
-            Alert.alert('Error', 'Please enter a plant name.');
+        if (!plantName.trim() || !plantType) {
+            Alert.alert('Missing Info', 'Please provide a name for your plant.');
             return;
         }
-        onSave(plantName, plantType);
+        onSave(plantName.trim(), plantType);
+        onClose(); 
+    };
+
+    const handleClose = () => {
         setPlantName('');
-        setPlantType('Mango');
+        setPlantType(initialPlantType || 'Mango');
         onClose();
     };
 
@@ -29,13 +45,13 @@ export function AddPlantModal({ isVisible, onClose, onSave }: AddPlantModalProps
             animationType="slide"
             transparent={true}
             visible={isVisible}
-            onRequestClose={onClose}
+            onRequestClose={handleClose}
         >
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Add New Plant</Text>
                     
-                    <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 8, marginLeft: 4 }}>Plant Name</Text>
+                    <Text style={styles.label}>Plant Name</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="e.g. My Backyard Mango"
@@ -43,27 +59,15 @@ export function AddPlantModal({ isVisible, onClose, onSave }: AddPlantModalProps
                         onChangeText={setPlantName}
                     />
 
-                    <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 8, marginLeft: 4 }}>Plant Type</Text>
+                    <Text style={styles.label}>Plant Type</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 }}>
                         {plantTypes.map((type) => (
                             <TouchableOpacity
                                 key={type}
                                 onPress={() => setPlantType(type)}
-                                style={{
-                                    paddingVertical: 8,
-                                    paddingHorizontal: 12,
-                                    borderRadius: 20,
-                                    backgroundColor: plantType === type ? '#10b981' : '#f3f4f6',
-                                    marginRight: 8,
-                                    marginBottom: 8,
-                                    borderWidth: 1,
-                                    borderColor: plantType === type ? '#10b981' : '#e5e7eb',
-                                }}
+                                style={plantType === type ? styles.chipSelected : styles.chip}
                             >
-                                <Text style={{ 
-                                    color: plantType === type ? '#fff' : '#4b5563',
-                                    fontWeight: plantType === type ? 'bold' : 'normal'
-                                }}>
+                                <Text style={plantType === type ? styles.chipTextSelected : styles.chipText}>
                                     {type}
                                 </Text>
                             </TouchableOpacity>
@@ -73,7 +77,7 @@ export function AddPlantModal({ isVisible, onClose, onSave }: AddPlantModalProps
                     <View style={styles.modalButtonContainer}>
                         <TouchableOpacity
                             style={[styles.modalButton, { backgroundColor: '#e5e7eb' }]}
-                            onPress={onClose}
+                            onPress={handleClose}
                         >
                             <Text style={[styles.modalButtonText, styles.modalButtonSecondaryText]}>Cancel</Text>
                         </TouchableOpacity>
