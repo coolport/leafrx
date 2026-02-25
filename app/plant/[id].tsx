@@ -3,7 +3,6 @@ import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert, Image, Acti
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
@@ -162,7 +161,7 @@ export default function DetailScreen() {
                         <Feather name="chevron-left" size={24} color="#fff" />
                     </TouchableOpacity>
 
-                    <Animated.View entering={FadeInDown.duration(800)} style={[styles.detailTop, { paddingHorizontal: 24, marginBottom: 12 }]}>
+                    <View style={[styles.detailTop, { paddingHorizontal: 24, marginBottom: 12 }]}>
                         <View style={[styles.detailIcon, { backgroundColor: 'rgba(255,255,255,0.25)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }]}>
                             <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
                         </View>
@@ -180,42 +179,37 @@ export default function DetailScreen() {
                             )}
                             <Text style={[styles.detailLabel, { fontWeight: '700' }]}>HEALTH</Text>
                         </View>
-                    </Animated.View>
+                    </View>
                 </LinearGradient>
 
                 <View style={styles.section}>
-                    <Animated.View entering={FadeInDown.delay(200).duration(800)}>
-                        <Chart data={trendData} labels={displayLabels} color={statusColors[1]} />
-                    </Animated.View>
+                    <Chart data={trendData} labels={displayLabels} color={statusColors[1]} />
 
                     <View style={[styles.statsGrid, { marginTop: 8 }]}>
-                        <Animated.View entering={FadeInRight.delay(400).duration(600)} style={{ flex: 1 }}>
+                        <View style={{ flex: 1 }}>
                             <StatCard 
                                 icon="calendar" 
                                 label="Last Check" 
                                 value={new Date(selectedPlant.lastChecked).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
                                 color='#3b82f6' 
                             />
-                        </Animated.View>
-                        <Animated.View entering={FadeInRight.delay(500).duration(600)} style={{ flex: 1 }}>
+                        </View>
+                        <View style={{ flex: 1 }}>
                             <StatCard icon="clipboard" label="Scans" value={selectedPlant.entries.toString()} color='#10b981' />
-                        </Animated.View>
-                        <Animated.View entering={FadeInRight.delay(600).duration(600)} style={{ flex: 1 }}>
+                        </View>
+                        <View style={{ flex: 1 }}>
                             <StatCard 
                                 icon="alert-triangle" 
                                 label="Status" 
                                 value={selectedPlant.status.toUpperCase()} 
                                 color={statusColors[1]} 
                             />
-                        </Animated.View>
+                        </View>
                     </View>
 
-                    <Animated.View entering={FadeInDown.delay(700).duration(800)}>
-                        <Timeline scans={plantScans} />
-                    </Animated.View>
+                    <Timeline scans={plantScans} />
 
-                    {/* New 3-Button Action Row */}
-                    <Animated.View entering={FadeInDown.delay(900).duration(800)} style={{ flexDirection: 'row', gap: 12, marginTop: 32 }}>
+                    <View style={{ flexDirection: 'row', gap: 12, marginTop: 32 }}>
                         <TouchableOpacity 
                             activeOpacity={0.8} 
                             style={{ flex: 1.5 }}
@@ -281,7 +275,7 @@ export default function DetailScreen() {
                             </View>
                             <Text style={{ color: '#ef4444', fontWeight: '700', marginTop: 6, fontSize: 11 }}>DELETE</Text>
                         </TouchableOpacity>
-                    </Animated.View>
+                    </View>
                 </View>
             </ScrollView>
 

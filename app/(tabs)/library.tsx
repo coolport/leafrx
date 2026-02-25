@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, TextInput, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
@@ -47,15 +46,14 @@ export default function LibraryScreen() {
                     end={{ x: 1, y: 1 }}
                     style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
                 >
-                    <Animated.View entering={FadeInDown.duration(800)} style={{ paddingHorizontal: 24 }}>
+                    <View style={{ paddingHorizontal: 24 }}>
                         <Text style={styles.headerTitle}>Knowledge</Text>
                         <Text style={styles.headerSubtitle}>Learn about diseases and care</Text>
-                    </Animated.View>
+                    </View>
                 </LinearGradient>
 
                 <View style={[styles.section, { marginTop: -20 }]}>
-                    <Animated.View 
-                        entering={FadeInDown.delay(200).duration(800)} 
+                    <View 
                         style={{ 
                             backgroundColor: '#fff', 
                             borderRadius: 20, 
@@ -93,7 +91,7 @@ export default function LibraryScreen() {
                                 onChangeText={setSearchQuery}
                             />
                         </View>
-                    </Animated.View>
+                    </View>
 
                     {isLoading ? (
                         <View style={{ padding: 60, alignItems: 'center' }}>
@@ -109,37 +107,33 @@ export default function LibraryScreen() {
                             <Text style={{ marginTop: 8, color: '#64748b', textAlign: 'center', lineHeight: 20 }}>We couldn't reach the library server.</Text>
                         </View>
                     ) : (
-                        filteredDiseases.map((disease, index) => (
-                            <Animated.View 
+                        filteredDiseases.map((disease) => (
+                            <Link 
+                                href={{ pathname: "/disease/[name]", params: { name: disease.id } }} 
+                                asChild 
                                 key={disease.id}
-                                entering={FadeInRight.delay(400 + (index * 100)).duration(600)}
                             >
-                                <Link 
-                                    href={{ pathname: "/disease/[name]", params: { name: disease.id } }} 
-                                    asChild 
+                                <TouchableOpacity 
+                                    activeOpacity={0.7} 
+                                    style={[styles.plantCard, { padding: 20, marginBottom: 16 }]}
                                 >
-                                    <TouchableOpacity 
-                                        activeOpacity={0.7} 
-                                        style={[styles.plantCard, { padding: 20, marginBottom: 16 }]}
-                                    >
-                                        <View style={[styles.plantIcon, { width: 64, height: 64, borderRadius: 20, backgroundColor: getPlantColor(disease.plant) + '15' }]}>
-                                            <Text style={{ fontSize: 32 }}>🍃</Text>
+                                    <View style={[styles.plantIcon, { width: 64, height: 64, borderRadius: 20, backgroundColor: getPlantColor(disease.plant) + '15' }]}>
+                                        <Text style={{ fontSize: 32 }}>🍃</Text>
+                                    </View>
+                                    <View style={[styles.plantInfo, { marginLeft: 8 }]}>
+                                        <Text style={[styles.plantName, { fontSize: 19 }]} numberOfLines={1}>{disease.display_name}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                                            <View style={{ backgroundColor: getPlantColor(disease.plant), width: 8, height: 8, borderRadius: 4, marginRight: 8 }} />
+                                            <Text style={[styles.plantMeta, { fontWeight: '800', color: '#64748b', fontSize: 13, letterSpacing: 0.5 }]}>
+                                                {disease.plant.toUpperCase()}
+                                            </Text>
                                         </View>
-                                        <View style={[styles.plantInfo, { marginLeft: 8 }]}>
-                                            <Text style={[styles.plantName, { fontSize: 19 }]} numberOfLines={1}>{disease.display_name}</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                                                <View style={{ backgroundColor: getPlantColor(disease.plant), width: 8, height: 8, borderRadius: 4, marginRight: 8 }} />
-                                                <Text style={[styles.plantMeta, { fontWeight: '800', color: '#64748b', fontSize: 13, letterSpacing: 0.5 }]}>
-                                                    {disease.plant.toUpperCase()}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                        <View style={{ backgroundColor: '#f8fafc', padding: 10, borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9' }}>
-                                            <Feather name="chevron-right" size={22} color="#94a3b8" />
-                                        </View>
-                                    </TouchableOpacity>
-                                </Link>
-                            </Animated.View>
+                                    </View>
+                                    <View style={{ backgroundColor: '#f8fafc', padding: 10, borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9' }}>
+                                        <Feather name="chevron-right" size={22} color="#94a3b8" />
+                                    </View>
+                                </TouchableOpacity>
+                            </Link>
                         ))
                     )}
                 </View>
@@ -147,4 +141,3 @@ export default function LibraryScreen() {
         </View>
     );
 }
-

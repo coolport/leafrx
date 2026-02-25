@@ -3,7 +3,6 @@ import { ScrollView, View, Text, TextInput, TouchableOpacity, StatusBar } from '
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { PlantCard } from '../../components/leafrx/PlantCard';
 import { AddPlantModal } from '../../components/leafrx/AddPlantModal';
@@ -47,7 +46,7 @@ export default function TrackingScreen() {
                     end={{ x: 1, y: 1 }}
                     style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
                 >
-                    <Animated.View entering={FadeInDown.duration(800)} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24 }}>
                         <View>
                             <Text style={styles.headerTitle}>Plant Tracking</Text>
                             <Text style={styles.headerSubtitle}>Monitor growth over time</Text>
@@ -59,12 +58,11 @@ export default function TrackingScreen() {
                         >
                             <Feather name="plus" size={24} color="#fff" />
                         </TouchableOpacity>
-                    </Animated.View>
+                    </View>
                 </LinearGradient>
 
                 <View style={[styles.section, { marginTop: -20 }]}>
-                    <Animated.View 
-                        entering={FadeInDown.delay(200).duration(800)}
+                    <View 
                         style={{ 
                             backgroundColor: '#fff', 
                             borderRadius: 24, 
@@ -123,16 +121,11 @@ export default function TrackingScreen() {
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
-                    </Animated.View>
+                    </View>
 
                     {filteredPlants.length > 0 ? (
-                        filteredPlants.map((plant, index) => (
-                            <Animated.View 
-                                key={plant.id}
-                                entering={FadeInRight.delay(400 + (index * 100)).duration(600)}
-                            >
-                                <PlantCard plant={plant} />
-                            </Animated.View>
+                        filteredPlants.map((plant) => (
+                            <PlantCard key={plant.id} plant={plant} />
                         ))
                     ) : (
                         <View style={{ padding: 60, alignItems: 'center' }}>
@@ -154,4 +147,3 @@ export default function TrackingScreen() {
         </View>
     );
 }
-

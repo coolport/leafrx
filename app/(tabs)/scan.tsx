@@ -4,7 +4,7 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { styles } from '../../constants/styles';
 import * as ImagePicker from 'expo-image-picker';
@@ -136,8 +136,6 @@ export default function ScanScreen() {
     const onAddPlantSave = async (name: string, type: string) => {
         if (!analysisResult) return;
         
-        // We need to add the plant first, then the scan linked to it.
-        // addPlant in our store doesn't return the ID, so we use a unique property or refine the store.
         await addPlant({
             name,
             type,
@@ -146,9 +144,8 @@ export default function ScanScreen() {
             status: analysisResult.status || 'warning',
         });
         
-        // Let's get the latest plant (the one we just added)
         const updatedPlants = usePlantStore.getState().plants;
-        const newPlant = updatedPlants[0]; // addPlant unshifts to the beginning
+        const newPlant = updatedPlants[0];
         
         if (newPlant) {
             await saveScanToStore(newPlant.id);
@@ -212,18 +209,15 @@ export default function ScanScreen() {
                     end={{ x: 1, y: 1 }}
                     style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
                 >
-                    <Animated.View entering={FadeInDown.duration(800)} style={{ paddingHorizontal: 24 }}>
+                    <View style={{ paddingHorizontal: 24 }}>
                         <Text style={styles.headerTitle}>{isUpdatingPlant ? "Add New Scan" : "Leaf Diagnosis"}</Text>
                         <Text style={styles.headerSubtitle}>
                             {isUpdatingPlant ? `For: ${plants.find(p => p.id === params.plantId)?.name}` : "Identify diseases instantly with AI"}
                         </Text>
-                    </Animated.View>
+                    </View>
                 </LinearGradient>
 
-                <Animated.View 
-                    entering={FadeInDown.delay(200).duration(800)} 
-                    style={[styles.section, { marginTop: -20 }]}
-                >
+                <View style={[styles.section, { marginTop: -20 }]}>
                     <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
                         {!isUpdatingPlant && (
                             <View style={{ marginBottom: 24 }}>
@@ -315,7 +309,7 @@ export default function ScanScreen() {
                             <Text style={[styles.btnSecondaryText, { fontSize: 14 }]}>Gallery</Text>
                         </TouchableOpacity>
                     </View>
-                </Animated.View>
+                </View>
             </ScrollView>
 
 

@@ -3,7 +3,6 @@ import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { HealthOverview } from '../../components/leafrx/HealthOverview';
 import { QuickActions } from '../../components/leafrx/QuickActions';
@@ -40,12 +39,8 @@ export default function HomeScreen() {
           end={{ x: 1, y: 1 }}
           style={[styles.header, { paddingTop: insets.top + 16 }]}
         >
-          <Animated.View 
-            entering={FadeInDown.delay(200).duration(800)}
-            style={styles.headerTop}
-          >
+          <View style={styles.headerTop}>
             <View>
-              {/* <Text style={styles.headerTitle}>Hello, Juan!</Text> */}
               <Text style={styles.headerTitle}>LeafRx</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <Text style={styles.headerSubtitle}>Monitor your trees health</Text>
@@ -65,25 +60,17 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.bellBtn} activeOpacity={0.7}>
               <Feather name="bell" size={20} color="#fff" />
             </TouchableOpacity>
-          </Animated.View>
+          </View>
           
-          <Animated.View entering={FadeInDown.delay(400).duration(800)}>
-            <HealthOverview />
-          </Animated.View>
+          <HealthOverview />
         </LinearGradient>
 
-        <Animated.View 
-          entering={FadeInDown.delay(600).duration(800)}
-          style={styles.section}
-        >
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <QuickActions />
-        </Animated.View>
+        </View>
 
-        <Animated.View 
-          entering={FadeInDown.delay(800).duration(800)}
-          style={styles.section}
-        >
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>My Plants</Text>
             {plants.length > 0 && (
@@ -96,13 +83,8 @@ export default function HomeScreen() {
           </View>
           
           {plants.length > 0 ? (
-            plants.slice(0, 3).map((plant, index) => (
-              <Animated.View 
-                key={plant.id} 
-                entering={FadeInRight.delay(900 + (index * 100)).duration(600)}
-              >
-                <PlantCard plant={plant} />
-              </Animated.View>
+            plants.slice(0, 3).map((plant) => (
+              <PlantCard key={plant.id} plant={plant} />
             ))
           ) : (
             <View style={{ 
@@ -124,28 +106,20 @@ export default function HomeScreen() {
               </Text>
             </View>
           )}
-        </Animated.View>
+        </View>
 
-        <Animated.View 
-          entering={FadeInDown.delay(1000).duration(800)}
-          style={styles.section}
-        >
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Scans</Text>
           {scans.length > 0 ? (
-            scans.slice(0, 5).map((scan, index) => (
-              <Animated.View 
-                key={scan.id}
-                entering={FadeInRight.delay(1100 + (index * 100)).duration(600)}
-              >
-                <RecentScanItem scan={scan} />
-              </Animated.View>
+            scans.slice(0, 5).map((scan) => (
+              <RecentScanItem key={scan.id} scan={scan} />
             ))
           ) : (
             <View style={{ padding: 20, backgroundColor: 'transparent', borderRadius: 12, alignItems: 'center' }}>
               <Text style={{ color: '#94a3b8', fontSize: 14 }}>No scans performed yet.</Text>
             </View>
           )}
-        </Animated.View>
+        </View>
       </ScrollView>
     </View>
   );
