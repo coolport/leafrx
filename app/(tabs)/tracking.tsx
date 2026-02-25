@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ScrollView, View, Text, TextInput, TouchableOpacity, StatusBar } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { PlantCard } from '../../components/leafrx/PlantCard';
 import { AddPlantModal } from '../../components/leafrx/AddPlantModal';
@@ -32,28 +34,71 @@ export default function TrackingScreen() {
     });
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" />
-            <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-                <View style={[styles.pageHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: insets.top }]}>
-                    <View>
-                        <Text style={styles.pageTitle}>Plant Tracking</Text>
-                        <Text style={styles.pageSubtitle}>Monitor growth over time</Text>
-                    </View>
-                    <TouchableOpacity style={styles.addBtn} onPress={() => setAddModalVisible(true)}>
-                        <Feather name="plus" size={18} color="#fff" />
-                        <Text style={styles.addBtnText}>Add</Text>
-                    </TouchableOpacity>
-                </View>
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" />
+            <ScrollView 
+                style={styles.screen} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
+                <LinearGradient
+                    colors={['#059669', '#10b981', '#34d399']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
+                >
+                    <Animated.View entering={FadeInDown.duration(800)} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24 }}>
+                        <View>
+                            <Text style={styles.headerTitle}>Plant Tracking</Text>
+                            <Text style={styles.headerSubtitle}>Monitor growth over time</Text>
+                        </View>
+                        <TouchableOpacity 
+                            style={styles.bellBtn} 
+                            onPress={() => setAddModalVisible(true)}
+                            activeOpacity={0.7}
+                        >
+                            <Feather name="plus" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </Animated.View>
+                </LinearGradient>
 
-                <View style={styles.section}>
-                    <View style={styles.searchContainer}>
-                        <View style={styles.searchInput}>
-                            <Feather name="search" size={20} color="#9ca3af" />
+                <View style={[styles.section, { marginTop: -20 }]}>
+                    <Animated.View 
+                        entering={FadeInDown.delay(200).duration(800)}
+                        style={{ 
+                            backgroundColor: '#fff', 
+                            borderRadius: 24, 
+                            padding: 20,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.05,
+                            shadowRadius: 12,
+                            elevation: 4,
+                            marginBottom: 24
+                        }}
+                    >
+                        <View style={{ 
+                            flexDirection: 'row', 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8fafc', 
+                            paddingHorizontal: 16, 
+                            paddingVertical: 12, 
+                            borderRadius: 14,
+                            borderWidth: 1,
+                            borderColor: '#f1f5f9',
+                            marginBottom: 16
+                        }}>
+                            <Feather name="search" size={20} color="#94a3b8" />
                             <TextInput
-                                placeholder="Search plants..."
-                                style={styles.searchInputText}
-                                placeholderTextColor="#9ca3af"
+                                placeholder="Search your plants..."
+                                style={{ 
+                                    flex: 1, 
+                                    fontSize: 16, 
+                                    color: '#1e293b', 
+                                    fontWeight: '500',
+                                    marginLeft: 12
+                                }}
+                                placeholderTextColor="#94a3b8"
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
                             />
@@ -62,27 +107,43 @@ export default function TrackingScreen() {
                             {['All', 'Mango', 'Banana', 'Guava', 'Calamansi'].map((filter) => (
                                 <TouchableOpacity 
                                     key={filter} 
-                                    style={[styles.filterPill, activeFilter === filter && styles.filterPillActive]}
+                                    style={[
+                                        styles.filterPill, 
+                                        { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: activeFilter === filter ? '#10b981' : '#f1f5f9', borderWidth: 0 },
+                                        activeFilter === filter && { shadowColor: '#10b981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 }
+                                    ]}
                                     onPress={() => setActiveFilter(filter)}
+                                    activeOpacity={0.7}
                                 >
-                                    <Text style={[styles.filterPillText, activeFilter === filter && styles.filterPillTextActive]}>{filter}</Text>
+                                    <Text style={{ 
+                                        fontSize: 13, 
+                                        fontWeight: '700', 
+                                        color: activeFilter === filter ? '#fff' : '#64748b' 
+                                    }}>{filter.toUpperCase()}</Text>
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
-                    </View>
+                    </Animated.View>
 
                     {filteredPlants.length > 0 ? (
-                        filteredPlants.map(plant => (
-                            <PlantCard key={plant.id} plant={plant} />
+                        filteredPlants.map((plant, index) => (
+                            <Animated.View 
+                                key={plant.id}
+                                entering={FadeInRight.delay(400 + (index * 100)).duration(600)}
+                            >
+                                <PlantCard plant={plant} />
+                            </Animated.View>
                         ))
                     ) : (
-                        <View style={{ padding: 40, alignItems: 'center' }}>
-                            <Feather name="search" size={48} color="#e5e7eb" />
-                            <Text style={{ marginTop: 16, color: '#6b7280' }}>No plants found.</Text>
+                        <View style={{ padding: 60, alignItems: 'center' }}>
+                            <View style={{ backgroundColor: '#f1f5f9', padding: 24, borderRadius: 32, marginBottom: 20 }}>
+                                <Feather name="search" size={48} color="#cbd5e1" />
+                            </View>
+                            <Text style={{ fontSize: 18, color: '#1e293b', fontWeight: '800' }}>No Plants Found</Text>
+                            <Text style={{ marginTop: 8, color: '#64748b', textAlign: 'center', lineHeight: 20 }}>Try adjusting your search or filter.</Text>
                         </View>
                     )}
                 </View>
-                <View style={{ height: 100 }} />
             </ScrollView>
 
             <AddPlantModal
@@ -90,6 +151,7 @@ export default function TrackingScreen() {
                 onClose={() => setAddModalVisible(false)}
                 onSave={handleSaveNewPlant}
             />
-        </SafeAreaView>
+        </View>
     );
 }
+

@@ -1,15 +1,20 @@
-import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert, Image, ActivityIndicator, Modal } from 'react-native';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { BlurView } from 'expo-blur';
+import * as ImagePicker from 'expo-image-picker';
 import { styles } from '../../constants/styles';
 import { Chart } from '../../components/leafrx/Chart';
 import { StatCard } from '../../components/leafrx/StatCard';
 import { Timeline } from '../../components/leafrx/Timeline';
 import { usePlantStore } from '../../store/usePlantStore';
+import { useMutation } from '@tanstack/react-query';
+import { apiService } from '../../services/api';
+import { AnalysisResponse, ScanResult } from '../../components/leafrx/types';
 
 export default function DetailScreen() {
     const insets = useSafeAreaInsets();
@@ -17,19 +22,88 @@ export default function DetailScreen() {
     const { id } = useLocalSearchParams();
     const plantId = Array.isArray(id) ? id[0] : id;
     
-    const { plants, getPlantScans, deletePlant } = usePlantStore();
+    const { plants, getPlantScans, deletePlant, addScan } = usePlantStore();
     const selectedPlant = plants.find(p => p.id === plantId);
     const plantScans = getPlantScans(plantId);
 
-    const handleScanPress = () => {
-        router.push({
-            pathname: '/(tabs)/scan',
-            params: { plantId: selectedPlant?.id, plantType: selectedPlant?.type },
+    const [isResultsModalVisible, setResultsModalVisible] = useState(false);
+    const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+    const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
+
+    const mutation = useMutation({
+        mutationFn: ({ uri, type }: { uri: string, type?: string }) => apiService.analyzeImage(uri, type),
+        onSuccess: (data) => {
+            if (data.success) {
+                setAnalysisResult(data);
+                setResultsModalVisible(true);
+                saveScanToStore(data);
+            } else {
+                Alert.alert('Analysis Failed', data.error || 'Unknown error occurred');
+            }
+        },
+        onError: () => {
+            Alert.alert('Connection Error', 'Failed to connect to the server.');
+        }
+    });
+
+    const processImage = async (uri: string) => {
+        setSelectedImageUri(uri);
+        mutation.mutate({ uri, type: selectedPlant?.type });
+    };
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
         });
+        if (!result.canceled) processImage(result.assets[0].uri);
+    };
+
+    const takePhoto = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Camera permission is required.');
+            return;
+        }
+        let result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+        if (!result.canceled) processImage(result.assets[0].uri);
+    };
+
+
+    const saveScanToStore = async (result: AnalysisResponse) => {
+        if (!selectedPlant) return;
+        const [_, disease] = result.primary_disease?.split('_') || ['Unknown', 'Unknown'];
+        const scanRecord: ScanResult = {
+            id: result.image_id || Math.random().toString(),
+            plantId: selectedPlant.id,
+            plantName: selectedPlant.name,
+            disease: disease || 'Unknown',
+            severity: result.predictions?.[0]?.severity || 'Unknown',
+            date: new Date().toISOString(),
+            healthScore: result.overall_health_score || 0,
+            predictions: result.predictions || [],
+        };
+        await addScan(scanRecord);
     };
 
     const handleBack = () => {
         router.back();
+    };
+
+    const getStatusColor = (status?: string) => {
+        switch (status) {
+            case 'healthy': return '#10b981';
+            case 'warning': return '#f59e0b';
+            case 'critical': return '#ef4444';
+            default: return '#6b7280';
+        }
     };
 
     if (!selectedPlant) {
@@ -99,7 +173,11 @@ export default function DetailScreen() {
                             </View>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={styles.detailScore}>{Math.round(selectedPlant.health)}%</Text>
+                            {mutation.isPending ? (
+                                <ActivityIndicator color="#fff" size="small" />
+                            ) : (
+                                <Text style={styles.detailScore}>{Math.round(selectedPlant.health)}%</Text>
+                            )}
                             <Text style={[styles.detailLabel, { fontWeight: '700' }]}>HEALTH</Text>
                         </View>
                     </Animated.View>
@@ -136,29 +214,54 @@ export default function DetailScreen() {
                         <Timeline scans={plantScans} />
                     </Animated.View>
 
-                    <Animated.View entering={FadeInDown.delay(900).duration(800)} style={{ marginTop: 32 }}>
-                        <TouchableOpacity
-                            activeOpacity={0.8}
-                            onPress={handleScanPress}
+                    {/* New 3-Button Action Row */}
+                    <Animated.View entering={FadeInDown.delay(900).duration(800)} style={{ flexDirection: 'row', gap: 12, marginTop: 32 }}>
+                        <TouchableOpacity 
+                            activeOpacity={0.8} 
+                            style={{ flex: 1.5 }}
+                            onPress={takePhoto}
+                            disabled={mutation.isPending}
                         >
                             <LinearGradient
                                 colors={statusColors.slice(0, 2)}
                                 start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                style={styles.btnPrimary}
+                                end={{ x: 1, y: 1 }}
+                                style={{ 
+                                    height: 100, 
+                                    borderRadius: 24, 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    shadowColor: statusColors[0],
+                                    shadowOffset: { width: 0, height: 4 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 10,
+                                    elevation: 6
+                                }}
                             >
-                                <Feather name="camera" size={20} color="#fff" />
-                                <Text style={styles.btnPrimaryText}>Perform New Analysis</Text>
+                                <Feather name="camera" size={28} color="#fff" />
+                                <Text style={{ color: '#fff', fontWeight: '800', marginTop: 8, fontSize: 13 }}>SCAN LEAF</Text>
                             </LinearGradient>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            activeOpacity={0.6}
-                            style={[styles.btnSecondary, { marginTop: 16, borderColor: '#fee2e2', backgroundColor: '#fff' }]}
+                        <TouchableOpacity 
+                            activeOpacity={0.7} 
+                            style={{ flex: 1, backgroundColor: '#fff', borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' }}
+                            onPress={pickImage}
+                            disabled={mutation.isPending}
+                        >
+                            <View style={{ backgroundColor: '#f8fafc', padding: 12, borderRadius: 16 }}>
+                                <Feather name="image" size={24} color="#64748b" />
+                            </View>
+                            <Text style={{ color: '#64748b', fontWeight: '700', marginTop: 6, fontSize: 11 }}>UPLOAD</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity 
+                            activeOpacity={0.7} 
+                            style={{ flex: 1, backgroundColor: '#fff', borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#fee2e2' }}
                             onPress={() => {
                                 Alert.alert(
                                     "Delete Plant",
-                                    `Are you sure you want to delete ${selectedPlant.name}? This action is permanent.`,
+                                    "This action is permanent.",
                                     [
                                         { text: "Cancel", style: "cancel" },
                                         { 
@@ -173,13 +276,107 @@ export default function DetailScreen() {
                                 );
                             }}
                         >
-                            <Text style={[styles.btnSecondaryText, { color: '#ef4444', fontWeight: '700' }]}>
-                                Remove from Tracker
-                            </Text>
+                            <View style={{ backgroundColor: '#fff1f2', padding: 12, borderRadius: 16 }}>
+                                <Feather name="trash-2" size={24} color="#ef4444" />
+                            </View>
+                            <Text style={{ color: '#ef4444', fontWeight: '700', marginTop: 6, fontSize: 11 }}>DELETE</Text>
                         </TouchableOpacity>
                     </Animated.View>
                 </View>
             </ScrollView>
+
+            {/* Results Modal for Direct Analysis */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isResultsModalVisible}
+                onRequestClose={() => setResultsModalVisible(false)}
+            >
+                <BlurView intensity={30} style={styles.modalContainer}>
+                    <View style={styles.bottomSheetContent}>
+                        <View style={styles.bottomSheetHandle} />
+                        
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16 }}>
+                            <Text style={[styles.modalTitle, { textAlign: 'left', marginBottom: 0 }]}>Diagnosis Results</Text>
+                            <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
+                                <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
+                                    <Feather name="x" size={20} color="#64748b" />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}>
+                            {selectedImageUri && (
+                                <Image 
+                                    source={{ uri: selectedImageUri }} 
+                                    style={{ width: '100%', height: 240, borderRadius: 24, marginBottom: 20 }} 
+                                    resizeMode="cover" 
+                                />
+                            )}
+                            
+                            <View style={{ 
+                                backgroundColor: getStatusColor(analysisResult?.status) + '15',
+                                borderRadius: 24, padding: 20, marginBottom: 20,
+                                borderLeftWidth: 6, borderLeftColor: getStatusColor(analysisResult?.status)
+                            }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b', marginBottom: 4, textTransform: 'uppercase' }}>Primary Finding</Text>
+                                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1e293b' }}>
+                                            {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
+                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                                            <View style={{ backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                                                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1e293b' }}>
+                                                    {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
+                                                </Text>
+                                            </View>
+                                            <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 8 }}>
+                                                Confidence: {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}%
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }}>
+                                        <Text style={{ fontSize: 24, fontWeight: '800', color: getStatusColor(analysisResult?.status) }}>
+                                            {analysisResult?.overall_health_score}
+                                        </Text>
+                                        <Text style={{ fontSize: 10, fontWeight: '700', color: '#94a3b8' }}>HEALTH</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {analysisResult?.predictions?.[0]?.recommendations && (
+                                <View style={{ marginBottom: 20 }}>
+                                    <Text style={styles.label}>Recommendations</Text>
+                                    {analysisResult.predictions[0].recommendations.map((rec, i) => (
+                                        <View key={i} style={{ flexDirection: 'row', marginBottom: 8, gap: 12, alignItems: 'center' }}>
+                                            <View style={{ backgroundColor: '#dcfce7', padding: 6, borderRadius: 10 }}>
+                                                <Feather name="check" size={14} color="#10b981" />
+                                            </View>
+                                            <Text style={{ flex: 1, fontSize: 14, color: '#475569', fontWeight: '500' }}>{rec}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        </ScrollView>
+
+                        <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+                            <TouchableOpacity 
+                                activeOpacity={0.8}
+                                style={{ width: '100%' }}
+                                onPress={() => setResultsModalVisible(false)}
+                            >
+                                <LinearGradient
+                                    colors={['#059669', '#10b981']}
+                                    style={[styles.modalButton, { marginHorizontal: 0 }]}
+                                >
+                                    <Text style={styles.modalButtonText}>Close & Update Stats</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </BlurView>
+            </Modal>
         </View>
     );
 }

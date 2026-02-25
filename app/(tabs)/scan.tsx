@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator, Dimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -93,7 +93,7 @@ export default function ScanScreen() {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
@@ -108,13 +108,14 @@ export default function ScanScreen() {
             return;
         }
         let result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
         });
         if (!result.canceled) processImage(result.assets[0].uri);
     };
+
 
     const handleSaveAsNewPlant = () => {
         setResultsModalVisible(false);
@@ -134,23 +135,29 @@ export default function ScanScreen() {
 
     const onAddPlantSave = async (name: string, type: string) => {
         if (!analysisResult) return;
-        const newPlant = await addPlant({
+        
+        // We need to add the plant first, then the scan linked to it.
+        // addPlant in our store doesn't return the ID, so we use a unique property or refine the store.
+        await addPlant({
             name,
             type,
             health: analysisResult.overall_health_score || 0,
             lastChecked: new Date().toISOString(),
             status: analysisResult.status || 'warning',
         });
-        // We need the ID from the added plant, but addPlant is a bit async in how it updates state.
-        // In our current store, addPlant creates its own ID. Let's make sure we can get it.
-        // For now, let's assume the store handles it or we'll refine the logic.
-        // Actually, store/usePlantStore.ts:addPlant doesn't return the plant.
-        // Let's find it in the plants list by name/type.
-        // A better way would be to return the ID from addPlant.
+        
+        // Let's get the latest plant (the one we just added)
+        const updatedPlants = usePlantStore.getState().plants;
+        const newPlant = updatedPlants[0]; // addPlant unshifts to the beginning
+        
+        if (newPlant) {
+            await saveScanToStore(newPlant.id);
+            setAddPlantModalVisible(false);
+            router.push(`/plant/${newPlant.id}`);
+        }
     };
 
     const onSelectExistingPlant = async (plant: Plant) => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         await saveScanToStore(plant.id);
         setAssignPlantModalVisible(false);
         router.push(`/plant/${plant.id}`);
@@ -158,7 +165,7 @@ export default function ScanScreen() {
 
     const saveScanToStore = async (plantIdToSave?: string) => {
         if (!analysisResult) return;
-        const plantInfo = plants.find(p => p.id === plantIdToSave);
+        const plantInfo = usePlantStore.getState().plants.find(p => p.id === plantIdToSave);
         const [_, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
         const scanRecord: ScanResult = {
             id: analysisResult.image_id || Math.random().toString(),
@@ -191,7 +198,7 @@ export default function ScanScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar barStyle="light-content" />
             <Stack.Screen options={{ headerShown: false }} />
 
             <ScrollView 
@@ -199,97 +206,119 @@ export default function ScanScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 120 }}
             >
-                <View style={[styles.scanHeader, { paddingTop: insets.top + 16 }]}>
-                    <Text style={styles.pageTitle}>{isUpdatingPlant ? "Add New Scan" : "Leaf Diagnosis"}</Text>
-                    <Text style={styles.pageSubtitle}>
-                        {isUpdatingPlant ? `For: ${plants.find(p => p.id === params.plantId)?.name}` : "Identify diseases instantly with AI"}
-                    </Text>
-                </View>
+                <LinearGradient
+                    colors={['#059669', '#10b981', '#34d399']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
+                >
+                    <Animated.View entering={FadeInDown.duration(800)} style={{ paddingHorizontal: 24 }}>
+                        <Text style={styles.headerTitle}>{isUpdatingPlant ? "Add New Scan" : "Leaf Diagnosis"}</Text>
+                        <Text style={styles.headerSubtitle}>
+                            {isUpdatingPlant ? `For: ${plants.find(p => p.id === params.plantId)?.name}` : "Identify diseases instantly with AI"}
+                        </Text>
+                    </Animated.View>
+                </LinearGradient>
 
-                <Animated.View entering={FadeInDown.delay(200).duration(800)} style={styles.section}>
-                    {!isUpdatingPlant && (
-                        <View style={{ marginBottom: 24 }}>
-                            <Text style={styles.label}>Select Plant Type</Text>
-                            <ScrollView 
-                                horizontal 
-                                showsHorizontalScrollIndicator={false} 
-                                contentContainerStyle={{ gap: 10, paddingRight: 24 }}
-                                style={styles.chipsScroll}
-                            >
-                                <TouchableOpacity
-                                    activeOpacity={0.7}
-                                    style={!selectedPlantClass ? styles.chipSelected : styles.chip}
-                                    onPress={() => setSelectedPlantClass(undefined)}
+                <Animated.View 
+                    entering={FadeInDown.delay(200).duration(800)} 
+                    style={[styles.section, { marginTop: -20 }]}
+                >
+                    <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
+                        {!isUpdatingPlant && (
+                            <View style={{ marginBottom: 24 }}>
+                                <Text style={styles.label}>Select Plant Type</Text>
+                                <ScrollView 
+                                    horizontal 
+                                    showsHorizontalScrollIndicator={false} 
+                                    contentContainerStyle={{ gap: 10, paddingRight: 24 }}
+                                    style={styles.chipsScroll}
                                 >
-                                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Auto Detect</Text>
-                                </TouchableOpacity>
-                                {plantTypes.map(type => (
                                     <TouchableOpacity
-                                        key={type}
                                         activeOpacity={0.7}
-                                        style={selectedPlantClass === type ? styles.chipSelected : styles.chip}
-                                        onPress={() => setSelectedPlantClass(type)}
+                                        style={!selectedPlantClass ? styles.chipSelected : styles.chip}
+                                        onPress={() => setSelectedPlantClass(undefined)}
                                     >
-                                        <Text style={selectedPlantClass === type ? styles.chipTextSelected : styles.chipText}>{type}</Text>
+                                        <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Auto Detect</Text>
                                     </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    )}
-
-                    <View style={styles.cameraArea}>
-                        {selectedImageUri && !mutation.isPending ? (
-                            <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: '100%' }} />
-                        ) : (
-                            <View style={{ alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
-                                <View style={styles.scannerFrame} />
-                                <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
-                                
-                                {mutation.isPending ? (
-                                    <View style={{ alignItems: 'center', padding: 20 }}>
-                                        <ActivityIndicator size="large" color="#10b981" />
-                                        <Text style={styles.cameraText}>Analyzing Leaf...</Text>
-                                        <Text style={styles.cameraHint}>Our AI is examining the leaf texture and patterns.</Text>
-                                    </View>
-                                ) : (
-                                    <>
-                                        <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
-                                            <Feather name="camera" size={48} color="#10b981" />
-                                        </View>
-                                        <Text style={styles.cameraText}>Position leaf in frame</Text>
-                                        <Text style={styles.cameraHint}>Ensure the leaf is well-lit and clearly visible.</Text>
-                                    </>
-                                )}
+                                    {plantTypes.map(type => (
+                                        <TouchableOpacity
+                                            key={type}
+                                            activeOpacity={0.7}
+                                            style={selectedPlantClass === type ? styles.chipSelected : styles.chip}
+                                            onPress={() => setSelectedPlantClass(type)}
+                                        >
+                                            <Text style={selectedPlantClass === type ? styles.chipTextSelected : styles.chipText}>{type}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
                             </View>
                         )}
+
+                        <View style={[styles.cameraArea, { marginVertical: 0, height: 300 }]}>
+                            {selectedImageUri && !mutation.isPending ? (
+                                <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: '100%' }} />
+                            ) : (
+                                <View style={{ alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
+                                    <View style={styles.scannerFrame} />
+                                    <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
+                                    
+                                    {mutation.isPending ? (
+                                        <View style={{ alignItems: 'center', padding: 20 }}>
+                                            <ActivityIndicator size="large" color="#10b981" />
+                                            <Text style={styles.cameraText}>Analyzing Leaf...</Text>
+                                            <Text style={styles.cameraHint}>Our AI is examining patterns.</Text>
+                                        </View>
+                                    ) : (
+                                        <>
+                                            <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
+                                                <Feather name="camera" size={48} color="#10b981" />
+                                            </View>
+                                            <Text style={styles.cameraText}>Position leaf in frame</Text>
+                                            <Text style={styles.cameraHint}>Ensure the leaf is clearly visible.</Text>
+                                        </>
+                                    )}
+                                </View>
+                            )}
+                        </View>
                     </View>
 
-                    <TouchableOpacity 
-                        activeOpacity={0.8}
-                        onPress={takePhoto} 
-                        disabled={mutation.isPending}
-                    >
-                        <LinearGradient
-                            colors={['#059669', '#10b981']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]}
+                    <View style={{ 
+                        flexDirection: 'row', 
+                        gap: 12, 
+                        marginTop: 24 
+                    }}>
+                        <TouchableOpacity 
+                            activeOpacity={0.8}
+                            onPress={takePhoto} 
+                            disabled={mutation.isPending}
+                            style={{ flex: 1.2 }}
                         >
-                            <Feather name="camera" size={20} color="#fff" />
-                            <Text style={styles.btnPrimaryText}>Take Photo</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                            <LinearGradient
+                                colors={['#059669', '#10b981']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]}
+                            >
+                                <Feather name="camera" size={22} color="#fff" />
+                                <Text style={styles.btnPrimaryText}>Take Photo</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity 
-                        style={[styles.btnSecondary, mutation.isPending && { opacity: 0.6 }]} 
-                        onPress={pickImage} 
-                        disabled={mutation.isPending}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={styles.btnSecondaryText}>Upload from Gallery</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={[styles.btnSecondary, { flex: 1, paddingHorizontal: 0 }, mutation.isPending && { opacity: 0.6 }]} 
+                            onPress={pickImage} 
+                            disabled={mutation.isPending}
+                            activeOpacity={0.7}
+                        >
+                            <Feather name="image" size={22} color="#64748b" style={{ marginBottom: 4 }} />
+                            <Text style={[styles.btnSecondaryText, { fontSize: 14 }]}>Gallery</Text>
+                        </TouchableOpacity>
+                    </View>
                 </Animated.View>
             </ScrollView>
+
+
 
             <Modal
                 animationType="slide"

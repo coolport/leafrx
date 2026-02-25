@@ -21,12 +21,12 @@ export function HealthOverview() {
             <View style={styles.healthOverviewTop}>
                 <View>
                     <Text style={styles.healthLabel}>Farm Health Overview</Text>
-                    {/* <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}> */}
-                    {/*     <Feather name="trending-up" size={14} color="#4ade80" /> */}
-                    {/*     <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginLeft: 4, fontWeight: '600' }}> */}
-                    {/*         Better than last week */}
-                    {/*     </Text> */}
-                    {/* </View> */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                        <Feather name="trending-up" size={14} color="#4ade80" />
+                        <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginLeft: 4, fontWeight: '600' }}>
+                            Better than last week
+                        </Text>
+                    </View>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                     <Text style={styles.healthScore}>{totalPlants > 0 ? averageHealth : '--'}%</Text>

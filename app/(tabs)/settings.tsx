@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, SafeAreaView, StatusBar, Switch, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, StatusBar, Switch, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '../../constants/styles';
 import { Feather } from '@expo/vector-icons';
 
