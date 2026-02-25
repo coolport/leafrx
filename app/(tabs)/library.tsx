@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, TextInput, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
@@ -33,6 +33,24 @@ export default function LibraryScreen() {
         }
     };
 
+    const getPlantEmoji = (plant: string) => {
+        switch (plant.toLowerCase()) {
+            case 'mango': return '🥭';
+            case 'banana': return '🍌';
+            case 'guava': return '🍈';
+            case 'calamansi': return '🍋';
+            default: return '🍃';
+        }
+    };
+
+    // Group diseases by plant
+    const grouped = filteredDiseases.reduce((acc, disease) => {
+        const key = disease.plant;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(disease);
+        return acc;
+    }, {} as Record<string, typeof filteredDiseases>);
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
@@ -53,18 +71,19 @@ export default function LibraryScreen() {
                     </Animated.View>
                 </LinearGradient>
 
-                <View style={[styles.section, { marginTop: -20 }]}>
+                <View style={[styles.section, { marginTop: -24 }]}>
+                    {/* Search Bar */}
                     <Animated.View 
                         entering={FadeInDown.delay(200).duration(800)} 
                         style={{ 
                             backgroundColor: '#fff', 
                             borderRadius: 20, 
-                            padding: 12,
+                            padding: 8,
                             shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 4 },
-                            shadowOpacity: 0.05,
-                            shadowRadius: 10,
-                            elevation: 4,
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.04,
+                            shadowRadius: 8,
+                            elevation: 3,
                             marginBottom: 24
                         }}
                     >
@@ -72,21 +91,21 @@ export default function LibraryScreen() {
                             flexDirection: 'row', 
                             alignItems: 'center', 
                             backgroundColor: '#f8fafc', 
-                            paddingHorizontal: 16, 
-                            paddingVertical: 12, 
-                            borderRadius: 14,
+                            paddingHorizontal: 14, 
+                            paddingVertical: 10, 
+                            borderRadius: 16,
                             borderWidth: 1,
                             borderColor: '#f1f5f9'
                         }}>
-                            <Feather name="search" size={20} color="#94a3b8" />
+                            <Feather name="search" size={18} color="#94a3b8" />
                             <TextInput
                                 placeholder="Search diseases, plants..."
                                 style={{ 
                                     flex: 1, 
-                                    fontSize: 16, 
+                                    fontSize: 15, 
                                     color: '#1e293b', 
-                                    fontWeight: '500',
-                                    marginLeft: 12
+                                    fontWeight: '600',
+                                    marginLeft: 10
                                 }}
                                 placeholderTextColor="#94a3b8"
                                 value={searchQuery}
@@ -108,37 +127,166 @@ export default function LibraryScreen() {
                             <Text style={{ fontSize: 18, color: '#1e293b', fontWeight: '800' }}>Sync Error</Text>
                             <Text style={{ marginTop: 8, color: '#64748b', textAlign: 'center', lineHeight: 20 }}>We couldn't reach the library server.</Text>
                         </View>
-                    ) : (
-                        filteredDiseases.map((disease, index) => (
-                            <Animated.View 
-                                key={disease.id}
-                                entering={FadeInRight.delay(400 + (index * 100)).duration(600)}
-                            >
-                                <Link 
-                                    href={{ pathname: "/disease/[name]", params: { name: disease.id } }} 
-                                    asChild 
+                    ) : searchQuery ? (
+                        // Flat list when searching
+                        <View style={{ gap: 12 }}>
+                            {filteredDiseases.map((disease, index) => (
+                                <Animated.View
+                                    key={disease.id}
+                                    entering={FadeInUp.delay(index * 60).duration(400)}
                                 >
-                                    <TouchableOpacity 
-                                        activeOpacity={0.7} 
-                                        style={[styles.plantCard, { padding: 20, marginBottom: 16 }]}
-                                    >
-                                        <View style={[styles.plantIcon, { width: 64, height: 64, borderRadius: 20, backgroundColor: getPlantColor(disease.plant) + '15' }]}>
-                                            <Text style={{ fontSize: 32 }}>🍃</Text>
-                                        </View>
-                                        <View style={[styles.plantInfo, { marginLeft: 8 }]}>
-                                            <Text style={[styles.plantName, { fontSize: 19 }]} numberOfLines={1}>{disease.display_name}</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                                                <View style={{ backgroundColor: getPlantColor(disease.plant), width: 8, height: 8, borderRadius: 4, marginRight: 8 }} />
-                                                <Text style={[styles.plantMeta, { fontWeight: '800', color: '#64748b', fontSize: 13, letterSpacing: 0.5 }]}>
-                                                    {disease.plant.toUpperCase()}
+                                    <HorizontalCard disease={disease} getPlantColor={getPlantColor} getPlantEmoji={getPlantEmoji} />
+                                </Animated.View>
+                            ))}
+                        </View>
+                    ) : (
+                        // Grouped by plant
+                        Object.entries(grouped).map(([plant, diseases], groupIndex) => (
+                            <Animated.View
+                                key={plant}
+                                entering={FadeInUp.delay(groupIndex * 100).duration(500)}
+                                style={{ marginBottom: 28 }}
+                            >
+                                {/* Plant Section Header */}
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    marginBottom: 12,
+                                    paddingHorizontal: 4
+                                }}>
+                                    <Text style={{ fontSize: 20, marginRight: 8 }}>{getPlantEmoji(plant)}</Text>
+                                    <Text style={{
+                                        fontSize: 13,
+                                        fontWeight: '800',
+                                        color: getPlantColor(plant),
+                                        letterSpacing: 1.2,
+                                        textTransform: 'uppercase'
+                                    }}>
+                                        {plant}
+                                    </Text>
+                                    <View style={{
+                                        flex: 1,
+                                        height: 1,
+                                        backgroundColor: getPlantColor(plant) + '25',
+                                        marginLeft: 10
+                                    }} />
+                                    {/* <Text style={{ */}
+                                    {/*     fontSize: 12, */}
+                                    {/*     color: '#94a3b8', */}
+                                    {/*     fontWeight: '600', */}
+                                    {/*     marginLeft: 10 */}
+                                    {/* }}> */}
+                                    {/*     {/* {diseases.length} {diseases.length === 1 ? 'disease' : 'diseases'} */} */}
+                                    {/*     4 {diseases.length === 1 ? 'disease' : 'diseases'} */}
+                                    {/* </Text> */}
+                                </View>
+
+                                {/* Horizontal scroll of cards */}
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={{ gap: 12, paddingHorizontal: 2, paddingBottom: 4 }}
+                                >
+                                    {diseases.map((disease) => (
+                                        <Link
+                                            key={disease.id}
+                                            href={{ pathname: "/disease/[name]", params: { name: disease.id } }}
+                                            asChild
+                                        >
+                                            <TouchableOpacity
+                                                activeOpacity={0.75}
+                                                style={{
+                                                    width: 160,
+                                                    backgroundColor: '#fff',
+                                                    borderRadius: 20,
+                                                    padding: 16,
+                                                    shadowColor: getPlantColor(disease.plant),
+                                                    shadowOffset: { width: 0, height: 4 },
+                                                    shadowOpacity: 0.1,
+                                                    shadowRadius: 12,
+                                                    elevation: 4,
+                                                    borderWidth: 1,
+                                                    borderColor: '#f1f5f9',
+                                                }}
+                                            >
+                                                {/* Card top accent */}
+                                                <View style={{
+                                                    width: '100%',
+                                                    height: 4,
+                                                    borderRadius: 4,
+                                                    backgroundColor: getPlantColor(disease.plant) + '30',
+                                                    marginBottom: 14
+                                                }}>
+                                                    <View style={{
+                                                        width: '60%',
+                                                        height: '100%',
+                                                        borderRadius: 4,
+                                                        backgroundColor: getPlantColor(disease.plant)
+                                                    }} />
+                                                </View>
+
+                                                {/* Icon */}
+                                                <View style={{
+                                                    width: 48,
+                                                    height: 48,
+                                                    borderRadius: 14,
+                                                    backgroundColor: getPlantColor(disease.plant) + '15',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    marginBottom: 12
+                                                }}>
+                                                    <Text style={{ fontSize: 26 }}>{getPlantEmoji(disease.plant)}</Text>
+                                                </View>
+
+                                                {/* Name */}
+                                                <Text style={{
+                                                    fontSize: 14,
+                                                    fontWeight: '700',
+                                                    color: '#1e293b',
+                                                    lineHeight: 20,
+                                                    marginBottom: 8,
+                                                    flexShrink: 1
+                                                }} numberOfLines={2}>
+                                                    {disease.display_name}
                                                 </Text>
-                                            </View>
-                                        </View>
-                                        <View style={{ backgroundColor: '#f8fafc', padding: 10, borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9' }}>
-                                            <Feather name="chevron-right" size={22} color="#94a3b8" />
-                                        </View>
-                                    </TouchableOpacity>
-                                </Link>
+
+                                                {/* Footer */}
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    marginTop: 'auto'
+                                                }}>
+                                                    <View style={{
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center',
+                                                        backgroundColor: getPlantColor(disease.plant) + '15',
+                                                        paddingHorizontal: 8,
+                                                        paddingVertical: 4,
+                                                        borderRadius: 8
+                                                    }}>
+                                                        <View style={{
+                                                            width: 5,
+                                                            height: 5,
+                                                            borderRadius: 2.5,
+                                                            backgroundColor: getPlantColor(disease.plant),
+                                                            marginRight: 5
+                                                        }} />
+                                                        <Text style={{
+                                                            fontSize: 10,
+                                                            fontWeight: '800',
+                                                            color: getPlantColor(disease.plant),
+                                                            letterSpacing: 0.5
+                                                        }}>
+                                                            {disease.plant.toUpperCase()}
+                                                        </Text>
+                                                    </View>
+                                                    <Feather name="arrow-right" size={14} color="#cbd5e1" />
+                                                </View>
+                                            </TouchableOpacity>
+                                        </Link>
+                                    ))}
+                                </ScrollView>
                             </Animated.View>
                         ))
                     )}
@@ -148,3 +296,84 @@ export default function LibraryScreen() {
     );
 }
 
+// Reusable horizontal row card (used in search results)
+function HorizontalCard({ disease, getPlantColor, getPlantEmoji }: {
+    disease: any;
+    getPlantColor: (p: string) => string;
+    getPlantEmoji: (p: string) => string;
+}) {
+    return (
+        <Link href={{ pathname: "/disease/[name]", params: { name: disease.id } }} asChild>
+            <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 18,
+                    padding: 14,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                    elevation: 2,
+                    borderWidth: 1,
+                    borderColor: '#f1f5f9',
+                    borderLeftWidth: 4,
+                    borderLeftColor: getPlantColor(disease.plant),
+                }}
+            >
+                <View style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 14,
+                    backgroundColor: getPlantColor(disease.plant) + '15',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 14,
+                    flexShrink: 0
+                }}>
+                    <Text style={{ fontSize: 26 }}>{getPlantEmoji(disease.plant)}</Text>
+                </View>
+
+                <View style={{ flex: 1 }}>
+                    <Text style={{
+                        fontSize: 15,
+                        fontWeight: '700',
+                        color: '#1e293b',
+                        marginBottom: 4
+                    }} numberOfLines={1}>
+                        {disease.display_name}
+                    </Text>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: getPlantColor(disease.plant) + '15',
+                        alignSelf: 'flex-start',
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        borderRadius: 8
+                    }}>
+                        <View style={{
+                            width: 5,
+                            height: 5,
+                            borderRadius: 2.5,
+                            backgroundColor: getPlantColor(disease.plant),
+                            marginRight: 5
+                        }} />
+                        <Text style={{
+                            fontSize: 10,
+                            fontWeight: '800',
+                            color: getPlantColor(disease.plant),
+                            letterSpacing: 0.5
+                        }}>
+                            {disease.plant.toUpperCase()}
+                        </Text>
+                    </View>
+                </View>
+
+                <Feather name="chevron-right" size={18} color="#cbd5e1" style={{ marginLeft: 8 }} />
+            </TouchableOpacity>
+        </Link>
+    );
+}
