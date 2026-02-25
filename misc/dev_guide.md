@@ -1,118 +1,110 @@
-# Developer Guide: Leafrx Mobile App
+# LeafRx Technical Developer Guide
 
-Welcome to the developer guide for the Leafrx mobile application. This document provides a comprehensive overview of the project's structure, architecture, and core concepts to help you get started with development.
+**Target Audience:** Large Language Models (LLMs) and Senior Developers
+**Version:** 1.1.0 (Post-Migration to Zustand & SQLite)
 
-## 1. Introduction
+## 1. System Architecture Overview
 
-Leafrx is a mobile application designed for monitoring plant and farm health. It allows users to track individual plants, scan for diseases, and view health trends over time.
+LeafRx is a high-performance plant health monitoring application built with **React Native (Expo)**. It utilizes a hybrid state management approach combining in-memory reactivity with local persistent storage and a remote machine learning backend.
 
-The application is built using:
-- **React Native**: A framework for building native apps using React.
-- **Expo**: A platform and set of tools built around React Native that simplifies development and deployment.
-- **Expo Router**: A file-system based router for React Native and web applications, enabling easy navigation.
+### 1.1 Core Tech Stack
+- **Framework:** Expo 54 (SDK 54)
+- **Navigation:** Expo Router (File-system based)
+- **State Management:** Zustand (Store-based)
+- **Persistence:** `expo-sqlite` (Relational Local DB)
+- **Networking:** Axios + TanStack Query (React Query)
+- **Styling:** React Native `StyleSheet` (Standard) + Global Theme Constants
+- **Backend:** Railway-hosted Python API (YOLOv8/MobileNetV2 analysis)
 
-## 2. Project Structure Overview
+---
 
-The project follows a logical structure, separating concerns into distinct directories. Here's a breakdown of the most important folders:
+## 2. Directory Structure & Symbol Mapping
 
-```
-/
-├── app/                  # Application screens and routing
-│   ├── (tabs)/           # Layout and screens for the main tab bar
-│   │   ├── _layout.tsx   # Configures the tab navigator
-│   │   ├── index.tsx     # Home screen
-│   │   ├── library.tsx   # Knowledge library screen
-│   │   ├── scan.tsx      # Leaf scanning screen
-│   │   ├── settings.tsx  # Settings screen
-│   │   └── tracking.tsx  # Plant tracking screen
-│   ├── plant/
-│   │   └── [id].tsx      # Dynamic screen for viewing a single plant's details
-│   └── _layout.tsx       # Root layout for the entire application
-│
-├── assets/               # Static assets like images and fonts
-│
-├── components/           # Reusable UI components
-│   └── leafrx/           # Custom components specific to this app
-│
-├── constants/            # Application-wide constants
-│   ├── mockData.ts       # Mock data for plants, scans, etc.
-│   └── styles.ts         # Global stylesheet
-│
-└── ... (other configuration files)
-```
+| Path | Purpose | Key Symbols |
+| :--- | :--- | :--- |
+| `app/` | Routing & Screens | `_layout.tsx`, `(tabs)/`, `plant/[id].tsx` |
+| `components/leafrx/` | UI Components | `PlantCard`, `HealthOverview`, `Timeline` |
+| `services/` | Side Effects & I/O | `api.ts`, `database.ts` |
+| `store/` | Global State | `usePlantStore.ts` |
+| `constants/` | Static Config | `theme.ts`, `styles.ts`, `mockData.ts` |
+| `hooks/` | Custom Logic | `use-theme-color.ts`, `use-color-scheme.ts` |
+| `misc/` | Documentation | `api_guide.md`, `dev_guide.md` |
 
-- **`app/`**: This is the most critical directory for the application's structure and navigation. Expo Router uses the file and directory names within `app/` to define the navigation routes.
-- **`components/leafrx/`**: Contains all the reusable UI components that make up the different screens, such as `PlantCard`, `HealthOverview`, and `Chart`.
-- **`constants/`**: Holds static data and configuration. All mock data is in `mockData.ts` and all global styles are in `styles.ts`.
-- **`assets/`**: Stores static files like images, icons, and fonts.
+---
 
-## 3. Navigation
+## 3. Data Flow & State Management
 
-Navigation is handled entirely by **Expo Router**. The routes are defined by the file structure within the `app` directory.
+### 3.1 Global Store (Zustand)
+The `usePlantStore` (`store/usePlantStore.ts`) is the single source of truth for UI state. It manages:
+- `plants`: Array of tracked plant objects.
+- `scans`: History of all diagnostic scans.
+- `isHydrated`: Flag indicating if SQLite data has been loaded.
 
-### Tab Navigation
+**Hydration Logic:**
+The store implements an `initialize()` action that performs a cold-start read from SQLite using `dbService.getAllPlants()` and `dbService.getAllScans()`. This is typically called in the root `_layout.tsx`.
 
-- The main tab bar is defined in **`app/(tabs)/_layout.tsx`**. This file uses the `<Tabs>` component from Expo Router to create the bottom navigation bar.
-- Each tab corresponds to a file within the `app/(tabs)/` directory. For example, the "Scan" tab links to the `app/(tabs)/scan.tsx` screen.
-- The `(tabs)` directory is a "route group" in Expo Router, which allows us to group a set of routes and give them a shared layout.
+### 3.2 Persistence Layer (SQLite)
+`services/database.ts` handles the mapping between TypeScript objects and the SQLite relational schema.
+- **Database Name:** `leafrx.db`
+- **Tables:**
+    - `plants`: Stores plant metadata and health history (JSON-stringified `healthTrend`).
+    - `scans`: Stores individual scan results (JSON-stringified `predictions`).
+- **Pattern:** The `dbService` provides atomic operations (save, delete, fetch) that are called by the Zustand store actions.
 
-### Stack Navigation & Dynamic Routes
+### 3.3 Remote Analysis Pipeline
+1. **Trigger:** `app/(tabs)/scan.tsx` captures an image via `expo-image-picker`.
+2. **Execution:** `apiService.analyzeImage(uri, plantType)` in `services/api.ts` sends a `multipart/form-data` POST request to the Railway API.
+3. **Response:** Returns an `AnalysisResponse` containing detection boxes, disease diagnosis, and health scores.
+4. **Integration:** Upon successful scan, the app calls `store.addScan()`, which updates the local `scans` list and triggers an update to the specific plant's health metrics in the `plants` table.
 
-- The root layout at **`app/_layout.tsx`** sets up a `<Stack>` navigator. This allows us to push new screens on top of the current view, such as opening a detail screen.
-- The plant detail screen is a **dynamic route**. The file **`app/plant/[id].tsx`** will match any route like `/plant/1`, `/plant/2`, etc.
-- Inside this screen, you can use the `useLocalSearchParams` hook from Expo Router to get the value of the `id` parameter from the URL.
+---
 
-### Navigating Between Screens
+## 4. Navigation & Routing
 
-To navigate, use the `<Link>` component from `expo-router`.
+LeafRx uses Expo Router's file-based system.
 
-**Example:** Navigating to a plant's detail page.
-```tsx
-// From components/leafrx/PlantCard.tsx
-import { Link } from 'expo-router';
+### 4.1 Layouts
+- **Root Layout (`app/_layout.tsx`):** Wraps the app in `QueryClientProvider` (TanStack) and `ThemeProvider`. It handles store initialization.
+- **Tab Layout (`app/(tabs)/_layout.tsx`):** Configures the bottom navigation bar (Home, Tracking, Scan, Library, Settings).
 
-// ...
-<Link href={`/plant/${plant.id}`} asChild>
-  <TouchableOpacity>
-    {/* ... card content ... */}
-  </TouchableOpacity>
-</Link>
-```
-This code wraps a `TouchableOpacity` in a `<Link>`. When the user presses it, they will be navigated to the dynamic route for that specific plant.
+### 4.2 Dynamic Routes
+- **Plant Details:** `app/plant/[id].tsx` - Accesses plant-specific history and charts.
+- **Disease Details:** `app/disease/[name].tsx` - Knowledge base entries for specific diseases.
 
-## 4. Components
+---
 
-Reusable components are the building blocks of the app. They are all located in `components/leafrx/`.
+## 5. UI & Design System
 
-- `HealthOverview.tsx`: The dashboard header on the home screen.
-- `PlantCard.tsx`: A card that displays a summary of a single plant. Used on the Home and Tracking screens.
-- `QuickActions.tsx`: The "Scan Leaf" and "Add Plant" buttons on the home screen.
-- `RecentScanItem.tsx`: A small item to show a summary of a recent scan.
-- `Chart.tsx`: The bar chart component used on the plant detail screen.
-- `StatCard.tsx`: A card for displaying a single statistic (e.g., "Days Tracked").
-- `Timeline.tsx`: The vertical timeline component on the plant detail screen.
-- `types.ts`: Contains TypeScript type definitions for our data models (`Plant`, `Scan`, etc.).
+### 5.1 Theming
+- **`constants/theme.ts`:** Defines the color palette (Primary: `#059669`, Success: `#10b981`, Warning: `#f59e0b`, Critical: `#ef4444`).
+- **`constants/styles.ts`:** Contains common shared styles (containers, headers, buttons).
 
-## 5. Data and State
+### 5.2 Component Guidelines
+- **Stateless vs Stateful:** Prefer stateless components in `components/leafrx/`. Pass data via props.
+- **Charts:** Use the `Chart` component for health trends, which renders simple `View`-based bars for performance.
 
-- **Mock Data**: Currently, all data is hardcoded in **`constants/mockData.ts`**. This is where you can find the arrays of plants, scans, and timeline entries. In a real-world application, this would be replaced with API calls to a backend service.
-- **Navigation State**: Managed automatically by Expo Router based on the current URL.
-- **Local Component State**: Managed within individual components using React's `useState` hook. There is no global state management library (like Redux or Zustand) in place yet.
+---
 
-## 6. Styling
+## 6. LLM Operational Context (Internal Reference)
 
-- A global stylesheet is defined in **`constants/styles.ts`** using React Native's `StyleSheet.create` API.
-- Components import this `styles` object to style their elements. This helps maintain a consistent look and feel.
-- For dynamic styles (e.g., changing a color based on a prop), a combination of the global style and an inline style object is used.
+When modifying this codebase, adhere to the following technical constraints:
 
-## 7. A Step-by-Step Walkthrough
+1.  **Strict Typing:** Always update `components/leafrx/types.ts` when changing data structures.
+2.  **Store Consistency:** Never modify the SQLite database directly from a component. Always use a Zustand action from `usePlantStore`.
+3.  **API Resilience:** The backend has a slow cold start (up to 60s). Always implement loading states with "First scan may take longer" messaging when calling `/api/analyze`.
+4.  **Serialization:** SQLite does not support arrays or nested objects. Ensure `healthTrend` and `predictions` are `JSON.stringify()`'d before insertion and `JSON.parse()`'d on retrieval in `database.ts`.
+5.  **Hooks Usage:** Use `useQuery` for read-only remote data (like API health or disease lists) and Zustand for local application state.
 
-1.  **App Launch**: The application starts at the root, defined by `app/_layout.tsx`. This file sets up the root `Stack` navigator and renders the `(tabs)` group as the initial screen.
-2.  **Tab Layout**: `app/(tabs)/_layout.tsx` takes over. It configures and renders the `Tabs` navigator, setting `index.tsx` as the default home screen.
-3.  **Home Screen**: `app/(tabs)/index.tsx` is rendered. It imports and assembles several reusable components (`HealthOverview`, `QuickActions`, `PlantCard`) and populates them with data from `constants/mockData.ts`.
-4.  **User Interaction**: The user taps on a `PlantCard`.
-5.  **Navigation to Detail**: The `<Link>` component within `PlantCard.tsx` triggers a navigation event to a URL like `/plant/3`.
-6.  **Dynamic Route Rendering**: Expo Router matches this URL to the file `app/plant/[id].tsx`. The `DetailScreen` component is rendered.
-7.  **Fetching Data**: Inside `DetailScreen`, the `useLocalSearchParams` hook extracts the `id` (`3`) from the URL. It then finds the corresponding plant from the `myPlants` array in `constants/mockData.ts` and displays its details.
+---
 
-This structure provides a solid foundation for building out the rest of the application's features.
+## 7. Development Workflows
+
+### 7.1 Adding a New Plant Attribute
+1. Update `Plant` type in `types.ts`.
+2. Update `CREATE TABLE` statement in `database.ts` (Note: Handle migrations or reset DB).
+3. Update `savePlant` and `getAllPlants` in `database.ts`.
+4. Update `addPlant` action in `usePlantStore.ts`.
+5. Update UI components (`PlantCard`, etc.).
+
+### 7.2 Testing API Connectivity
+The home screen (`app/(tabs)/index.tsx`) performs a background health check every 60 seconds. Check the green/red indicator in the header to verify if the model server is reachable.
