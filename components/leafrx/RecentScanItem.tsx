@@ -1,24 +1,53 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
-import { Scan } from './types';
+import { ScanResult } from './types';
+import { useRouter } from 'expo-router';
 
 type RecentScanItemProps = {
-    scan: Scan;
+    scan: ScanResult;
 };
 
 export function RecentScanItem({ scan }: RecentScanItemProps) {
+    const router = useRouter();
+
+    const getStatusColor = () => {
+        if (scan.healthScore > 85) return '#10b981';
+        if (scan.healthScore > 60) return '#f59e0b';
+        return '#ef4444';
+    };
+
+    const handlePress = () => {
+        if (scan.plantId) {
+            router.push(`/plant/${scan.plantId}`);
+        }
+    };
+
+    const formattedDate = new Date(scan.date).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+    });
+
     return (
-        <View style={styles.scanItem}>
-            <View style={styles.scanLeft}>
-                <Feather name="check-circle" size={20} color={scan.color} />
-                <View>
-                    <Text style={styles.scanPlant}>{scan.plant}</Text>
-                    <Text style={styles.scanDisease}>{scan.disease}</Text>
-                </View>
+        <TouchableOpacity 
+            style={styles.recentScanCard} 
+            onPress={handlePress} 
+            disabled={!scan.plantId}
+        >
+            <View style={[styles.recentScanIconContainer, { backgroundColor: getStatusColor() + '1A' }]}>
+                <Feather name="shield" size={24} color={getStatusColor()} />
             </View>
-            <Text style={styles.scanDate}>{scan.date}</Text>
-        </View>
+
+            <View style={styles.recentScanInfo}>
+                <Text style={styles.recentScanPlantName}>{scan.plantName || 'Unassigned'}</Text>
+                <Text style={styles.recentScanDisease}>{scan.disease}</Text>
+            </View>
+
+            <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.recentScanDate}>{formattedDate}</Text>
+                {scan.plantId && <Feather name="chevron-right" size={16} color="#9ca3af" style={{ marginTop: 4 }} />}
+            </View>
+        </TouchableOpacity>
     );
 }

@@ -163,32 +163,47 @@ export const styles = StyleSheet.create({
     },
   
     // Recent Scans
-    scanItem: {
-      backgroundColor: '#f9fafb',
-      borderRadius: 8,
-      padding: 12,
-      marginBottom: 8,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    scanLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    scanPlant: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: '#1f2937',
-    },
-    scanDisease: {
-      fontSize: 12,
-      color: '#6b7280',
-    },
     scanDate: {
       fontSize: 12,
       color: '#9ca3af',
+    },
+
+    // Recent Scans (New Card Style)
+    recentScanCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#f3f4f6',
+    },
+    recentScanIconContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    recentScanInfo: {
+        flex: 1,
+    },
+    recentScanPlantName: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#1f2937',
+        marginBottom: 2,
+    },
+    recentScanDisease: {
+        fontSize: 13,
+        color: '#6b7280',
+    },
+    recentScanDate: {
+        fontSize: 13,
+        color: '#9ca3af',
+        fontWeight: '500',
     },
   
     // Page Header
