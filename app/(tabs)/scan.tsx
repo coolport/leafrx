@@ -224,14 +224,14 @@ export default function ScanScreen() {
                     entering={FadeInDown.delay(200).duration(800)} 
                     style={[styles.section, { marginTop: -20 }]}
                 >
-                    <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
+                    <View style={{ backgroundColor: '#fff', borderRadius: 28, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.08, shadowRadius: 20, elevation: 5 }}>
                         {!isUpdatingPlant && (
-                            <View style={{ marginBottom: 24 }}>
-                                <Text style={styles.label}>Select Plant Type</Text>
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={[styles.label, { fontSize: 13, marginBottom: 12 }]}>Target Plant Species</Text>
                                 <ScrollView 
                                     horizontal 
                                     showsHorizontalScrollIndicator={false} 
-                                    contentContainerStyle={{ gap: 10, paddingRight: 24 }}
+                                    contentContainerStyle={{ gap: 8, paddingRight: 20 }}
                                     style={styles.chipsScroll}
                                 >
                                     <TouchableOpacity
@@ -239,7 +239,7 @@ export default function ScanScreen() {
                                         style={!selectedPlantClass ? styles.chipSelected : styles.chip}
                                         onPress={() => setSelectedPlantClass(undefined)}
                                     >
-                                        <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Auto Detect</Text>
+                                        <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Auto</Text>
                                     </TouchableOpacity>
                                     {plantTypes.map(type => (
                                         <TouchableOpacity
@@ -255,7 +255,16 @@ export default function ScanScreen() {
                             </View>
                         )}
 
-                        <View style={[styles.cameraArea, { marginVertical: 0, height: 300 }]}>
+                        <View style={{ 
+                            height: 320, 
+                            backgroundColor: '#f8fafc', 
+                            borderRadius: 24, 
+                            overflow: 'hidden',
+                            borderWidth: 1,
+                            borderColor: '#f1f5f9',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
                             {selectedImageUri && !mutation.isPending ? (
                                 <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: '100%' }} />
                             ) : (
@@ -266,16 +275,16 @@ export default function ScanScreen() {
                                     {mutation.isPending ? (
                                         <View style={{ alignItems: 'center', padding: 20 }}>
                                             <ActivityIndicator size="large" color="#10b981" />
-                                            <Text style={styles.cameraText}>Analyzing Leaf...</Text>
-                                            <Text style={styles.cameraHint}>Our AI is examining patterns.</Text>
+                                            <Text style={[styles.cameraText, { fontSize: 16 }]}>Analyzing Leaf...</Text>
+                                            <Text style={[styles.cameraHint, { fontSize: 12 }]}>AI is examining texture and health markers.</Text>
                                         </View>
                                     ) : (
                                         <>
-                                            <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
-                                                <Feather name="camera" size={48} color="#10b981" />
+                                            <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2, marginBottom: 16 }}>
+                                                <Feather name="camera" size={40} color="#10b981" />
                                             </View>
-                                            <Text style={styles.cameraText}>Position leaf in frame</Text>
-                                            <Text style={styles.cameraHint}>Ensure the leaf is clearly visible.</Text>
+                                            <Text style={[styles.cameraText, { fontSize: 17 }]}>Position leaf in frame</Text>
+                                            <Text style={[styles.cameraHint, { fontSize: 13 }]}>Ensure natural light and steady focus.</Text>
                                         </>
                                     )}
                                 </View>
@@ -283,36 +292,59 @@ export default function ScanScreen() {
                         </View>
                     </View>
 
-                    <View style={{ 
-                        flexDirection: 'row', 
-                        gap: 12, 
-                        marginTop: 24 
-                    }}>
+                    {/* Premium Action Buttons */}
+                    <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
                         <TouchableOpacity 
-                            activeOpacity={0.8}
-                            onPress={takePhoto} 
+                            activeOpacity={0.8} 
+                            style={{ flex: 1.5 }}
+                            onPress={takePhoto}
                             disabled={mutation.isPending}
-                            style={{ flex: 1.2 }}
                         >
                             <LinearGradient
                                 colors={['#059669', '#10b981']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 1 }}
-                                style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]}
+                                style={{ 
+                                    height: 100, 
+                                    borderRadius: 24, 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    shadowColor: '#10b981',
+                                    shadowOffset: { width: 0, height: 4 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 10,
+                                    elevation: 6
+                                }}
                             >
-                                <Feather name="camera" size={22} color="#fff" />
-                                <Text style={styles.btnPrimaryText}>Take Photo</Text>
+                                <Feather name="camera" size={28} color="#fff" />
+                                <Text style={{ color: '#fff', fontWeight: '800', marginTop: 8, fontSize: 13, letterSpacing: 0.5 }}>TAKE PHOTO</Text>
                             </LinearGradient>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
-                            style={[styles.btnSecondary, { flex: 1, paddingHorizontal: 0 }, mutation.isPending && { opacity: 0.6 }]} 
-                            onPress={pickImage} 
+                            activeOpacity={0.7} 
+                            style={{ 
+                                flex: 1, 
+                                height: 100,
+                                backgroundColor: '#fff', 
+                                borderRadius: 24, 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                borderWidth: 1, 
+                                borderColor: '#f1f5f9',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.05,
+                                shadowRadius: 5,
+                                elevation: 2
+                            }}
+                            onPress={pickImage}
                             disabled={mutation.isPending}
-                            activeOpacity={0.7}
                         >
-                            <Feather name="image" size={22} color="#64748b" style={{ marginBottom: 4 }} />
-                            <Text style={[styles.btnSecondaryText, { fontSize: 14 }]}>Gallery</Text>
+                            <View style={{ backgroundColor: '#f8fafc', padding: 10, borderRadius: 12 }}>
+                                <Feather name="image" size={24} color="#64748b" />
+                            </View>
+                            <Text style={{ color: '#64748b', fontWeight: '700', marginTop: 6, fontSize: 11, letterSpacing: 0.5 }}>GALLERY</Text>
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
