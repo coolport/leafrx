@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator, Dimensions } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator, Dimensions, StyleSheet } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
@@ -47,7 +47,6 @@ export default function ScanScreen() {
         }
     });
 
-    // Animation values
     const scanLinePos = useSharedValue(0);
 
     useEffect(() => {
@@ -249,29 +248,31 @@ export default function ScanScreen() {
                             </View>
                         )}
 
-                        <View style={[styles.cameraArea, { marginVertical: 0, height: 300 }]}>
-                            {selectedImageUri && !mutation.isPending ? (
-                                <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: '100%' }} />
+                        <View style={[styles.cameraArea, { marginVertical: 0, height: 300, overflow: 'hidden' }]}>
+                            {selectedImageUri ? (
+                                <View style={{ width: '100%', height: '100%' }}>
+                                    <Image 
+                                        source={{ uri: selectedImageUri }} 
+                                        style={[{ width: '100%', height: '100%' }, mutation.isPending && { opacity: 0.6 }]} 
+                                    />
+                                    {mutation.isPending && (
+                                        <>
+                                            <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
+                                            <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+                                                <ActivityIndicator size="large" color="#10b981" />
+                                                <Text style={{ color: '#10b981', fontWeight: '800', marginTop: 12 }}>Analyzing...</Text>
+                                            </View>
+                                        </>
+                                    )}
+                                </View>
                             ) : (
                                 <View style={{ alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
                                     <View style={styles.scannerFrame} />
-                                    <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
-                                    
-                                    {mutation.isPending ? (
-                                        <View style={{ alignItems: 'center', padding: 20 }}>
-                                            <ActivityIndicator size="large" color="#10b981" />
-                                            <Text style={styles.cameraText}>Analyzing Leaf...</Text>
-                                            <Text style={styles.cameraHint}>Our AI is examining patterns.</Text>
-                                        </View>
-                                    ) : (
-                                        <>
-                                            <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
-                                                <Feather name="camera" size={48} color="#10b981" />
-                                            </View>
-                                            <Text style={styles.cameraText}>Position leaf in frame</Text>
-                                            <Text style={styles.cameraHint}>Ensure the leaf is clearly visible.</Text>
-                                        </>
-                                    )}
+                                    <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
+                                        <Feather name="camera" size={48} color="#10b981" />
+                                    </View>
+                                    <Text style={styles.cameraText}>Position leaf in frame</Text>
+                                    <Text style={styles.cameraHint}>Ensure the leaf is clearly visible.</Text>
                                 </View>
                             )}
                         </View>
@@ -342,54 +343,58 @@ export default function ScanScreen() {
                                 />
                             )}
                             
-                            <View style={{ 
-                                backgroundColor: getStatusColor(analysisResult?.status) + '15',
-                                borderRadius: 24, padding: 20, marginBottom: 20,
-                                borderLeftWidth: 6, borderLeftColor: getStatusColor(analysisResult?.status)
-                            }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b', marginBottom: 4, textTransform: 'uppercase' }}>Primary Finding</Text>
-                                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1e293b' }}>
-                                            {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
-                                        </Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                                            <View style={{ backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
-                                                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1e293b' }}>
-                                                    {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
+                            {analysisResult && (
+                                <>
+                                    <View style={{ 
+                                        backgroundColor: getStatusColor(analysisResult?.status) + '15',
+                                        borderRadius: 24, padding: 20, marginBottom: 20,
+                                        borderLeftWidth: 6, borderLeftColor: getStatusColor(analysisResult?.status)
+                                    }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b', marginBottom: 4, textTransform: 'uppercase' }}>Primary Finding</Text>
+                                                <Text style={{ fontSize: 22, fontWeight: '800', color: '#1e293b' }}>
+                                                    {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
                                                 </Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                                                    <View style={{ backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                                                        <Text style={{ fontSize: 12, fontWeight: '700', color: '#1e293b' }}>
+                                                            {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
+                                                        </Text>
+                                                    </View>
+                                                    <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 8 }}>
+                                                        Model Confidence: {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}%
+                                                    </Text>
+                                                </View>
                                             </View>
-                                            <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 8 }}>
-                                                Model Confidence: {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}%
-                                            </Text>
+                                            <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }}>
+                                                <Text style={{ fontSize: 24, fontWeight: '800', color: getStatusColor(analysisResult?.status) }}>
+                                                    {analysisResult?.overall_health_score}
+                                                </Text>
+                                                <Text style={{ fontSize: 10, fontWeight: '700', color: '#94a3b8' }}>HEALTH</Text>
+                                            </View>
                                         </View>
                                     </View>
-                                    <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }}>
-                                        <Text style={{ fontSize: 24, fontWeight: '800', color: getStatusColor(analysisResult?.status) }}>
-                                            {analysisResult?.overall_health_score}
-                                        </Text>
-                                        <Text style={{ fontSize: 10, fontWeight: '700', color: '#94a3b8' }}>HEALTH</Text>
-                                    </View>
-                                </View>
-                            </View>
 
-                            {analysisResult?.predictions?.[0]?.recommendations && (
-                                <View style={{ marginBottom: 20 }}>
-                                    <Text style={styles.label}>Recommendations</Text>
-                                    {analysisResult.predictions[0].recommendations.map((rec, i) => (
-                                        <View key={i} style={{ flexDirection: 'row', marginBottom: 8, gap: 12, alignItems: 'center' }}>
-                                            <View style={{ backgroundColor: '#dcfce7', padding: 6, borderRadius: 10 }}>
-                                                <Feather name="check" size={14} color="#10b981" />
-                                            </View>
-                                            <Text style={{ flex: 1, fontSize: 14, color: '#475569', fontWeight: '500' }}>{rec}</Text>
+                                    {analysisResult?.predictions?.[0]?.recommendations && (
+                                        <View style={{ marginBottom: 20 }}>
+                                            <Text style={styles.label}>Recommendations</Text>
+                                            {analysisResult.predictions[0].recommendations.map((rec, i) => (
+                                                <View key={i} style={{ flexDirection: 'row', marginBottom: 8, gap: 12, alignItems: 'center' }}>
+                                                    <View style={{ backgroundColor: '#dcfce7', padding: 6, borderRadius: 10 }}>
+                                                        <Feather name="check" size={14} color="#10b981" />
+                                                    </View>
+                                                    <Text style={{ flex: 1, fontSize: 14, color: '#475569', fontWeight: '500' }}>{rec}</Text>
+                                                </View>
+                                            ))}
                                         </View>
-                                    ))}
-                                </View>
+                                    )}
+                                </>
                             )}
 
                         </ScrollView>
 
-                        <View style={{ paddingHorizontal: 24, paddingTop: 16, flexDirection: 'row', gap: 12 }}>
+                        <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 32, flexDirection: 'row', gap: 12 }}>
                             {isUpdatingPlant ? (
                                 <TouchableOpacity 
                                     activeOpacity={0.8}
