@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert, Image, ActivityIndicator, Modal } from 'react-native';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert, Image, ActivityIndicator, Modal, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,12 +16,14 @@ import { useMutation } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
 import { AnalysisResponse, ScanResult } from '../../components/leafrx/types';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export default function DetailScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const plantId = Array.isArray(id) ? id[0] : id;
-    
+
     const { plants, getPlantScans, deletePlant, addScan } = usePlantStore();
     const selectedPlant = plants.find(p => p.id === plantId);
     const plantScans = getPlantScans(plantId);
@@ -76,7 +78,6 @@ export default function DetailScreen() {
         if (!result.canceled) processImage(result.assets[0].uri);
     };
 
-
     const saveScanToStore = async (result: AnalysisResponse) => {
         if (!selectedPlant) return;
         const [_, disease] = result.primary_disease?.split('_') || ['Unknown', 'Unknown'];
@@ -93,10 +94,6 @@ export default function DetailScreen() {
         await addScan(scanRecord);
     };
 
-    const handleBack = () => {
-        router.back();
-    };
-
     const getStatusColor = (status?: string) => {
         switch (status) {
             case 'healthy': return '#10b981';
@@ -105,28 +102,6 @@ export default function DetailScreen() {
             default: return '#6b7280';
         }
     };
-
-    if (!selectedPlant) {
-        return (
-            <View style={styles.container}>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-                    <Feather name="alert-circle" size={48} color="#94a3b8" />
-                    <Text style={[styles.pageSubtitle, { marginTop: 16, textAlign: 'center' }]}>Plant information not found.</Text>
-                    <TouchableOpacity onPress={handleBack} style={{ marginTop: 24 }}>
-                        <Text style={[styles.viewAll, { fontSize: 16 }]}>← Go Back</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
-    }
-
-    const chartLabels = plantScans.slice(-6).map(s => {
-        const date = new Date(s.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
-    
-    const trendData = selectedPlant.healthTrend.length > 0 ? selectedPlant.healthTrend : [100];
-    const displayLabels = chartLabels.length > 0 ? chartLabels : ['Start'];
 
     const getStatusColors = (status: string): [string, string, string] => {
         switch (status) {
@@ -137,155 +112,297 @@ export default function DetailScreen() {
         }
     };
 
+    if (!selectedPlant) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 40 }]}>
+                <View style={{ backgroundColor: '#f1f5f9', padding: 24, borderRadius: 32, marginBottom: 20 }}>
+                    <Feather name="alert-circle" size={40} color="#94a3b8" />
+                </View>
+                <Text style={{ fontSize: 17, fontWeight: '700', color: '#1e293b', marginBottom: 8 }}>Plant not found</Text>
+                <Text style={{ color: '#94a3b8', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>This plant may have been deleted.</Text>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20 }}
+                >
+                    <Text style={{ color: '#475569', fontWeight: '700' }}>← Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
     const statusColors = getStatusColors(selectedPlant.status);
+    const trendData = selectedPlant.healthTrend.length > 0 ? selectedPlant.healthTrend : [100];
+    const chartLabels = plantScans.slice(-6).map(s => {
+        const date = new Date(s.date);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+    });
+    const displayLabels = chartLabels.length > 0 ? chartLabels : ['Start'];
+
+    const healthScore = Math.round(selectedPlant.health);
+    const lastCheckedFormatted = new Date(selectedPlant.lastChecked).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
             <Stack.Screen options={{ headerShown: false }} />
-            
-            <ScrollView 
-                style={styles.screen} 
+
+            <ScrollView
+                style={styles.screen}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 60 }}
+                contentContainerStyle={{ paddingBottom: 80 }}
             >
+                {/* Hero Header */}
                 <LinearGradient
                     colors={statusColors}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.header, { paddingTop: insets.top + 16, borderBottomLeftRadius: 40, borderBottomRightRadius: 40 }]}
+                    style={[styles.header, { paddingTop: insets.top + 12, paddingBottom: 48, borderBottomLeftRadius: 36, borderBottomRightRadius: 36 }]}
                 >
-                    <TouchableOpacity 
-                        onPress={handleBack} 
-                        style={{ marginLeft: 24, marginBottom: 20, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }}
+                    {/* Back button */}
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        style={{
+                            marginLeft: 20,
+                            marginBottom: 20,
+                            width: 38, height: 38,
+                            borderRadius: 19,
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
                     >
-                        <Feather name="chevron-left" size={24} color="#fff" />
+                        <Feather name="chevron-left" size={22} color="#fff" />
                     </TouchableOpacity>
 
-                    <Animated.View entering={FadeInDown.duration(800)} style={[styles.detailTop, { paddingHorizontal: 24, marginBottom: 12 }]}>
-                        <View style={[styles.detailIcon, { backgroundColor: 'rgba(255,255,255,0.25)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }]}>
-                            <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
-                            <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, alignSelf: 'flex-start' }}>
-                                <Text style={[styles.detailMeta, { color: '#fff', fontWeight: '700' }]}>{selectedPlant.type.toUpperCase()}</Text>
+                    <Animated.View entering={FadeInDown.duration(700)} style={{ paddingHorizontal: 24 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                            {/* Plant emoji badge */}
+                            <View style={{
+                                width: 72, height: 72,
+                                borderRadius: 24,
+                                backgroundColor: 'rgba(255,255,255,0.25)',
+                                borderWidth: 1.5,
+                                borderColor: 'rgba(255,255,255,0.35)',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <Text style={{ fontSize: 38 }}>{getPlantEmoji(selectedPlant.type)}</Text>
                             </View>
-                        </View>
-                        <View style={{ alignItems: 'flex-end' }}>
-                            {mutation.isPending ? (
-                                <ActivityIndicator color="#fff" size="small" />
-                            ) : (
-                                <Text style={styles.detailScore}>{Math.round(selectedPlant.health)}%</Text>
-                            )}
-                            <Text style={[styles.detailLabel, { fontWeight: '700' }]}>HEALTH</Text>
+
+                            {/* Name + type */}
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.detailTitle, { marginBottom: 6 }]}>{selectedPlant.name}</Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 8
+                                }}>
+                                    <View style={{
+                                        backgroundColor: 'rgba(255,255,255,0.22)',
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 4,
+                                        borderRadius: 10,
+                                    }}>
+                                        <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 0.8 }}>
+                                            {selectedPlant.type.toUpperCase()}
+                                        </Text>
+                                    </View>
+                                    <View style={{
+                                        backgroundColor: 'rgba(255,255,255,0.22)',
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 4,
+                                        borderRadius: 10,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 4
+                                    }}>
+                                        <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: '#fff' }} />
+                                        <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                                            {selectedPlant.status}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Health score */}
+                            <View style={{ alignItems: 'center' }}>
+                                {mutation.isPending ? (
+                                    <ActivityIndicator color="#fff" size="small" />
+                                ) : (
+                                    <>
+                                        <Text style={{ fontSize: 34, fontWeight: '900', color: '#fff', lineHeight: 38 }}>{healthScore}</Text>
+                                        <Text style={{ fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }}>HEALTH</Text>
+                                    </>
+                                )}
+                            </View>
                         </View>
                     </Animated.View>
                 </LinearGradient>
 
-                <View style={styles.section}>
-                    <Animated.View entering={FadeInDown.delay(200).duration(800)}>
+                <View style={[styles.section, { marginTop: -24 }]}>
+
+                    {/* Quick stats row */}
+                    <Animated.View
+                        entering={FadeInUp.delay(150).duration(600)}
+                        style={{
+                            flexDirection: 'row',
+                            gap: 10,
+                            marginBottom: 16,
+                        }}
+                    >
+                        {[
+                            { icon: 'calendar', label: 'Last Check', value: lastCheckedFormatted, color: '#3b82f6' },
+                            { icon: 'clipboard', label: 'Total Scans', value: selectedPlant.entries.toString(), color: '#10b981' },
+                            { icon: 'activity', label: 'Status', value: selectedPlant.status.toUpperCase(), color: statusColors[1] },
+                        ].map((stat, i) => (
+                            <Animated.View key={stat.label} entering={FadeInRight.delay(200 + i * 80).duration(500)} style={{ flex: 1 }}>
+                                <StatCard
+                                    icon={stat.icon as any}
+                                    label={stat.label}
+                                    value={stat.value}
+                                    color={stat.color}
+                                />
+                            </Animated.View>
+                        ))}
+                    </Animated.View>
+
+                    {/* Chart */}
+                    <Animated.View entering={FadeInDown.delay(350).duration(700)}>
                         <Chart data={trendData} labels={displayLabels} color={statusColors[1]} />
                     </Animated.View>
 
-                    <View style={[styles.statsGrid, { marginTop: 8 }]}>
-                        <Animated.View entering={FadeInRight.delay(400).duration(600)} style={{ flex: 1 }}>
-                            <StatCard 
-                                icon="calendar" 
-                                label="Last Check" 
-                                value={new Date(selectedPlant.lastChecked).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
-                                color='#3b82f6' 
-                            />
-                        </Animated.View>
-                        <Animated.View entering={FadeInRight.delay(500).duration(600)} style={{ flex: 1 }}>
-                            <StatCard icon="clipboard" label="Scans" value={selectedPlant.entries.toString()} color='#10b981' />
-                        </Animated.View>
-                        <Animated.View entering={FadeInRight.delay(600).duration(600)} style={{ flex: 1 }}>
-                            <StatCard 
-                                icon="alert-triangle" 
-                                label="Status" 
-                                value={selectedPlant.status.toUpperCase()} 
-                                color={statusColors[1]} 
-                            />
-                        </Animated.View>
-                    </View>
-
-                    <Animated.View entering={FadeInDown.delay(700).duration(800)}>
+                    {/* Timeline */}
+                    <Animated.View entering={FadeInDown.delay(500).duration(700)}>
                         <Timeline scans={plantScans} />
                     </Animated.View>
 
-                    {/* New 3-Button Action Row */}
-                    <Animated.View entering={FadeInDown.delay(900).duration(800)} style={{ flexDirection: 'row', gap: 12, marginTop: 32 }}>
-                        <TouchableOpacity 
-                            activeOpacity={0.8} 
-                            style={{ flex: 1.5 }}
+                    {/* Actions */}
+                    <Animated.View entering={FadeInUp.delay(650).duration(700)}>
+                        <Text style={{
+                            fontSize: 11,
+                            fontWeight: '800',
+                            color: '#94a3b8',
+                            letterSpacing: 1,
+                            textTransform: 'uppercase',
+                            marginBottom: 12,
+                            marginTop: 8
+                        }}>
+                            Actions
+                        </Text>
+
+                        {/* Primary scan button */}
+                        <TouchableOpacity
+                            activeOpacity={0.85}
                             onPress={takePhoto}
                             disabled={mutation.isPending}
+                            style={{ marginBottom: 10 }}
                         >
                             <LinearGradient
-                                colors={statusColors.slice(0, 2)}
+                                colors={[statusColors[0], statusColors[1]]}
                                 start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={{ 
-                                    height: 100, 
-                                    borderRadius: 24, 
-                                    alignItems: 'center', 
+                                end={{ x: 1, y: 0 }}
+                                style={{
+                                    height: 60,
+                                    borderRadius: 20,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
                                     justifyContent: 'center',
+                                    gap: 10,
                                     shadowColor: statusColors[0],
-                                    shadowOffset: { width: 0, height: 4 },
+                                    shadowOffset: { width: 0, height: 6 },
                                     shadowOpacity: 0.3,
-                                    shadowRadius: 10,
-                                    elevation: 6
+                                    shadowRadius: 12,
+                                    elevation: 6,
                                 }}
                             >
-                                <Feather name="camera" size={28} color="#fff" />
-                                <Text style={{ color: '#fff', fontWeight: '800', marginTop: 8, fontSize: 13 }}>SCAN LEAF</Text>
+                                {mutation.isPending ? (
+                                    <>
+                                        <ActivityIndicator color="#fff" size="small" />
+                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Analyzing...</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Feather name="camera" size={20} color="#fff" />
+                                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15, letterSpacing: 0.3 }}>Scan Leaf</Text>
+                                    </>
+                                )}
                             </LinearGradient>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            activeOpacity={0.7} 
-                            style={{ flex: 1, backgroundColor: '#fff', borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' }}
-                            onPress={pickImage}
-                            disabled={mutation.isPending}
-                        >
-                            <View style={{ backgroundColor: '#f8fafc', padding: 12, borderRadius: 16 }}>
-                                <Feather name="image" size={24} color="#64748b" />
-                            </View>
-                            <Text style={{ color: '#64748b', fontWeight: '700', marginTop: 6, fontSize: 11 }}>UPLOAD</Text>
-                        </TouchableOpacity>
+                        {/* Secondary actions */}
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={pickImage}
+                                disabled={mutation.isPending}
+                                style={{
+                                    flex: 1,
+                                    height: 52,
+                                    backgroundColor: '#fff',
+                                    borderRadius: 16,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 8,
+                                    borderWidth: 1,
+                                    borderColor: '#e2e8f0',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.04,
+                                    shadowRadius: 6,
+                                    elevation: 2,
+                                }}
+                            >
+                                <Feather name="image" size={16} color="#64748b" />
+                                <Text style={{ color: '#64748b', fontWeight: '700', fontSize: 13 }}>Upload</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            activeOpacity={0.7} 
-                            style={{ flex: 1, backgroundColor: '#fff', borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#fee2e2' }}
-                            onPress={() => {
-                                Alert.alert(
-                                    "Delete Plant",
-                                    "This action is permanent.",
-                                    [
-                                        { text: "Cancel", style: "cancel" },
-                                        { 
-                                            text: "Delete", 
-                                            onPress: async () => {
-                                                await deletePlant(plantId);
-                                                router.replace('/(tabs)/tracking');
-                                            },
-                                            style: "destructive"
-                                        }
-                                    ]
-                                );
-                            }}
-                        >
-                            <View style={{ backgroundColor: '#fff1f2', padding: 12, borderRadius: 16 }}>
-                                <Feather name="trash-2" size={24} color="#ef4444" />
-                            </View>
-                            <Text style={{ color: '#ef4444', fontWeight: '700', marginTop: 6, fontSize: 11 }}>DELETE</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => {
+                                    Alert.alert(
+                                        "Delete Plant",
+                                        `Remove "${selectedPlant.name}" permanently?`,
+                                        [
+                                            { text: "Cancel", style: "cancel" },
+                                            {
+                                                text: "Delete",
+                                                onPress: async () => {
+                                                    await deletePlant(plantId);
+                                                    router.replace('/(tabs)/tracking');
+                                                },
+                                                style: "destructive"
+                                            }
+                                        ]
+                                    );
+                                }}
+                                style={{
+                                    flex: 1,
+                                    height: 52,
+                                    backgroundColor: '#fff',
+                                    borderRadius: 16,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 8,
+                                    borderWidth: 1,
+                                    borderColor: '#fecaca',
+                                    shadowColor: '#ef4444',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.06,
+                                    shadowRadius: 6,
+                                    elevation: 2,
+                                }}
+                            >
+                                <Feather name="trash-2" size={16} color="#ef4444" />
+                                <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 13 }}>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
                     </Animated.View>
                 </View>
             </ScrollView>
 
-            {/* Results Modal for Direct Analysis */}
+            {/* Results Modal */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -293,84 +410,140 @@ export default function DetailScreen() {
                 onRequestClose={() => setResultsModalVisible(false)}
             >
                 <BlurView intensity={30} style={styles.modalContainer}>
-                    <View style={styles.bottomSheetContent}>
+                    <View style={[styles.bottomSheetContent, { maxHeight: SCREEN_HEIGHT * 0.88 }]}>
                         <View style={styles.bottomSheetHandle} />
-                        
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16 }}>
-                            <Text style={[styles.modalTitle, { textAlign: 'left', marginBottom: 0 }]}>Diagnosis Results</Text>
+
+                        {/* Modal header */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16 }}>
+                            <View>
+                                <Text style={{ fontSize: 20, fontWeight: '800', color: '#1e293b' }}>Diagnosis Results</Text>
+                                <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600', marginTop: 2 }}>Saved to {selectedPlant.name}</Text>
+                            </View>
                             <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
                                 <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
-                                    <Feather name="x" size={20} color="#64748b" />
+                                    <Feather name="x" size={18} color="#64748b" />
                                 </View>
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+                            {/* Image with status badge */}
                             {selectedImageUri && (
-                                <Image 
-                                    source={{ uri: selectedImageUri }} 
-                                    style={{ width: '100%', height: 240, borderRadius: 24, marginBottom: 20 }} 
-                                    resizeMode="cover" 
-                                />
-                            )}
-                            
-                            <View style={{ 
-                                backgroundColor: getStatusColor(analysisResult?.status) + '15',
-                                borderRadius: 24, padding: 20, marginBottom: 20,
-                                borderLeftWidth: 6, borderLeftColor: getStatusColor(analysisResult?.status)
-                            }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b', marginBottom: 4, textTransform: 'uppercase' }}>Primary Finding</Text>
-                                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1e293b' }}>
-                                            {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
+                                <View style={{ marginBottom: 16, borderRadius: 20, overflow: 'hidden', height: 180 }}>
+                                    <Image
+                                        source={{ uri: selectedImageUri }}
+                                        style={{ width: '100%', height: '100%' }}
+                                        resizeMode="cover"
+                                    />
+                                    <View style={{
+                                        position: 'absolute',
+                                        top: 12, right: 12,
+                                        backgroundColor: getStatusColor(analysisResult?.status),
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 5,
+                                        borderRadius: 20,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 5
+                                    }}>
+                                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' }} />
+                                        <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                            {analysisResult?.status}
                                         </Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                                            <View style={{ backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
-                                                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1e293b' }}>
-                                                    {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* Primary finding */}
+                            <View style={{
+                                backgroundColor: getStatusColor(analysisResult?.status) + '12',
+                                borderRadius: 20,
+                                padding: 18,
+                                marginBottom: 16,
+                                borderWidth: 1,
+                                borderColor: getStatusColor(analysisResult?.status) + '30',
+                            }}>
+                                <Text style={{ fontSize: 11, fontWeight: '800', color: '#94a3b8', letterSpacing: 1, marginBottom: 10, textTransform: 'uppercase' }}>
+                                    Primary Finding
+                                </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <View style={{ flex: 1, marginRight: 16 }}>
+                                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1e293b', marginBottom: 6 }}>
+                                            {analysisResult?.primary_disease?.split('_')[1]?.replace(/([A-Z])/g, ' $1').trim() || 'Healthy'}
+                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                            <View style={{ backgroundColor: '#fff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0' }}>
+                                                <Text style={{ fontSize: 11, fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                                    {analysisResult?.primary_disease?.split('_')[0]}
                                                 </Text>
                                             </View>
-                                            <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 8 }}>
-                                                Confidence: {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}%
+                                            <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600' }}>
+                                                {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}% confidence
                                             </Text>
                                         </View>
                                     </View>
-                                    <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }}>
-                                        <Text style={{ fontSize: 24, fontWeight: '800', color: getStatusColor(analysisResult?.status) }}>
+
+                                    {/* Health circle */}
+                                    <View style={{
+                                        width: 68, height: 68,
+                                        borderRadius: 34,
+                                        backgroundColor: '#fff',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        borderWidth: 3,
+                                        borderColor: getStatusColor(analysisResult?.status),
+                                        shadowColor: getStatusColor(analysisResult?.status),
+                                        shadowOffset: { width: 0, height: 4 },
+                                        shadowOpacity: 0.2,
+                                        shadowRadius: 8,
+                                        elevation: 4,
+                                    }}>
+                                        <Text style={{ fontSize: 20, fontWeight: '900', color: getStatusColor(analysisResult?.status) }}>
                                             {analysisResult?.overall_health_score}
                                         </Text>
-                                        <Text style={{ fontSize: 10, fontWeight: '700', color: '#94a3b8' }}>HEALTH</Text>
+                                        <Text style={{ fontSize: 8, fontWeight: '700', color: '#94a3b8', letterSpacing: 0.5 }}>HEALTH</Text>
                                     </View>
                                 </View>
                             </View>
 
+                            {/* Recommendations */}
                             {analysisResult?.predictions?.[0]?.recommendations && (
-                                <View style={{ marginBottom: 20 }}>
-                                    <Text style={styles.label}>Recommendations</Text>
-                                    {analysisResult.predictions[0].recommendations.map((rec, i) => (
-                                        <View key={i} style={{ flexDirection: 'row', marginBottom: 8, gap: 12, alignItems: 'center' }}>
-                                            <View style={{ backgroundColor: '#dcfce7', padding: 6, borderRadius: 10 }}>
-                                                <Feather name="check" size={14} color="#10b981" />
+                                <View>
+                                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#94a3b8', letterSpacing: 1, marginBottom: 12, textTransform: 'uppercase' }}>
+                                        Recommendations
+                                    </Text>
+                                    <View style={{ gap: 8 }}>
+                                        {analysisResult.predictions[0].recommendations.map((rec, i) => (
+                                            <View key={i} style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'flex-start',
+                                                backgroundColor: '#f8fafc',
+                                                borderRadius: 14,
+                                                padding: 12,
+                                                gap: 10,
+                                                borderWidth: 1,
+                                                borderColor: '#f1f5f9'
+                                            }}>
+                                                <View style={{ backgroundColor: '#dcfce7', padding: 5, borderRadius: 8, marginTop: 1 }}>
+                                                    <Feather name="check" size={12} color="#10b981" />
+                                                </View>
+                                                <Text style={{ flex: 1, fontSize: 13, color: '#475569', fontWeight: '500', lineHeight: 19 }}>{rec}</Text>
                                             </View>
-                                            <Text style={{ flex: 1, fontSize: 14, color: '#475569', fontWeight: '500' }}>{rec}</Text>
-                                        </View>
-                                    ))}
+                                        ))}
+                                    </View>
                                 </View>
                             )}
                         </ScrollView>
 
-                        <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-                            <TouchableOpacity 
-                                activeOpacity={0.8}
-                                style={{ width: '100%' }}
-                                onPress={() => setResultsModalVisible(false)}
-                            >
+                        <View style={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: insets.bottom + 8 }}>
+                            <TouchableOpacity activeOpacity={0.85} onPress={() => setResultsModalVisible(false)}>
                                 <LinearGradient
-                                    colors={['#059669', '#10b981']}
+                                    colors={[statusColors[0], statusColors[1]]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
                                     style={[styles.modalButton, { marginHorizontal: 0 }]}
                                 >
-                                    <Text style={styles.modalButtonText}>Close & Update Stats</Text>
+                                    <Text style={styles.modalButtonText}>Done</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>
