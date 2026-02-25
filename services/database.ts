@@ -42,8 +42,16 @@ export const dbService = {
     const db = await SQLite.openDatabaseAsync(DB_NAME);
     await db.runAsync(
       'INSERT OR REPLACE INTO plants (id, name, type, health, lastChecked, status, entries, healthTrend) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      // [plant.id, plant.name, plant.type, plant.health, plant.lastChecked, plant.status, plant.location || '', plant.entries, JSON.stringify(plant.healthTrend)]
-      [plant.id, plant.name, plant.type, plant.health, plant.lastChecked, plant.status, plant.entries, JSON.stringify(plant.healthTrend)]
+      [
+        plant.id || '', 
+        plant.name || 'Unknown', 
+        plant.type || 'Unknown', 
+        plant.health ?? 0, 
+        plant.lastChecked || new Date().toISOString(), 
+        plant.status || 'warning', 
+        plant.entries ?? 0, 
+        JSON.stringify(plant.healthTrend || [])
+      ]
     );
   },
 
@@ -52,7 +60,7 @@ export const dbService = {
     const rows = await db.getAllAsync('SELECT * FROM plants ORDER BY lastChecked DESC');
     return rows.map((row: any) => ({
       ...row,
-      healthTrend: JSON.parse(row.healthTrend)
+      healthTrend: row.healthTrend ? JSON.parse(row.healthTrend) : []
     }));
   },
 
@@ -68,9 +76,19 @@ export const dbService = {
     const db = await SQLite.openDatabaseAsync(DB_NAME);
     await db.runAsync(
       'INSERT INTO scans (id, plantId, plantName, disease, severity, date, healthScore, predictions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [scan.id, scan.plantId || null, scan.plantName, scan.disease, scan.severity, scan.date, scan.healthScore, JSON.stringify(scan.predictions)]
+      [
+        scan.id || Math.random().toString(), 
+        scan.plantId || null, 
+        scan.plantName || 'Unassigned', 
+        scan.disease || 'Unknown', 
+        scan.severity || 'Unknown', 
+        scan.date || new Date().toISOString(), 
+        scan.healthScore ?? 0, 
+        JSON.stringify(scan.predictions || [])
+      ]
     );
   },
+
 
   getAllScans: async (): Promise<ScanResult[]> => {
     const db = await SQLite.openDatabaseAsync(DB_NAME);
