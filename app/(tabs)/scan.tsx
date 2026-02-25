@@ -15,8 +15,6 @@ import { usePlantStore } from '../../store/usePlantStore';
 import { useMutation } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 export default function ScanScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
@@ -217,9 +215,9 @@ export default function ScanScreen() {
                 </LinearGradient>
 
                 <View style={[styles.section, { marginTop: -20 }]}>
-                    <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 4 }}>
+                    <View style={{ backgroundColor: '#fff', borderRadius: 28, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 5 }}>
                         {!isUpdatingPlant && (
-                            <View style={{ marginBottom: 24 }}>
+                            <View style={{ marginBottom: 20 }}>
                                 <Text style={styles.label}>Select Plant Type</Text>
                                 <ScrollView 
                                     horizontal 
@@ -248,7 +246,7 @@ export default function ScanScreen() {
                             </View>
                         )}
 
-                        <View style={[styles.cameraArea, { marginVertical: 0, height: 300, overflow: 'hidden' }]}>
+                        <View style={styles.cameraArea}>
                             {selectedImageUri ? (
                                 <View style={{ width: '100%', height: '100%' }}>
                                     <Image 
@@ -268,11 +266,11 @@ export default function ScanScreen() {
                             ) : (
                                 <View style={{ alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
                                     <View style={styles.scannerFrame} />
-                                    <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
-                                        <Feather name="camera" size={48} color="#10b981" />
+                                    <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 24, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 }}>
+                                        <Feather name="camera" size={40} color="#10b981" />
                                     </View>
-                                    <Text style={styles.cameraText}>Position leaf in frame</Text>
-                                    <Text style={styles.cameraHint}>Ensure the leaf is clearly visible.</Text>
+                                    <Text style={{ fontSize: 17, fontWeight: '700', color: '#1e293b' }}>Position leaf in frame</Text>
+                                    <Text style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Ensure natural light and focus.</Text>
                                 </View>
                             )}
                         </View>
@@ -287,7 +285,7 @@ export default function ScanScreen() {
                             activeOpacity={0.8}
                             onPress={takePhoto} 
                             disabled={mutation.isPending}
-                            style={{ flex: 1.2 }}
+                            style={{ flex: 1.5 }}
                         >
                             <LinearGradient
                                 colors={['#059669', '#10b981']}
@@ -301,13 +299,13 @@ export default function ScanScreen() {
                         </TouchableOpacity>
 
                         <TouchableOpacity 
-                            style={[styles.btnSecondary, { flex: 1, paddingHorizontal: 0 }, mutation.isPending && { opacity: 0.6 }]} 
+                            style={[styles.btnSecondary, { flex: 1 }, mutation.isPending && { opacity: 0.6 }]} 
                             onPress={pickImage} 
                             disabled={mutation.isPending}
                             activeOpacity={0.7}
                         >
-                            <Feather name="image" size={22} color="#64748b" style={{ marginBottom: 4 }} />
-                            <Text style={[styles.btnSecondaryText, { fontSize: 14 }]}>Gallery</Text>
+                            <Feather name="image" size={20} color="#64748b" />
+                            <Text style={styles.btnSecondaryText}>Gallery</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -326,7 +324,7 @@ export default function ScanScreen() {
                         <View style={styles.bottomSheetHandle} />
                         
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16 }}>
-                            <Text style={[styles.modalTitle, { textAlign: 'left', marginBottom: 0 }]}>Diagnosis Results</Text>
+                            <Text style={styles.modalTitle}>Diagnosis Results</Text>
                             <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
                                 <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
                                     <Feather name="x" size={20} color="#64748b" />
@@ -394,7 +392,7 @@ export default function ScanScreen() {
 
                         </ScrollView>
 
-                        <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 32, flexDirection: 'row', gap: 12 }}>
+                        <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40, flexDirection: 'row', gap: 12 }}>
                             {isUpdatingPlant ? (
                                 <TouchableOpacity 
                                     activeOpacity={0.8}
