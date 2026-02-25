@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
 import { usePlantStore } from '../../store/usePlantStore';
 
@@ -18,9 +19,22 @@ export function HealthOverview() {
     return (
         <View style={styles.healthOverview}>
             <View style={styles.healthOverviewTop}>
-                <Text style={styles.healthLabel}>Farm Health Overview</Text>
-                <Text style={styles.healthScore}>{totalPlants > 0 ? averageHealth : '--'}%</Text>
+                <View>
+                    <Text style={styles.healthLabel}>Farm Health Overview</Text>
+                    {/* <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}> */}
+                    {/*     <Feather name="trending-up" size={14} color="#4ade80" /> */}
+                    {/*     <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginLeft: 4, fontWeight: '600' }}> */}
+                    {/*         Better than last week */}
+                    {/*     </Text> */}
+                    {/* </View> */}
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.healthScore}>{totalPlants > 0 ? averageHealth : '--'}%</Text>
+                </View>
             </View>
+            
+            <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 16 }} />
+            
             <View style={styles.healthBadges}>
                 <View style={styles.badge}>
                     <View style={[styles.dot, { backgroundColor: '#10b981' }]} />

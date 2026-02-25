@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TextInput, SafeAreaView, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, TextInput, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
@@ -24,7 +25,7 @@ export default function LibraryScreen() {
     const getPlantColor = (plant: string) => {
         switch (plant.toLowerCase()) {
             case 'mango': return '#f59e0b';
-            case 'banana': return '#fbbf24';
+            case 'banana': return '#eab308';
             case 'guava': return '#10b981';
             case 'calamansi': return '#059669';
             default: return '#10b981';
@@ -32,66 +33,81 @@ export default function LibraryScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
-            <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-                <View style={[styles.pageHeader, { paddingTop: insets.top }]}>
-                    <Text style={styles.pageTitle}>Knowledge Library</Text>
-                    <Text style={styles.pageSubtitle}>Learn about diseases and care</Text>
+            <ScrollView 
+                style={styles.screen} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
+                <View style={[styles.pageHeader, { paddingTop: insets.top + 16, paddingBottom: 24, borderBottomLeftRadius: 32, borderBottomRightRadius: 32, backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 }]}>
+                    <Text style={[styles.pageTitle, { fontSize: 28, fontWeight: '800' }]}>Knowledge</Text>
+                    <Text style={[styles.pageSubtitle, { fontSize: 16, fontWeight: '500' }]}>Learn about diseases and care</Text>
                 </View>
 
                 <View style={styles.section}>
-                    <View style={styles.searchContainer}>
-                        <View style={styles.searchInput}>
-                            <Feather name="search" size={20} color="#9ca3af" />
+                    <Animated.View entering={FadeInDown.delay(200).duration(800)} style={[styles.searchContainer, { borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 2, padding: 20 }]}>
+                        <View style={[styles.searchInput, { backgroundColor: '#f8fafc', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9' }]}>
+                            <Feather name="search" size={20} color="#94a3b8" />
                             <TextInput
                                 placeholder="Search diseases, plants..."
-                                style={styles.searchInputText}
-                                placeholderTextColor="#9ca3af"
+                                style={[styles.searchInputText, { fontWeight: '600' }]}
+                                placeholderTextColor="#94a3b8"
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
                             />
                         </View>
-                    </View>
+                    </Animated.View>
 
                     {isLoading ? (
-                        <View style={{ padding: 40, alignItems: 'center' }}>
+                        <View style={{ padding: 60, alignItems: 'center' }}>
                             <ActivityIndicator size="large" color="#10b981" />
-                            <Text style={{ marginTop: 16, color: '#6b7280' }}>Loading library...</Text>
+                            <Text style={{ marginTop: 20, color: '#64748b', fontWeight: '600' }}>Loading knowledge base...</Text>
                         </View>
                     ) : error ? (
-                        <View style={{ padding: 40, alignItems: 'center' }}>
-                            <Feather name="alert-circle" size={48} color="#ef4444" />
-                            <Text style={{ marginTop: 16, color: '#ef4444', fontWeight: 'bold' }}>Failed to load library</Text>
-                            <Text style={{ marginTop: 8, color: '#6b7280', textAlign: 'center' }}>Please check your internet connection.</Text>
+                        <View style={{ padding: 60, alignItems: 'center' }}>
+                            <View style={{ backgroundColor: '#fee2e2', padding: 20, borderRadius: 30, marginBottom: 20 }}>
+                                <Feather name="alert-circle" size={48} color="#ef4444" />
+                            </View>
+                            <Text style={{ fontSize: 18, color: '#1e293b', fontWeight: '800' }}>Sync Error</Text>
+                            <Text style={{ marginTop: 8, color: '#64748b', textAlign: 'center', lineHeight: 20 }}>We couldn't reach the library server. Please check your connection.</Text>
                         </View>
                     ) : (
-                        filteredDiseases.map((disease) => (
-                            <Link 
-                                href={{ pathname: "/disease/[name]", params: { name: disease.id } }} 
-                                asChild 
+                        filteredDiseases.map((disease, index) => (
+                            <Animated.View 
                                 key={disease.id}
+                                entering={FadeInRight.delay(400 + (index * 100)).duration(600)}
                             >
-                                <TouchableOpacity style={styles.plantCard}>
-                                    <View style={[styles.plantIcon, { backgroundColor: getPlantColor(disease.plant) }]}>
-                                        <Text style={{ fontSize: 24 }}>🍃</Text>
-                                    </View>
-                                    <View style={styles.plantInfo}>
-                                        <Text style={styles.plantName}>{disease.display_name}</Text>
-                                        <Text style={styles.plantMeta}>Plant: {disease.plant.charAt(0).toUpperCase() + disease.plant.slice(1)}</Text>
-                                        <View style={{ marginTop: 8 }}>
-                                            <View style={[styles.severityBadge, { backgroundColor: '#f3f4f6' }]}>
-                                                <Text style={[styles.severityText, { color: '#374151' }]}>Common</Text>
+                                <Link 
+                                    href={{ pathname: "/disease/[name]", params: { name: disease.id } }} 
+                                    asChild 
+                                >
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7} 
+                                        style={[styles.plantCard, { paddingVertical: 12 }]}
+                                    >
+                                        <View style={[styles.plantIcon, { backgroundColor: getPlantColor(disease.plant) + '15' }]}>
+                                            <Text style={{ fontSize: 28 }}>🍃</Text>
+                                        </View>
+                                        <View style={styles.plantInfo}>
+                                            <Text style={[styles.plantName, { fontSize: 18 }]}>{disease.display_name}</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                                                <View style={{ backgroundColor: getPlantColor(disease.plant), width: 8, height: 8, borderRadius: 4, marginRight: 6 }} />
+                                                <Text style={[styles.plantMeta, { fontWeight: '700', color: '#64748b' }]}>
+                                                    {disease.plant.toUpperCase()}
+                                                </Text>
                                             </View>
                                         </View>
-                                    </View>
-                                    <Feather name="chevron-right" size={20} color="#9ca3af" />
-                                </TouchableOpacity>
-                            </Link>
+                                        <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 14 }}>
+                                            <Feather name="chevron-right" size={20} color="#94a3b8" />
+                                        </View>
+                                    </TouchableOpacity>
+                                </Link>
+                            </Animated.View>
                         ))
                     )}
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

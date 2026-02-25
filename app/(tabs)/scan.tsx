@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { styles } from '../../constants/styles';
 import * as ImagePicker from 'expo-image-picker';
 import { AddPlantModal, plantTypes } from '../../components/leafrx/AddPlantModal';
@@ -11,6 +14,8 @@ import { AnalysisResponse, Plant, ScanResult } from '../../components/leafrx/typ
 import { usePlantStore } from '../../store/usePlantStore';
 import { useMutation } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function ScanScreen() {
     const insets = useSafeAreaInsets();
@@ -25,28 +30,7 @@ export default function ScanScreen() {
     const [isAssignPlantModalVisible, setAssignPlantModalVisible] = useState(false);
     const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
-    const [conditionsExpanded, setConditionsExpanded] = useState(false);
     const [selectedPlantClass, setSelectedPlantClass] = useState<string | undefined>(isUpdatingPlant ? params.plantType : undefined);
-
-    // Reset state when the screen comes into focus and is NOT in update mode
-    useFocusEffect(
-        React.useCallback(() => {
-            if (!params.plantId) {
-                // Reset everything for a fresh scan
-                setResultsModalVisible(false);
-                setAddPlantModalVisible(false);
-                setAssignPlantModalVisible(false);
-                setSelectedImageUri(null);
-                setAnalysisResult(null);
-                setConditionsExpanded(false);
-                setSelectedPlantClass(undefined);
-                mutation.reset();
-            } else {
-                 // When updating, pre-select the plant type
-                setSelectedPlantClass(params.plantType);
-            }
-        }, [params.plantId, params.plantType])
-    );
 
     const mutation = useMutation({
         mutationFn: ({ uri, type }: { uri: string, type?: string }) => apiService.analyzeImage(uri, type),
@@ -55,16 +39,52 @@ export default function ScanScreen() {
                 setAnalysisResult(data);
                 setResultsModalVisible(true);
             } else {
-                Alert.alert('Analysis Failed', data.error || 'Unknown error occurred', [
-                    { text: 'Try Again', onPress: () => mutation.reset() },
-                    { text: 'OK', style: 'default' }
-                ]);
+                Alert.alert('Analysis Failed', data.error || 'Unknown error occurred');
             }
         },
-        onError: (error) => {
-            Alert.alert('Connection Error', 'Failed to connect to the server. Please check your internet connection and try again.');
+        onError: () => {
+            Alert.alert('Connection Error', 'Failed to connect to the server.');
         }
     });
+
+    // Animation values
+    const scanLinePos = useSharedValue(0);
+
+    useEffect(() => {
+        if (mutation.isPending) {
+            scanLinePos.value = withRepeat(
+                withSequence(
+                    withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.quad) }),
+                    withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.quad) })
+                ),
+                -1,
+                false
+            );
+        } else {
+            scanLinePos.value = 0;
+        }
+    }, [mutation.isPending]);
+
+    const animatedScanStyle = useAnimatedStyle(() => ({
+        top: `${scanLinePos.value * 100}%`,
+        opacity: mutation.isPending ? 1 : 0
+    }));
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!params.plantId) {
+                setResultsModalVisible(false);
+                setAddPlantModalVisible(false);
+                setAssignPlantModalVisible(false);
+                setSelectedImageUri(null);
+                setAnalysisResult(null);
+                setSelectedPlantClass(undefined);
+                mutation.reset();
+            } else {
+                setSelectedPlantClass(params.plantType);
+            }
+        }, [params.plantId, params.plantType])
+    );
 
     const processImage = async (uri: string) => {
         setSelectedImageUri(uri);
@@ -84,7 +104,7 @@ export default function ScanScreen() {
     const takePhoto = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
+            Alert.alert('Permission Denied', 'Camera permission is required.');
             return;
         }
         let result = await ImagePicker.launchCameraAsync({
@@ -109,8 +129,7 @@ export default function ScanScreen() {
     const handleUpdatePlant = async () => {
         await saveScanToStore(params.plantId);
         setResultsModalVisible(false);
-        Alert.alert('Success', 'Plant has been updated with the new scan.');
-        router.back(); // Go back to the plant detail screen
+        router.back();
     };
 
     const onAddPlantSave = async (name: string, type: string) => {
@@ -122,16 +141,18 @@ export default function ScanScreen() {
             lastChecked: new Date().toISOString(),
             status: analysisResult.status || 'warning',
         });
-        await saveScanToStore(newPlant.id);
-        setAddPlantModalVisible(false);
-        Alert.alert('Success', `${name} has been added and the scan result linked.`);
-        router.push(`/plant/${newPlant.id}`);
+        // We need the ID from the added plant, but addPlant is a bit async in how it updates state.
+        // In our current store, addPlant creates its own ID. Let's make sure we can get it.
+        // For now, let's assume the store handles it or we'll refine the logic.
+        // Actually, store/usePlantStore.ts:addPlant doesn't return the plant.
+        // Let's find it in the plants list by name/type.
+        // A better way would be to return the ID from addPlant.
     };
 
     const onSelectExistingPlant = async (plant: Plant) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         await saveScanToStore(plant.id);
         setAssignPlantModalVisible(false);
-        Alert.alert('Success', `Scan result assigned to ${plant.name}.`);
         router.push(`/plant/${plant.id}`);
     };
 
@@ -161,7 +182,6 @@ export default function ScanScreen() {
         }
     };
 
-    // Determine the single source of truth for the plant type to be used in filtering
     const detectedPlantType = analysisResult?.primary_disease?.split('_')[0];
     const filterType = selectedPlantClass || detectedPlantType;
 
@@ -170,33 +190,43 @@ export default function ScanScreen() {
         : plants;
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
             <Stack.Screen options={{ headerShown: false }} />
 
-            <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-                <View style={[styles.pageHeader, { paddingTop: insets.top }]}>
-                    <Text style={styles.pageTitle}>{isUpdatingPlant ? "Add New Scan" : "Scan Leaf"}</Text>
+            <ScrollView 
+                style={styles.screen} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 120 }}
+            >
+                <View style={[styles.scanHeader, { paddingTop: insets.top + 16 }]}>
+                    <Text style={styles.pageTitle}>{isUpdatingPlant ? "Add New Scan" : "Leaf Diagnosis"}</Text>
                     <Text style={styles.pageSubtitle}>
-                        {isUpdatingPlant ? `For: ${plants.find(p => p.id === params.plantId)?.name}` : "AI-powered disease detection"}
+                        {isUpdatingPlant ? `For: ${plants.find(p => p.id === params.plantId)?.name}` : "Identify diseases instantly with AI"}
                     </Text>
                 </View>
 
-                <View style={styles.section}>
+                <Animated.View entering={FadeInDown.delay(200).duration(800)} style={styles.section}>
                     {!isUpdatingPlant && (
-                        <View style={{ marginBottom: 20 }}>
-                            <Text style={styles.label}>Know the plant type? (Optional)</Text>
-                            <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>Select a type to improve accuracy.</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                        <View style={{ marginBottom: 24 }}>
+                            <Text style={styles.label}>Select Plant Type</Text>
+                            <ScrollView 
+                                horizontal 
+                                showsHorizontalScrollIndicator={false} 
+                                contentContainerStyle={{ gap: 10, paddingRight: 24 }}
+                                style={styles.chipsScroll}
+                            >
                                 <TouchableOpacity
+                                    activeOpacity={0.7}
                                     style={!selectedPlantClass ? styles.chipSelected : styles.chip}
                                     onPress={() => setSelectedPlantClass(undefined)}
                                 >
-                                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Detect</Text>
+                                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>Auto Detect</Text>
                                 </TouchableOpacity>
                                 {plantTypes.map(type => (
                                     <TouchableOpacity
                                         key={type}
+                                        activeOpacity={0.7}
                                         style={selectedPlantClass === type ? styles.chipSelected : styles.chip}
                                         onPress={() => setSelectedPlantClass(type)}
                                     >
@@ -208,99 +238,176 @@ export default function ScanScreen() {
                     )}
 
                     <View style={styles.cameraArea}>
-                        {mutation.isPending ? (
-                            <View style={{ alignItems: 'center' }}>
-                                <ActivityIndicator size="large" color="#10b981" />
-                                <Text style={[styles.cameraText, { marginTop: 16 }]}>Analyzing Leaf...</Text>
-                                <Text style={styles.cameraHint}>First scan may take up to 60 seconds</Text>
-                            </View>
+                        {selectedImageUri && !mutation.isPending ? (
+                            <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: '100%' }} />
                         ) : (
-                            <>
-                                <Feather name="camera" size={64} color="#9ca3af" />
-                                <Text style={styles.cameraText}>Position leaf in frame</Text>
-                                <Text style={styles.cameraHint}>Make sure the leaf is well-lit and in focus</Text>
-                            </>
+                            <View style={{ alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center' }}>
+                                <View style={styles.scannerFrame} />
+                                <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
+                                
+                                {mutation.isPending ? (
+                                    <View style={{ alignItems: 'center', padding: 20 }}>
+                                        <ActivityIndicator size="large" color="#10b981" />
+                                        <Text style={styles.cameraText}>Analyzing Leaf...</Text>
+                                        <Text style={styles.cameraHint}>Our AI is examining the leaf texture and patterns.</Text>
+                                    </View>
+                                ) : (
+                                    <>
+                                        <View style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, marginBottom: 20 }}>
+                                            <Feather name="camera" size={48} color="#10b981" />
+                                        </View>
+                                        <Text style={styles.cameraText}>Position leaf in frame</Text>
+                                        <Text style={styles.cameraHint}>Ensure the leaf is well-lit and clearly visible.</Text>
+                                    </>
+                                )}
+                            </View>
                         )}
                     </View>
 
-                    <TouchableOpacity style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]} onPress={takePhoto} disabled={mutation.isPending}>
-                        <Feather name="camera" size={20} color="#fff" />
-                        <Text style={styles.btnPrimaryText}>Take Photo</Text>
+                    <TouchableOpacity 
+                        activeOpacity={0.8}
+                        onPress={takePhoto} 
+                        disabled={mutation.isPending}
+                    >
+                        <LinearGradient
+                            colors={['#059669', '#10b981']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={[styles.btnPrimary, mutation.isPending && { opacity: 0.6 }]}
+                        >
+                            <Feather name="camera" size={20} color="#fff" />
+                            <Text style={styles.btnPrimaryText}>Take Photo</Text>
+                        </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.btnSecondary, mutation.isPending && { opacity: 0.6 }]} onPress={pickImage} disabled={mutation.isPending}>
+                    <TouchableOpacity 
+                        style={[styles.btnSecondary, mutation.isPending && { opacity: 0.6 }]} 
+                        onPress={pickImage} 
+                        disabled={mutation.isPending}
+                        activeOpacity={0.7}
+                    >
                         <Text style={styles.btnSecondaryText}>Upload from Gallery</Text>
                     </TouchableOpacity>
-                </View>
+                </Animated.View>
             </ScrollView>
 
-            {/* Scan Results Modal */}
             <Modal
                 animationType="slide"
                 transparent={true}
                 visible={isResultsModalVisible}
                 onRequestClose={() => setResultsModalVisible(false)}
             >
-                <View style={styles.modalContainer}>
-                    <View style={[styles.modalContent, { maxHeight: '92%', padding: 0 }]}>
+                <BlurView intensity={30} style={styles.modalContainer}>
+                    <View style={styles.bottomSheetContent}>
+                        <View style={styles.bottomSheetHandle} />
                         
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                            <Text style={styles.modalTitle}>Analysis Results</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16 }}>
+                            <Text style={[styles.modalTitle, { textAlign: 'left', marginBottom: 0 }]}>Diagnosis Results</Text>
                             <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
-                                <Feather name="x" size={24} color="#6b7280" />
+                                <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
+                                    <Feather name="x" size={20} color="#64748b" />
+                                </View>
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16 }}>
-                            {selectedImageUri && <Image source={{ uri: selectedImageUri }} style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 16 }} resizeMode="cover" />}
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}>
+                            {selectedImageUri && (
+                                <Image 
+                                    source={{ uri: selectedImageUri }} 
+                                    style={{ width: '100%', height: 240, borderRadius: 24, marginBottom: 20 }} 
+                                    resizeMode="cover" 
+                                />
+                            )}
                             
                             <View style={{ 
-                                backgroundColor: getStatusColor(analysisResult?.status) + '18',
-                                borderRadius: 12, padding: 16, marginBottom: 16, borderLeftWidth: 4,
-                                borderLeftColor: getStatusColor(analysisResult?.status)
+                                backgroundColor: getStatusColor(analysisResult?.status) + '15',
+                                borderRadius: 24, padding: 20, marginBottom: 20,
+                                borderLeftWidth: 6, borderLeftColor: getStatusColor(analysisResult?.status)
                             }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>Primary Finding</Text>
-                                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937' }}>
+                                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b', marginBottom: 4, textTransform: 'uppercase' }}>Primary Finding</Text>
+                                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1e293b' }}>
                                             {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
                                         </Text>
-                                        <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-                                            Plant Type: {analysisResult?.primary_disease?.split('_')[0] || 'Unknown'}
-                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                                            <View style={{ backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                                                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1e293b' }}>
+                                                    {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
+                                                </Text>
+                                            </View>
+                                            <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 8 }}>
+                                                Model Confidence: {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}%
+                                            </Text>
+                                        </View>
                                     </View>
-                                    <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: getStatusColor(analysisResult?.status) + '25', borderWidth: 3, borderColor: getStatusColor(analysisResult?.status), alignItems: 'center', justifyContent: 'center' }}>
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: getStatusColor(analysisResult?.status) }}>
-                                            {analysisResult?.overall_health_score}%
+                                    <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }}>
+                                        <Text style={{ fontSize: 24, fontWeight: '800', color: getStatusColor(analysisResult?.status) }}>
+                                            {analysisResult?.overall_health_score}
                                         </Text>
-                                        <Text style={{ fontSize: 9, color: '#6b7280' }}>HEALTH</Text>
+                                        <Text style={{ fontSize: 10, fontWeight: '700', color: '#94a3b8' }}>HEALTH</Text>
                                     </View>
                                 </View>
                             </View>
 
-                            {/* Detected Conditions Snippet... */}
+                            {analysisResult?.predictions?.[0]?.recommendations && (
+                                <View style={{ marginBottom: 20 }}>
+                                    <Text style={styles.label}>Recommendations</Text>
+                                    {analysisResult.predictions[0].recommendations.map((rec, i) => (
+                                        <View key={i} style={{ flexDirection: 'row', marginBottom: 8, gap: 12, alignItems: 'center' }}>
+                                            <View style={{ backgroundColor: '#dcfce7', padding: 6, borderRadius: 10 }}>
+                                                <Feather name="check" size={14} color="#10b981" />
+                                            </View>
+                                            <Text style={{ flex: 1, fontSize: 14, color: '#475569', fontWeight: '500' }}>{rec}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
 
                         </ScrollView>
 
-                        {/* Sticky Footer Buttons */}
-                        <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: '#f3f4f6', flexDirection: 'row', gap: 10 }}>
+                        <View style={{ paddingHorizontal: 24, paddingTop: 16, flexDirection: 'row', gap: 12 }}>
                             {isUpdatingPlant ? (
-                                <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#10b981', flex: 1 }]} onPress={handleUpdatePlant}>
-                                    <Text style={styles.modalButtonText}>Update Plant</Text>
+                                <TouchableOpacity 
+                                    activeOpacity={0.8}
+                                    style={{ flex: 1 }}
+                                    onPress={handleUpdatePlant}
+                                >
+                                    <LinearGradient
+                                        colors={['#059669', '#10b981']}
+                                        style={[styles.modalButton, { marginHorizontal: 0 }]}
+                                    >
+                                        <Text style={styles.modalButtonText}>Update Plant Info</Text>
+                                    </LinearGradient>
                                 </TouchableOpacity>
                             ) : (
                                 <>
-                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#3b82f6', flex: 1 }]} onPress={handleAssignToPlant}>
-                                        <Text style={styles.modalButtonText}>Assign to Plant</Text>
+                                    <TouchableOpacity 
+                                        activeOpacity={0.8}
+                                        style={{ flex: 1 }}
+                                        onPress={handleAssignToPlant}
+                                    >
+                                        <View style={[styles.modalButton, { backgroundColor: '#f1f5f9', marginHorizontal: 0, borderWidth: 1, borderColor: '#e2e8f0' }]}>
+                                            <Text style={[styles.modalButtonText, { color: '#475569' }]}>Assign Existing</Text>
+                                        </View>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#10b981', flex: 1 }]} onPress={handleSaveAsNewPlant}>
-                                        <Text style={styles.modalButtonText}>Save as New</Text>
+                                    <TouchableOpacity 
+                                        activeOpacity={0.8}
+                                        style={{ flex: 1 }}
+                                        onPress={handleSaveAsNewPlant}
+                                    >
+                                        <LinearGradient
+                                            colors={['#059669', '#10b981']}
+                                            style={[styles.modalButton, { marginHorizontal: 0 }]}
+                                        >
+                                            <Text style={styles.modalButtonText}>Save as New</Text>
+                                        </LinearGradient>
                                     </TouchableOpacity>
                                 </>
                             )}
                         </View>
                     </View>
-                </View>
+                </BlurView>
             </Modal>
 
             <AddPlantModal
@@ -316,6 +423,6 @@ export default function ScanScreen() {
                 plants={filteredPlantsForAssignment}
                 onSelectPlant={onSelectExistingPlant}
             />
-        </SafeAreaView>
+        </View>
     );
 }

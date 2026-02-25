@@ -1,7 +1,9 @@
 import React from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { styles } from '../../constants/styles';
 import { HealthOverview } from '../../components/leafrx/HealthOverview';
 import { QuickActions } from '../../components/leafrx/QuickActions';
@@ -25,46 +27,68 @@ export default function HomeScreen() {
   const isApiOnline = apiStatus?.status === 'ok';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-        <View style={[styles.header, { paddingTop: insets.top }]}>
-          <View style={styles.headerTop}>
+      <ScrollView 
+        style={styles.screen} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        <LinearGradient
+          colors={['#059669', '#10b981', '#34d399']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.header, { paddingTop: insets.top + 16 }]}
+        >
+          <Animated.View 
+            entering={FadeInDown.delay(200).duration(800)}
+            style={styles.headerTop}
+          >
             <View>
-              <Text style={styles.headerTitle}>Hello, Juan!</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {/* <Text style={styles.headerTitle}>Hello, Juan!</Text> */}
+              <Text style={styles.headerTitle}>LeafRx</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <Text style={styles.headerSubtitle}>Monitor your trees health</Text>
                 <View style={{ 
-                  width: 8, 
-                  height: 8, 
-                  borderRadius: 4, 
-                  backgroundColor: isApiOnline ? '#10b981' : '#ef4444',
+                  width: 6, 
+                  height: 6, 
+                  borderRadius: 3, 
+                  backgroundColor: isApiOnline ? '#4ade80' : '#f87171',
                   marginLeft: 8,
                   marginRight: 4
                 }} />
-                <Text style={{ fontSize: 10, color: '#e5e7eb' }}>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
                   {isApiOnline ? 'API Online' : 'API Offline'}
                 </Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.bellBtn}>
+            <TouchableOpacity style={styles.bellBtn} activeOpacity={0.7}>
               <Feather name="bell" size={20} color="#fff" />
             </TouchableOpacity>
-          </View>
-          <HealthOverview />
-        </View>
+          </Animated.View>
+          
+          <Animated.View entering={FadeInDown.delay(400).duration(800)}>
+            <HealthOverview />
+          </Animated.View>
+        </LinearGradient>
 
-        <View style={styles.section}>
+        <Animated.View 
+          entering={FadeInDown.delay(600).duration(800)}
+          style={styles.section}
+        >
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <QuickActions />
-        </View>
+        </Animated.View>
 
-        <View style={styles.section}>
+        <Animated.View 
+          entering={FadeInDown.delay(800).duration(800)}
+          style={styles.section}
+        >
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>My Plants</Text>
             {plants.length > 0 && (
               <Link href="/(tabs)/tracking" asChild>
-                <TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.6}>
                   <Text style={styles.viewAll}>View All →</Text>
                 </TouchableOpacity>
               </Link>
@@ -72,34 +96,57 @@ export default function HomeScreen() {
           </View>
           
           {plants.length > 0 ? (
-            plants.slice(0, 3).map(plant => (
-              <PlantCard key={plant.id} plant={plant} />
+            plants.slice(0, 3).map((plant, index) => (
+              <Animated.View 
+                key={plant.id} 
+                entering={FadeInRight.delay(900 + (index * 100)).duration(600)}
+              >
+                <PlantCard plant={plant} />
+              </Animated.View>
             ))
           ) : (
-            <View style={{ padding: 20, backgroundColor: '#f9fafb', borderRadius: 12, alignItems: 'center' }}>
-              <Text style={{ color: '#6b7280', marginBottom: 12 }}>No plants tracked yet.</Text>
-              <Link href="/(tabs)/scan" asChild>
-                <TouchableOpacity style={[styles.btnSecondary, { paddingVertical: 8 }]}>
-                  <Text style={styles.btnSecondaryText}>Start First Scan</Text>
-                </TouchableOpacity>
-              </Link>
+            <View style={{ 
+              padding: 32, 
+              backgroundColor: '#fff', 
+              borderRadius: 24, 
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: '#f1f5f9',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 10,
+              elevation: 2
+            }}>
+              <Feather name="plus-circle" size={48} color="#cbd5e1" style={{ marginBottom: 16 }} />
+              <Text style={{ color: '#64748b', fontSize: 15, fontWeight: '500', textAlign: 'center' }}>
+                No plants tracked yet. Start by scanning a leaf.
+              </Text>
             </View>
           )}
-        </View>
+        </Animated.View>
 
-        <View style={[styles.section, { marginBottom: 100 }]}>
+        <Animated.View 
+          entering={FadeInDown.delay(1000).duration(800)}
+          style={styles.section}
+        >
           <Text style={styles.sectionTitle}>Recent Scans</Text>
           {scans.length > 0 ? (
-            scans.slice(0, 5).map(scan => (
-              <RecentScanItem key={scan.id} scan={scan} />
+            scans.slice(0, 5).map((scan, index) => (
+              <Animated.View 
+                key={scan.id}
+                entering={FadeInRight.delay(1100 + (index * 100)).duration(600)}
+              >
+                <RecentScanItem scan={scan} />
+              </Animated.View>
             ))
           ) : (
-            <View style={{ padding: 20, backgroundColor: '#f9fafb', borderRadius: 12, alignItems: 'center' }}>
-              <Text style={{ color: '#6b7280' }}>No scans performed yet.</Text>
+            <View style={{ padding: 20, backgroundColor: 'transparent', borderRadius: 12, alignItems: 'center' }}>
+              <Text style={{ color: '#94a3b8', fontSize: 14 }}>No scans performed yet.</Text>
             </View>
           )}
-        </View>
+        </Animated.View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

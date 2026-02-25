@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { styles } from '../../constants/styles';
 import { Plant } from './types';
 import { Link } from 'expo-router';
@@ -9,31 +10,81 @@ type PlantCardProps = {
 };
 
 export function PlantCard({ plant }: PlantCardProps) {
+    const size = 56;
+    const strokeWidth = 5;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const progress = plant.health / 100;
+    const offset = circumference - (progress * circumference);
+
+    const getStatusColor = () => {
+        if (plant.status === 'healthy') return '#10b981';
+        if (plant.status === 'warning') return '#f59e0b';
+        return '#ef4444';
+    };
+
     return (
         <Link href={`/plant/${plant.id}`} asChild>
-            <TouchableOpacity style={styles.plantCard}>
+            <TouchableOpacity 
+                style={styles.plantCard} 
+                activeOpacity={0.7}
+            >
                 <View style={[
                     styles.plantIcon,
-                    plant.status === 'healthy' && { backgroundColor: '#dcfce7' },
-                    plant.status === 'warning' && { backgroundColor: '#fef3c7' },
-                    plant.status === 'critical' && { backgroundColor: '#fee2e2' },
+                    plant.status === 'healthy' && { backgroundColor: 'rgba(16, 185, 129, 0.1)' },
+                    plant.status === 'warning' && { backgroundColor: 'rgba(245, 158, 11, 0.1)' },
+                    plant.status === 'critical' && { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
                 ]}>
-                    <Text style={{ fontSize: 24 }}>🌿</Text>
+                    <Text style={{ fontSize: 28 }}>{getPlantEmoji(plant.type)}</Text>
                 </View>
+
                 <View style={styles.plantInfo}>
-                    <Text style={styles.plantName}>{plant.name}</Text>
-                    <Text style={styles.plantMeta}>{plant.type}</Text>
+                    <Text style={styles.plantName} numberOfLines={1}>{plant.name}</Text>
+                    <Text style={styles.plantMeta}>{plant.type.charAt(0).toUpperCase() + plant.type.slice(1)}</Text>
+                    <View style={styles.lastCheckedContainer}>
+                        <Text style={styles.lastChecked}>Last checked: {plant.lastChecked}</Text>
+                    </View>
                 </View>
+
                 <View style={styles.plantHealth}>
-                    <Text style={[
-                        styles.healthScoreText,
-                        plant.status === 'healthy' && { color: '#22c55e' },
-                        plant.status === 'warning' && { color: '#eab308' },
-                        plant.status === 'critical' && { color: '#ef4444' },
-                    ]}>{plant.health}%</Text>
-                    <Text style={styles.lastChecked}>{plant.lastChecked}</Text>
+                    <Svg width={size} height={size}>
+                        <Circle
+                            cx={size / 2}
+                            cy={size / 2}
+                            r={radius}
+                            stroke="#f1f5f9"
+                            strokeWidth={strokeWidth}
+                            fill="transparent"
+                        />
+                        <Circle
+                            cx={size / 2}
+                            cy={size / 2}
+                            r={radius}
+                            stroke={getStatusColor()}
+                            strokeWidth={strokeWidth}
+                            strokeDasharray={circumference}
+                            strokeDashoffset={offset}
+                            strokeLinecap="round"
+                            fill="transparent"
+                            transform={`rotate(-90, ${size / 2}, ${size / 2})`}
+                        />
+                    </Svg>
+                    <View style={{ position: 'absolute' }}>
+                        <Text style={[styles.healthScoreText, { color: getStatusColor() }]}>
+                            {Math.round(plant.health)}
+                        </Text>
+                    </View>
                 </View>
             </TouchableOpacity>
         </Link>
     );
+}
+
+function getPlantEmoji(type: string) {
+    const t = type.toLowerCase();
+    if (t.includes('mango')) return '🥭';
+    if (t.includes('banana')) return '🍌';
+    if (t.includes('guava')) return '🍈';
+    if (t.includes('calamansi')) return '🍊';
+    return '🌿';
 }

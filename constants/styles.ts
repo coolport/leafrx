@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#f5f5f5',
+      backgroundColor: '#f8fafc', // Softer background
     },
     screen: {
       flex: 1,
@@ -11,53 +11,66 @@ export const styles = StyleSheet.create({
     
     // Header
     header: {
-      backgroundColor: '#22c55e',
-      padding: 24,
-      borderBottomLeftRadius: 24,
-      borderBottomRightRadius: 24,
+      paddingBottom: 24,
+      borderBottomLeftRadius: 32,
+      borderBottomRightRadius: 32,
+      // Shadows for depth
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 15,
+      elevation: 10,
     },
     headerTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 16,
+      marginBottom: 20,
+      paddingHorizontal: 24,
     },
     headerTitle: {
-      fontSize: 24,
-      fontWeight: 'bold',
+      fontSize: 28,
+      fontWeight: '800', // Thicker font
       color: '#fff',
+      letterSpacing: -0.5,
     },
     headerSubtitle: {
-      fontSize: 14,
-      color: '#dcfce7',
+      fontSize: 15,
+      color: 'rgba(255,255,255,0.85)',
+      fontWeight: '500',
     },
     bellBtn: {
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      backgroundColor: 'rgba(255,255,255,0.25)',
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       alignItems: 'center',
       justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.3)',
     },
     healthOverview: {
-      backgroundColor: 'rgba(255,255,255,0.1)',
-      padding: 16,
-      borderRadius: 16,
-      marginTop: 16,
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      padding: 20,
+      borderRadius: 24,
+      marginHorizontal: 24,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.2)',
     },
     healthOverviewTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 8,
+      marginBottom: 12,
     },
     healthLabel: {
-      fontSize: 14,
-      color: '#dcfce7',
+      fontSize: 15,
+      fontWeight: '600',
+      color: '#fff',
     },
     healthScore: {
-      fontSize: 28,
-      fontWeight: 'bold',
+      fontSize: 32,
+      fontWeight: '800',
       color: '#fff',
     },
     healthBadges: {
@@ -67,7 +80,11 @@ export const styles = StyleSheet.create({
     badge: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: 6,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 20,
     },
     dot: {
       width: 8,
@@ -76,12 +93,14 @@ export const styles = StyleSheet.create({
     },
     badgeText: {
       fontSize: 12,
+      fontWeight: '600',
       color: '#fff',
     },
   
     // Sections
     section: {
-      padding: 24,
+      paddingHorizontal: 24,
+      paddingVertical: 20,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -90,50 +109,73 @@ export const styles = StyleSheet.create({
       marginBottom: 16,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#1f2937',
+      fontSize: 20,
+      fontWeight: '700',
+      color: '#1e293b',
+      letterSpacing: -0.3,
     },
     viewAll: {
       fontSize: 14,
-      color: '#22c55e',
+      fontWeight: '600',
+      color: '#059669',
     },
   
     // Quick Actions
     quickActions: {
       flexDirection: 'row',
-      gap: 12,
-      marginTop: 16,
+      gap: 16,
     },
     actionBtn: {
       flex: 1,
-      padding: 20,
-      borderRadius: 16,
+      paddingVertical: 24,
+      paddingHorizontal: 16,
+      borderRadius: 24,
       alignItems: 'center',
-      gap: 8,
+      justifyContent: 'center',
+      gap: 12,
+      // Depth
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
     },
     actionBtnText: {
-      fontSize: 16,
-      fontWeight: '500',
+      fontSize: 15,
+      fontWeight: '700',
       color: '#fff',
+    },
+    actionIconBg: {
+      width: 54,
+      height: 54,
+      backgroundColor: 'rgba(255,255,255,0.25)',
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.3)',
     },
   
     // Plant Cards
     plantCard: {
       backgroundColor: '#fff',
-      borderWidth: 1,
-      borderColor: '#e5e7eb',
-      borderRadius: 12,
+      borderRadius: 24,
       padding: 16,
-      marginBottom: 12,
+      marginBottom: 16,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 16,
+      // Soft shadow
+      shadowColor: '#64748b',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 3,
     },
     plantIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
+      width: 60,
+      height: 60,
+      borderRadius: 22,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -141,25 +183,35 @@ export const styles = StyleSheet.create({
       flex: 1,
     },
     plantName: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: '#1f2937',
+      fontSize: 17,
+      fontWeight: '700',
+      color: '#1e293b',
       marginBottom: 4,
     },
     plantMeta: {
-      fontSize: 14,
-      color: '#6b7280',
+      fontSize: 13,
+      fontWeight: '500',
+      color: '#64748b',
+    },
+    lastCheckedContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 4,
     },
     plantHealth: {
-      alignItems: 'flex-end',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 56,
+      height: 56,
     },
     healthScoreText: {
-      fontSize: 20,
-      fontWeight: 'bold',
+      fontSize: 16,
+      fontWeight: '800',
     },
     lastChecked: {
-      fontSize: 12,
-      color: '#9ca3af',
+      fontSize: 11,
+      fontWeight: '500',
+      color: '#94a3b8',
     },
   
     // Recent Scans
@@ -226,117 +278,111 @@ export const styles = StyleSheet.create({
   
     // Camera Area
     cameraArea: {
-      backgroundColor: '#f3f4f6',
-      borderWidth: 2,
-      borderColor: '#d1d5db',
-      borderStyle: 'dashed',
-      borderRadius: 16,
+      backgroundColor: '#fff',
+      borderRadius: 32,
       aspectRatio: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      marginVertical: 16,
+      marginVertical: 24,
+      overflow: 'hidden',
+      // Depth
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.1,
+      shadowRadius: 16,
+      elevation: 6,
+      borderWidth: 1,
+      borderColor: '#f1f5f9',
+    },
+    scannerFrame: {
+      position: 'absolute',
+      top: 20,
+      left: 20,
+      right: 20,
+      bottom: 20,
+      borderWidth: 2,
+      borderColor: '#10b981',
+      borderRadius: 24,
+      borderStyle: 'dashed',
+    },
+    scanningLine: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      height: 4,
+      backgroundColor: '#10b981',
+      shadowColor: '#10b981',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.8,
+      shadowRadius: 10,
     },
     cameraText: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: '#4b5563',
-      marginTop: 16,
+      fontSize: 18,
+      fontWeight: '700',
+      color: '#1e293b',
+      marginTop: 20,
       marginBottom: 8,
     },
     cameraHint: {
       fontSize: 14,
-      color: '#6b7280',
+      color: '#64748b',
       textAlign: 'center',
-      paddingHorizontal: 32,
+      paddingHorizontal: 40,
+      lineHeight: 20,
     },
-  
-    // Buttons
-    btnPrimary: {
-      backgroundColor: '#22c55e',
-      padding: 16,
-      borderRadius: 12,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-      marginBottom: 12,
+    
+    // Scan Screen Header
+    scanHeader: {
+        paddingTop: 16,
+        paddingBottom: 24,
+        paddingHorizontal: 24,
+        backgroundColor: '#fff',
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 3,
     },
-    btnPrimaryText: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: '#fff',
+
+    // Bottom Sheet (Modal Content)
+    bottomSheetContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingTop: 8,
+        paddingBottom: 40,
+        width: '100%',
+        maxHeight: '90%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 20,
     },
-    btnSecondary: {
-      backgroundColor: '#fff',
-      borderWidth: 2,
-      borderColor: '#e5e7eb',
-      padding: 16,
-      borderRadius: 12,
-      alignItems: 'center',
-      marginBottom: 24,
+    bottomSheetHandle: {
+        width: 40,
+        height: 5,
+        backgroundColor: '#e2e8f0',
+        borderRadius: 3,
+        alignSelf: 'center',
+        marginVertical: 12,
     },
-    btnSecondaryText: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: '#374151',
+
+    // Labels
+    label: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#475569',
+        marginBottom: 8,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
-    addBtn: {
-      backgroundColor: '#22c55e',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-    },
-    addBtnText: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: '#fff',
-    },
-  
-    // Info Box
-    infoBox: {
-      backgroundColor: '#dbeafe',
-      borderRadius: 12,
-      padding: 16,
-      flexDirection: 'row',
-      gap: 12,
-    },
-    infoTitle: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: '#1e40af',
-      marginBottom: 4,
-    },
-    infoText: {
-      fontSize: 14,
-      color: '#1e40af',
-      marginTop: 4,
-    },
-  
-    // Search
-    searchContainer: {
-      backgroundColor: '#fff',
-      borderWidth: 1,
-      borderColor: '#e5e7eb',
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 16,
-    },
-    searchInput: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      marginBottom: 12,
-    },
-    searchInputText: {
-      flex: 1,
-      fontSize: 16,
-      color: '#374151',
-    },
-    filterPills: {
-      flexDirection: 'row',
+
+    // Chips Container
+    chipsScroll: {
+        paddingBottom: 8,
     },
     filterPill: {
       paddingHorizontal: 16,
