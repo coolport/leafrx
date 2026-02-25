@@ -198,7 +198,7 @@ export default function ScanScreen() {
             <ScrollView 
                 style={styles.screen} 
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 120 }}
+                contentContainerStyle={{ paddingBottom: 140 }}
             >
                 <LinearGradient
                     colors={['#059669', '#10b981', '#34d399']}

@@ -38,7 +38,7 @@ export default function LibraryScreen() {
             <ScrollView 
                 style={styles.screen} 
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={{ paddingBottom: 140 }}
             >
                 <LinearGradient
                     colors={['#059669', '#10b981', '#34d399']}
