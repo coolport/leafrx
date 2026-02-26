@@ -204,7 +204,7 @@ export default function ScanScreen() {
                     colors={['#059669', '#10b981', '#34d399']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
+                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32, marginBottom: 24 }]}
                 >
                     <View style={{ paddingHorizontal: 24 }}>
                         <Text style={styles.headerTitle}>{isUpdatingPlant ? "Add New Scan" : "Leaf Diagnosis"}</Text>
@@ -257,8 +257,8 @@ export default function ScanScreen() {
                                         <>
                                             <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
                                             <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
-                                                <ActivityIndicator size="large" color="#10b981" />
-                                                <Text style={{ color: '#10b981', fontWeight: '800', marginTop: 12 }}>Analyzing...</Text>
+                                                <ActivityIndicator size="large" color="#FFFFFF" />
+                                                <Text style={{ color: '#FFFFFF', fontWeight: '800', marginTop: 12 }}>Analyzing...</Text>
                                             </View>
                                         </>
                                     )}

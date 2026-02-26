@@ -66,7 +66,9 @@ export default function HomeScreen() {
         </LinearGradient>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
+            Quick Actions
+          </Text>
           <QuickActions />
         </View>
 

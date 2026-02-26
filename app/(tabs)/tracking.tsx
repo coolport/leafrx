@@ -44,7 +44,7 @@ export default function TrackingScreen() {
                     colors={['#059669', '#10b981', '#34d399']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
+                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32, marginBottom: 23 }]}
                 >
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24 }}>
                         <View>

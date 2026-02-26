@@ -16,7 +16,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
             <View style={styles.chartHeader}>
                 <Text style={[styles.sectionTitle, { fontSize: 16 }]}>Health History</Text>
                 <View style={[styles.chartSelect, { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#f1f5f9', borderWidth: 0 }]}>
-                    <Text style={[styles.chartSelectText, { fontSize: 12, fontWeight: '700', color: '#64748b' }]}>WEEKLY</Text>
+                    <Text style={[styles.chartSelectText, { fontSize: 12, fontWeight: '700', color: '#64748b' }]}>Historical</Text>
                 </View>
             </View>
             <View style={[styles.chart, { height: chartHeight + 40, alignItems: 'flex-end', paddingTop: 20 }]}>

@@ -44,7 +44,7 @@ export default function LibraryScreen() {
                     colors={['#059669', '#10b981', '#34d399']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
+                    style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32, marginBottom: 26 }]}
                 >
                     <View style={{ paddingHorizontal: 24 }}>
                         <Text style={styles.headerTitle}>Knowledge</Text>
@@ -71,7 +71,7 @@ export default function LibraryScreen() {
                             alignItems: 'center', 
                             backgroundColor: '#f8fafc', 
                             paddingHorizontal: 16, 
-                            paddingVertical: 12, 
+                            paddingVertical: 1, 
                             borderRadius: 14,
                             borderWidth: 1,
                             borderColor: '#f1f5f9'
