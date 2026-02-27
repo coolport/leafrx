@@ -26,6 +26,7 @@ export default function DetailScreen() {
   const plantScans = getPlantScans(plantId);
 
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
     null,
@@ -189,13 +190,6 @@ export default function DetailScreen() {
             },
           ]}
         >
-          {/* <TouchableOpacity  */}
-          {/*     onPress={handleBack}  */}
-          {/*     style={{ marginLeft: 24, marginBottom: 20, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }} */}
-          {/* > */}
-          {/*     <Feather name="chevron-left" size={24} color="#fff" /> */}
-          {/* </TouchableOpacity> */}
-
           <View
             style={[
               styles.detailTop,
@@ -283,7 +277,6 @@ export default function DetailScreen() {
               <StatCard
                 icon="alert-triangle"
                 label="Status"
-                // value={selectedPlant.status.toUpperCase()}
                 value={
                   selectedPlant.status.charAt(0).toUpperCase() +
                   selectedPlant.status.slice(1)
@@ -378,19 +371,7 @@ export default function DetailScreen() {
                 borderWidth: 1,
                 borderColor: "#fee2e2",
               }}
-              onPress={() => {
-                Alert.alert("Delete Plant", "This action is permanent.", [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete",
-                    onPress: async () => {
-                      await deletePlant(plantId);
-                      router.replace("/(tabs)/tracking");
-                    },
-                    style: "destructive",
-                  },
-                ]);
-              }}
+              onPress={() => setShowDeleteModal(true)}
             >
               <View
                 style={{
@@ -415,6 +396,69 @@ export default function DetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: "#fff1f2",
+                alignItems: "center",
+                justifyContent: "center",
+                alignSelf: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Feather name="trash-2" size={24} color="#ef4444" />
+            </View>
+
+            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 8 }]}>
+              Delete Plant
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#6b7280",
+                textAlign: "center",
+                lineHeight: 20,
+                marginBottom: 28,
+              }}
+            >
+              This action is permanent and cannot be undone.
+            </Text>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[styles.modalButton, { backgroundColor: "#ef4444", width: "100%", marginBottom: 10 }]}
+              onPress={async () => {
+                setShowDeleteModal(false);
+                await deletePlant(plantId);
+                router.replace("/(tabs)/tracking");
+              }}
+            >
+              <Text style={styles.modalButtonText}>Delete</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.btnSecondary, { width: "100%" }]}
+              onPress={() => setShowDeleteModal(false)}
+            >
+              <Text style={styles.btnSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Results Modal for Direct Analysis */}
       <Modal
@@ -502,7 +546,6 @@ export default function DetailScreen() {
                         fontWeight: "700",
                         color: "#64748b",
                         marginBottom: 4,
-                        // textTransform: "uppercase",
                       }}
                     >
                       Primary Finding
