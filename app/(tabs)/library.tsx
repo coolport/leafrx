@@ -22,7 +22,7 @@ export default function LibraryScreen() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [selected, setSelected] = useState<DiseaseGuide | null>(null);
-  const [detailTab, setDetailTab] = useState<"overview"|"symptoms"|"treatment"|"prevention">("overview");
+  const [detailTab, setDetailTab] = useState<"overview" | "symptoms" | "treatment" | "prevention">("overview");
 
   const filtered = DISEASE_LIBRARY.filter((d) => {
     const matchesFilter = activeFilter === "All" || d.plant.toLowerCase() === activeFilter.toLowerCase();
@@ -41,7 +41,7 @@ export default function LibraryScreen() {
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <LinearGradient
           colors={["#059669", "#10b981", "#34d399"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 36 }]}
+          style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32, marginBottom: 24 }]}
         >
           <Animated.View entering={FadeInDown.duration(700)} style={{ paddingHorizontal: 24 }}>
             <Text style={styles.headerTitle}>Disease Library</Text>
@@ -50,33 +50,79 @@ export default function LibraryScreen() {
         </LinearGradient>
 
         <View style={[styles.section, { marginTop: -24 }]}>
-          <Animated.View entering={FadeInDown.delay(100).duration(700)} style={{ backgroundColor: "#fff", borderRadius: 18, padding: 8, marginBottom: 14, elevation: 3 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#f8fafc", paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: "#f1f5f9" }}>
-              <Feather name="search" size={17} color="#94a3b8" />
-              <TextInput placeholder="Search diseases, plants..." style={{ flex: 1, fontSize: 14, color: "#1e293b", fontWeight: "600", marginLeft: 10 }} placeholderTextColor="#94a3b8" value={search} onChangeText={setSearch} />
-              {search.length > 0 && <TouchableOpacity onPress={() => setSearch("")}><Feather name="x" size={16} color="#94a3b8" /></TouchableOpacity>}
-            </View>
-          </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(180).duration(700)}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 20, paddingHorizontal: 2 }}>
+          {/* ── Search + Filter card — same visual as TrackingScreen ── */}
+          <Animated.View
+            entering={FadeInDown.delay(100).duration(700)}
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 24,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 12,
+              elevation: 4,
+              marginBottom: 20,
+            }}
+          >
+            {/* Search bar */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#f8fafc',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: '#f1f5f9',
+              marginBottom: 16,
+            }}>
+              <Feather name="search" size={20} color="#94a3b8" />
+              <TextInput
+                placeholder="Search diseases, plants..."
+                style={{ flex: 1, fontSize: 16, color: '#1e293b', fontWeight: '500', marginLeft: 12 }}
+                placeholderTextColor="#94a3b8"
+                value={search}
+                onChangeText={setSearch}
+              />
+              {search.length > 0 && (
+                <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Feather name="x" size={16} color="#94a3b8" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Filter pills */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {PLANT_FILTERS.map((f) => {
                 const active = activeFilter === f;
-                const color = f === "All" ? "#059669" : getPlantColor(f);
+                const color = f === "All" ? "#10b981" : getPlantColor(f);
                 return (
-                  <TouchableOpacity key={f} onPress={() => setActiveFilter(f)} activeOpacity={0.7}
-                    style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: active ? color : "#f1f5f9", borderWidth: active ? 0 : 1, borderColor: "#e2e8f0" }}>
-                    <Text style={{ fontSize: 13, fontWeight: "700", color: active ? "#fff" : "#64748b" }}>{f}</Text>
+                  <TouchableOpacity
+                    key={f}
+                    onPress={() => setActiveFilter(f)}
+                    activeOpacity={0.7}
+                    style={[
+                      { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: active ? color : '#f1f5f9', borderWidth: 0 },
+                      active && { shadowColor: color, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+                    ]}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: active ? '#fff' : '#64748b' }}>
+                      {f.toUpperCase()}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
             </ScrollView>
           </Animated.View>
 
+          {/* Result count */}
           <Text style={{ fontSize: 11, fontWeight: "800", color: "#94a3b8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
             {filtered.length} {filtered.length === 1 ? "entry" : "entries"} found
           </Text>
 
+          {/* Disease cards grid */}
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
             {filtered.map((disease, index) => (
               <Animated.View key={disease.id} entering={FadeInUp.delay(index * 60).duration(500)}>
@@ -102,6 +148,7 @@ export default function LibraryScreen() {
               </Animated.View>
             ))}
           </View>
+
         </View>
       </ScrollView>
 
