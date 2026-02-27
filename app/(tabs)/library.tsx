@@ -5,7 +5,6 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { styles } from "../../constants/styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -43,17 +42,16 @@ export default function LibraryScreen() {
           colors={["#059669", "#10b981", "#34d399"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32, marginBottom: 24 }]}
         >
-          <Animated.View entering={FadeInDown.duration(700)} style={{ paddingHorizontal: 24 }}>
+          <View style={{ paddingHorizontal: 24 }}>
             <Text style={styles.headerTitle}>Disease Library</Text>
             <Text style={styles.headerSubtitle}>{DISEASE_LIBRARY.length} entries · Mango, Banana, Guava, Calamansi</Text>
-          </Animated.View>
+          </View>
         </LinearGradient>
 
         <View style={[styles.section, { marginTop: -20 }]}>
 
           {/* ── Search + Filter card — same visual as TrackingScreen ── */}
-          <Animated.View
-            entering={FadeInDown.delay(100).duration(700)}
+          <View
             style={{
               backgroundColor: '#fff',
               borderRadius: 24,
@@ -115,7 +113,7 @@ export default function LibraryScreen() {
                 );
               })}
             </ScrollView>
-          </Animated.View>
+          </View>
 
           {/* Result count */}
           <Text style={{ fontSize: 11, fontWeight: "800", color: "#94a3b8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
@@ -124,8 +122,8 @@ export default function LibraryScreen() {
 
           {/* Disease cards grid */}
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-            {filtered.map((disease, index) => (
-              <Animated.View key={disease.id} entering={FadeInUp.delay(index * 60).duration(500)}>
+            {filtered.map((disease) => (
+              <View key={disease.id}>
                 <TouchableOpacity activeOpacity={0.85} onPress={() => openDetail(disease)}
                   style={{ width: CARD_W, backgroundColor: "#fff", borderRadius: 20, overflow: "hidden", elevation: 4, borderWidth: 1, borderColor: "#f1f5f9" }}>
                   <View style={{ height: 120, position: "relative" }}>
@@ -145,7 +143,7 @@ export default function LibraryScreen() {
                     </View>
                   </View>
                 </TouchableOpacity>
-              </Animated.View>
+              </View>
             ))}
           </View>
 
