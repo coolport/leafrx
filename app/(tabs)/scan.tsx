@@ -249,17 +249,16 @@ export default function ScanScreen() {
                     </View>
                 </LinearGradient>
 
-                {/* ── Main Card (overlaps header) ── */}
                 <View style={[styles.section, { marginTop: -20 }]}>
                     <View style={{
                         backgroundColor: '#fff',
-                        borderRadius: 28,
+                        borderRadius: 24,
                         padding: 20,
                         shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 8 },
-                        shadowOpacity: 0.08,
-                        shadowRadius: 20,
-                        elevation: 6,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.05,
+                        shadowRadius: 12,
+                        elevation: 4,
                     }}>
 
                         {/* ── Plant Type Selector ── */}

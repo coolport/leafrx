@@ -49,7 +49,7 @@ export default function LibraryScreen() {
           </Animated.View>
         </LinearGradient>
 
-        <View style={[styles.section, { marginTop: -24 }]}>
+        <View style={[styles.section, { marginTop: -20 }]}>
 
           {/* ── Search + Filter card — same visual as TrackingScreen ── */}
           <Animated.View
