@@ -650,7 +650,7 @@ export default function DetailScreen() {
                         key={i}
                         style={{
                           flexDirection: "row",
-                          marginBottom: 8,
+                          marginBottom: 6,
                           gap: 12,
                           alignItems: "center",
                         }}
@@ -681,7 +681,7 @@ export default function DetailScreen() {
               )}
             </ScrollView>
 
-            <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+            <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 }}>
               <TouchableOpacity
                 activeOpacity={0.8}
                 style={{ width: "100%" }}
