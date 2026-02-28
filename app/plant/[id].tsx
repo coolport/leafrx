@@ -57,7 +57,8 @@ export default function DetailScreen() {
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
+      // allowsEditing: true,
+      allowsEditing: false,
       aspect: [4, 3],
       quality: 0.7,
     });
@@ -72,7 +73,8 @@ export default function DetailScreen() {
     }
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
+      // allowsEditing: true,
+      allowsEditing: false,
       aspect: [4, 3],
       quality: 0.7,
     });
