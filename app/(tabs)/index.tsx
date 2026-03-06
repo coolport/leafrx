@@ -12,9 +12,11 @@ import { Link } from 'expo-router';
 import { usePlantStore } from '../../store/usePlantStore';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
   const { plants, scans } = usePlantStore();
 
   const { data: apiStatus } = useQuery({
@@ -26,7 +28,7 @@ export default function HomeScreen() {
   const isApiOnline = apiStatus?.status === 'ok';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar barStyle="light-content" />
       <ScrollView 
         style={styles.screen} 
@@ -66,7 +68,7 @@ export default function HomeScreen() {
         </LinearGradient>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
+          <Text style={[styles.sectionTitle, { marginBottom: 12, color: colors.text }]}>
             Quick Actions
           </Text>
           <QuickActions />
@@ -74,7 +76,7 @@ export default function HomeScreen() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>My Plants</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>My Plants</Text>
             {plants.length > 0 && (
               <Link href="/(tabs)/tracking" asChild>
                 <TouchableOpacity activeOpacity={0.6}>
@@ -91,19 +93,19 @@ export default function HomeScreen() {
           ) : (
             <View style={{ 
               padding: 32, 
-              backgroundColor: '#fff', 
+              backgroundColor: colors.card, 
               borderRadius: 24, 
               alignItems: 'center',
               borderWidth: 1,
-              borderColor: '#f1f5f9',
+              borderColor: colors.border,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 10,
               elevation: 2
             }}>
-              <Feather name="plus-circle" size={48} color="#cbd5e1" style={{ marginBottom: 16 }} />
-              <Text style={{ color: '#64748b', fontSize: 15, fontWeight: '500', textAlign: 'center' }}>
+              <Feather name="plus-circle" size={48} color={isDark ? '#475569' : '#cbd5e1'} style={{ marginBottom: 16 }} />
+              <Text style={{ color: colors.subtext, fontSize: 15, fontWeight: '500', textAlign: 'center' }}>
                 No plants tracked yet. Start by scanning a leaf.
               </Text>
             </View>
@@ -111,14 +113,14 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Scans</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Scans</Text>
           {scans.length > 0 ? (
             scans.slice(0, 5).map((scan) => (
               <RecentScanItem key={scan.id} scan={scan} />
             ))
           ) : (
             <View style={{ padding: 20, backgroundColor: 'transparent', borderRadius: 12, alignItems: 'center' }}>
-              <Text style={{ color: '#94a3b8', fontSize: 14 }}>No scans performed yet.</Text>
+              <Text style={{ color: colors.subtext, fontSize: 14 }}>No scans performed yet.</Text>
             </View>
           )}
         </View>

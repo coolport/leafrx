@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert, Image, ActivityIndicator, Modal, } from "react-native";
-import { useSafeAreaInsets, SafeAreaView, } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -14,10 +14,12 @@ import { usePlantStore } from "../../store/usePlantStore";
 import { useMutation } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
 import { AnalysisResponse, ScanResult } from "../../components/leafrx/types";
+import { useAppTheme } from "../../hooks/use-app-theme";
 
 export default function DetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors, isDark } = useAppTheme();
   const { id } = useLocalSearchParams();
   const plantId = Array.isArray(id) ? id[0] : id;
 
@@ -57,7 +59,6 @@ export default function DetailScreen() {
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      // allowsEditing: true,
       allowsEditing: false,
       aspect: [4, 3],
       quality: 0.7,
@@ -73,7 +74,6 @@ export default function DetailScreen() {
     }
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
-      // allowsEditing: true,
       allowsEditing: false,
       aspect: [4, 3],
       quality: 0.7,
@@ -119,7 +119,7 @@ export default function DetailScreen() {
 
   if (!selectedPlant) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View
           style={{
             flex: 1,
@@ -128,11 +128,11 @@ export default function DetailScreen() {
             padding: 40,
           }}
         >
-          <Feather name="alert-circle" size={48} color="#94a3b8" />
+          <Feather name="alert-circle" size={48} color={isDark ? "#334155" : "#94a3b8"} />
           <Text
             style={[
               styles.pageSubtitle,
-              { marginTop: 16, textAlign: "center" },
+              { marginTop: 16, textAlign: "center", color: colors.subtext },
             ]}
           >
             Plant information not found.
@@ -170,7 +170,7 @@ export default function DetailScreen() {
   const statusColors = getStatusColors(selectedPlant.status);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar barStyle="light-content" />
       <Stack.Screen options={{ headerShown: false }} />
 
@@ -331,28 +331,28 @@ export default function DetailScreen() {
               activeOpacity={0.7}
               style={{
                 flex: 1,
-                backgroundColor: "#fff",
+                backgroundColor: colors.card,
                 borderRadius: 24,
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1,
-                borderColor: "#f1f5f9",
+                borderColor: colors.border,
               }}
               onPress={pickImage}
               disabled={mutation.isPending}
             >
               <View
                 style={{
-                  backgroundColor: "#f8fafc",
+                  backgroundColor: isDark ? "#334155" : "#f8fafc",
                   padding: 12,
                   borderRadius: 16,
                 }}
               >
-                <Feather name="image" size={24} color="#64748b" />
+                <Feather name="image" size={24} color={isDark ? "#94a3b8" : "#64748b"} />
               </View>
               <Text
                 style={{
-                  color: "#64748b",
+                  color: isDark ? "#cbd5e1" : "#64748b",
                   fontWeight: "700",
                   marginTop: 6,
                   fontSize: 11,
@@ -366,18 +366,18 @@ export default function DetailScreen() {
               activeOpacity={0.7}
               style={{
                 flex: 1,
-                backgroundColor: "#fff",
+                backgroundColor: isDark ? "#1e293b" : "#fff",
                 borderRadius: 24,
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1,
-                borderColor: "#fee2e2",
+                borderColor: isDark ? "#7f1d1d" : "#fee2e2",
               }}
               onPress={() => setShowDeleteModal(true)}
             >
               <View
                 style={{
-                  backgroundColor: "#fff1f2",
+                  backgroundColor: isDark ? "#450a0a" : "#fff1f2",
                   padding: 12,
                   borderRadius: 16,
                 }}
@@ -399,7 +399,6 @@ export default function DetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         visible={showDeleteModal}
         transparent
@@ -407,13 +406,13 @@ export default function DetailScreen() {
         onRequestClose={() => setShowDeleteModal(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View
               style={{
                 width: 56,
                 height: 56,
                 borderRadius: 28,
-                backgroundColor: "#fff1f2",
+                backgroundColor: isDark ? "#450a0a" : "#fff1f2",
                 alignItems: "center",
                 justifyContent: "center",
                 alignSelf: "center",
@@ -423,14 +422,14 @@ export default function DetailScreen() {
               <Feather name="trash-2" size={24} color="#ef4444" />
             </View>
 
-            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 8 }]}>
+            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 8, color: colors.text }]}>
               Delete Plant
             </Text>
 
             <Text
               style={{
                 fontSize: 14,
-                color: "#6b7280",
+                color: colors.subtext,
                 textAlign: "center",
                 lineHeight: 20,
                 marginBottom: 28,
@@ -453,25 +452,24 @@ export default function DetailScreen() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              style={[styles.btnSecondary, { width: "100%" }]}
+              style={[styles.btnSecondary, { width: "100%", backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() => setShowDeleteModal(false)}
             >
-              <Text style={styles.btnSecondaryText}>Cancel</Text>
+              <Text style={[styles.btnSecondaryText, { color: colors.text }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* Results Modal for Direct Analysis */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={isResultsModalVisible}
         onRequestClose={() => setResultsModalVisible(false)}
       >
-        <BlurView intensity={30} style={styles.modalContainer}>
-          <View style={styles.bottomSheetContent}>
-            <View style={styles.bottomSheetHandle} />
+        <BlurView intensity={isDark ? 40 : 30} tint={isDark ? 'dark' : 'light'} style={styles.modalContainer}>
+          <View style={[styles.bottomSheetContent, { backgroundColor: colors.card }]}>
+            <View style={[styles.bottomSheetHandle, { backgroundColor: isDark ? '#334155' : '#e5e7eb' }]} />
 
             <View
               style={{
@@ -485,7 +483,7 @@ export default function DetailScreen() {
               <Text
                 style={[
                   styles.modalTitle,
-                  { textAlign: "left", marginBottom: 0 },
+                  { textAlign: "left", marginBottom: 0, color: colors.text },
                 ]}
               >
                 Diagnosis Results
@@ -493,12 +491,12 @@ export default function DetailScreen() {
               <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
                 <View
                   style={{
-                    backgroundColor: "#f1f5f9",
+                    backgroundColor: isDark ? "#334155" : "#f1f5f9",
                     padding: 8,
                     borderRadius: 20,
                   }}
                 >
-                  <Feather name="x" size={20} color="#64748b" />
+                  <Feather name="x" size={20} color={isDark ? "#94a3b8" : "#64748b"} />
                 </View>
               </TouchableOpacity>
             </View>
@@ -526,7 +524,7 @@ export default function DetailScreen() {
               <View
                 style={{
                   backgroundColor:
-                    getStatusColor(analysisResult?.status) + "15",
+                    getStatusColor(analysisResult?.status) + (isDark ? "25" : "15"),
                   borderRadius: 24,
                   padding: 20,
                   marginBottom: 20,
@@ -546,7 +544,7 @@ export default function DetailScreen() {
                       style={{
                         fontSize: 13,
                         fontWeight: "700",
-                        color: "#64748b",
+                        color: colors.subtext,
                         marginBottom: 4,
                       }}
                     >
@@ -556,7 +554,7 @@ export default function DetailScreen() {
                       style={{
                         fontSize: 22,
                         fontWeight: "800",
-                        color: "#1e293b",
+                        color: colors.text,
                       }}
                     >
                       {analysisResult?.primary_disease
@@ -572,7 +570,7 @@ export default function DetailScreen() {
                     >
                       <View
                         style={{
-                          backgroundColor: "#fff",
+                          backgroundColor: isDark ? "#334155" : "#fff",
                           paddingHorizontal: 8,
                           paddingVertical: 2,
                           borderRadius: 8,
@@ -582,7 +580,7 @@ export default function DetailScreen() {
                           style={{
                             fontSize: 12,
                             fontWeight: "700",
-                            color: "#1e293b",
+                            color: colors.text,
                           }}
                         >
                           {analysisResult?.primary_disease
@@ -593,7 +591,7 @@ export default function DetailScreen() {
                       <Text
                         style={{
                           fontSize: 13,
-                          color: "#64748b",
+                          color: colors.subtext,
                           marginLeft: 8,
                         }}
                       >
@@ -611,7 +609,7 @@ export default function DetailScreen() {
                       width: 80,
                       height: 80,
                       borderRadius: 40,
-                      backgroundColor: "#fff",
+                      backgroundColor: isDark ? "#334155" : "#fff",
                       alignItems: "center",
                       justifyContent: "center",
                       shadowColor: "#000",
@@ -645,7 +643,7 @@ export default function DetailScreen() {
 
               {analysisResult?.predictions?.[0]?.recommendations && (
                 <View style={{ marginBottom: 20 }}>
-                  <Text style={styles.label}>Recommendations</Text>
+                  <Text style={[styles.label, { color: colors.subtext }]}>Recommendations</Text>
                   {analysisResult.predictions[0].recommendations.map(
                     (rec, i) => (
                       <View
@@ -659,7 +657,7 @@ export default function DetailScreen() {
                       >
                         <View
                           style={{
-                            backgroundColor: "#dcfce7",
+                            backgroundColor: isDark ? "#064e3b" : "#dcfce7",
                             padding: 6,
                             borderRadius: 10,
                           }}
@@ -670,7 +668,7 @@ export default function DetailScreen() {
                           style={{
                             flex: 1,
                             fontSize: 14,
-                            color: "#475569",
+                            color: isDark ? "#cbd5e1" : "#475569",
                             fontWeight: "500",
                           }}
                         >

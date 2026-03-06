@@ -3,6 +3,7 @@ import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from 'react-nat
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 type AddPlantModalProps = {
     isVisible: boolean;
@@ -23,6 +24,7 @@ function getPlantEmoji(type: string) {
 }
 
 export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: AddPlantModalProps) {
+    const { colors, isDark } = useAppTheme();
     const [plantName, setPlantName] = useState('');
     const [plantType, setPlantType] = useState(initialPlantType || 'Mango');
 
@@ -57,57 +59,57 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
             onRequestClose={handleClose}
         >
             <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
 
                     {/* Header */}
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                         <View>
-                            <Text style={styles.modalTitle}>Add New Plant</Text>
-                            <Text style={{ fontSize: 13, color: '#94a3b8', fontWeight: '500', marginTop: 3 }}>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>Add New Plant</Text>
+                            <Text style={{ fontSize: 13, color: colors.subtext, fontWeight: '500', marginTop: 3 }}>
                                 Give your plant a name & type
                             </Text>
                         </View>
                         <TouchableOpacity onPress={handleClose}>
-                            <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
-                                <Feather name="x" size={18} color="#64748b" />
+                            <View style={{ backgroundColor: colors.iconBg, padding: 8, borderRadius: 20 }}>
+                                <Feather name="x" size={18} color={colors.subtext} />
                             </View>
                         </TouchableOpacity>
                     </View>
 
                     {/* Divider */}
-                    <View style={{ height: 1, backgroundColor: '#f1f5f9', marginVertical: 16 }} />
+                    <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 16 }} />
 
                     {/* Plant Name */}
-                    <Text style={styles.label}>Plant Name</Text>
+                    <Text style={[styles.label, { color: colors.subtext }]}>Plant Name</Text>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        backgroundColor: '#f8fafc',
+                        backgroundColor: isDark ? colors.background : '#f8fafc',
                         borderRadius: 16,
                         borderWidth: 1.5,
-                        borderColor: plantName ? '#10b981' : '#e2e8f0',
+                        borderColor: plantName ? colors.primary : colors.border,
                         paddingHorizontal: 14,
                         marginBottom: 20,
                         gap: 10,
                     }}>
-                        <Feather name="tag" size={16} color={plantName ? '#10b981' : '#94a3b8'} />
+                        <Feather name="tag" size={16} color={plantName ? colors.primary : colors.subtext} />
                         <TextInput
                             style={{
                                 flex: 1,
                                 height: 50,
                                 fontSize: 15,
                                 fontWeight: '600',
-                                color: '#1e293b',
+                                color: colors.text,
                             }}
                             placeholder="e.g. My Backyard Mango"
-                            placeholderTextColor="#cbd5e1"
+                            placeholderTextColor={isDark ? '#475569' : '#cbd5e1'}
                             value={plantName}
                             onChangeText={setPlantName}
                         />
                     </View>
 
                     {/* Plant Type */}
-                    <Text style={styles.label}>Plant Type</Text>
+                    <Text style={[styles.label, { color: colors.subtext }]}>Plant Type</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 }}>
                         {plantTypes.map((type) => (
                             <TouchableOpacity
@@ -125,14 +127,14 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                                         borderWidth: 1.5,
                                     },
                                     plantType === type
-                                        ? { backgroundColor: '#ecfdf5', borderColor: '#10b981' }
-                                        : { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
+                                        ? { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : '#ecfdf5', borderColor: colors.primary }
+                                        : { backgroundColor: colors.background, borderColor: colors.border },
                                 ]}
                             >
                                 <Text style={{ fontSize: 18 }}>{getPlantEmoji(type)}</Text>
                                 <Text style={[
                                     { fontSize: 14, fontWeight: '700' },
-                                    plantType === type ? { color: '#059669' } : { color: '#64748b' },
+                                    plantType === type ? { color: colors.primary } : { color: colors.subtext },
                                 ]}>
                                     {type}
                                 </Text>
@@ -141,7 +143,7 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                                         width: 16,
                                         height: 16,
                                         borderRadius: 8,
-                                        backgroundColor: '#10b981',
+                                        backgroundColor: colors.primary,
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                     }}>
@@ -153,16 +155,16 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                     </View>
 
                     {/* Divider */}
-                    <View style={{ height: 1, backgroundColor: '#f1f5f9', marginBottom: 16 }} />
+                    <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 16 }} />
 
                     {/* Buttons */}
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                         <TouchableOpacity
                             activeOpacity={0.7}
-                            style={[styles.btnSecondary, { flex: 1 }]}
+                            style={[styles.btnSecondary, { flex: 1, backgroundColor: colors.secondary, borderColor: colors.border }]}
                             onPress={handleClose}
                         >
-                            <Text style={styles.btnSecondaryText}>Cancel</Text>
+                            <Text style={[styles.btnSecondaryText, { color: colors.text }]}>Cancel</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity

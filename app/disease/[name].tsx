@@ -5,10 +5,12 @@ import { styles } from '../../constants/styles';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 export default function DiseaseDetailScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
+    const { colors, isDark } = useAppTheme();
     const { name } = useLocalSearchParams();
     const diseaseId = Array.isArray(name) ? name[0] : name;
 
@@ -30,10 +32,10 @@ export default function DiseaseDetailScreen() {
 
     if (isLoading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#10b981" />
-                    <Text style={{ marginTop: 16, color: '#6b7280' }}>Loading details...</Text>
+                    <Text style={{ marginTop: 16, color: colors.subtext }}>Loading details...</Text>
                 </View>
             </SafeAreaView>
         );
@@ -41,8 +43,8 @@ export default function DiseaseDetailScreen() {
 
     if (error || !selectedDisease) {
         return (
-            <SafeAreaView style={styles.container}>
-                <StatusBar barStyle="dark-content" />
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+                <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
                 <Stack.Screen options={{ headerShown: false }} />
                 <View style={[styles.detailHeader, { paddingTop: insets.top, backgroundColor: '#ef4444' }]}>
                     <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
@@ -51,12 +53,12 @@ export default function DiseaseDetailScreen() {
                     <Text style={[styles.detailTitle, { color: '#fff' }]}>Disease Not Found</Text>
                 </View>
                 <View style={styles.section}>
-                    <Text style={{ color: '#6b7280' }}>The requested disease could not be found or there was a network error.</Text>
+                    <Text style={{ color: colors.subtext }}>The requested disease could not be found or there was a network error.</Text>
                     <TouchableOpacity 
-                        style={[styles.primaryButton, { marginTop: 20 }]} 
+                        style={[styles.btnPrimary, { marginTop: 20, backgroundColor: '#ef4444' }]} 
                         onPress={() => router.back()}
                     >
-                        <Text style={styles.primaryButtonText}>Go Back</Text>
+                        <Text style={styles.btnPrimaryText}>Go Back</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -66,8 +68,8 @@ export default function DiseaseDetailScreen() {
     const plantColor = getPlantColor(selectedDisease.plant);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <StatusBar barStyle="light-content" />
             <Stack.Screen options={{ headerShown: false }} />
             <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
                 <View style={[styles.detailHeader, { paddingTop: insets.top, backgroundColor: plantColor }]}>
@@ -79,23 +81,23 @@ export default function DiseaseDetailScreen() {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Description</Text>
-                    <Text style={{ fontSize: 16, color: '#374151', marginBottom: 24, lineHeight: 24 }}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Description</Text>
+                    <Text style={{ fontSize: 16, color: isDark ? '#cbd5e1' : '#374151', marginBottom: 24, lineHeight: 24 }}>
                         {selectedDisease.description || "No description available for this disease."}
                     </Text>
 
-                    <Text style={styles.sectionTitle}>Recommendations & Treatment</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Recommendations & Treatment</Text>
                     {selectedDisease.recommendations && selectedDisease.recommendations.length > 0 ? (
                         selectedDisease.recommendations.map((rec, index) => (
                             <View key={index} style={{ flexDirection: 'row', marginBottom: 12 }}>
                                 <Text style={{ fontSize: 16, color: '#10b981', marginRight: 8 }}>✓</Text>
-                                <Text style={{ fontSize: 16, color: '#374151', flex: 1, lineHeight: 22 }}>
+                                <Text style={{ fontSize: 16, color: isDark ? '#cbd5e1' : '#374151', flex: 1, lineHeight: 22 }}>
                                     {rec}
                                 </Text>
                             </View>
                         ))
                     ) : (
-                        <Text style={{ fontSize: 16, color: '#6b7280', fontStyle: 'italic' }}>
+                        <Text style={{ fontSize: 16, color: colors.subtext, fontStyle: 'italic' }}>
                             No specific recommendations found. Consult an agricultural expert.
                         </Text>
                     )}

@@ -4,14 +4,17 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from '../../constants/styles';
 import { Link } from 'expo-router';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 export function QuickActions() {
+    const { isDark } = useAppTheme();
+    
     return (
         <View style={styles.quickActions}>
             <Link href="/(tabs)/scan" asChild>
                 <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }}>
                     <LinearGradient
-                        colors={['#059669', '#10b981']}
+                        colors={isDark ? ['#065f46', '#059669'] : ['#059669', '#10b981']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.actionBtn}
@@ -27,7 +30,7 @@ export function QuickActions() {
             <Link href="/(tabs)/tracking" asChild>
                 <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }}>
                     <LinearGradient
-                        colors={['#2563eb', '#3b82f6']}
+                        colors={isDark ? ['#1e40af', '#2563eb'] : ['#2563eb', '#3b82f6']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.actionBtn}

@@ -4,17 +4,19 @@ import Svg, { Circle } from 'react-native-svg';
 import { styles } from '../../constants/styles';
 import { Plant } from './types';
 import { Link } from 'expo-router';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 type PlantCardProps = {
     plant: Plant;
 };
 
 export function PlantCard({ plant }: PlantCardProps) {
+    const { colors, isDark } = useAppTheme();
     const size = 56;
     const strokeWidth = 5;
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
-    const progress = plant.health / 100;
+    const progress = (plant.health || 0) / 100;
     const offset = circumference - (progress * circumference);
 
     const getStatusColor = () => {
@@ -23,36 +25,53 @@ export function PlantCard({ plant }: PlantCardProps) {
         return '#ef4444';
     };
 
+    const formattedDate = new Date(plant.lastChecked).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+    });
+
     return (
         <Link href={`/plant/${plant.id}`} asChild>
             <TouchableOpacity 
-                style={styles.plantCard} 
+                style={[
+                    styles.plantCard, 
+                    { 
+                        backgroundColor: colors.card, 
+                        borderColor: colors.border,
+                        borderWidth: 1,
+                        // Clean up shadow for dark mode or consistent look
+                        shadowOpacity: isDark ? 0 : 0.05,
+                        elevation: isDark ? 0 : 2
+                    }
+                ]} 
                 activeOpacity={0.7}
             >
                 <View style={[
                     styles.plantIcon,
-                    plant.status === 'healthy' && { backgroundColor: 'rgba(16, 185, 129, 0.1)' },
-                    plant.status === 'warning' && { backgroundColor: 'rgba(245, 158, 11, 0.1)' },
-                    plant.status === 'critical' && { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+                    { marginRight: 12 }, // Spacing between icon and info
+                    plant.status === 'healthy' && { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)' },
+                    plant.status === 'warning' && { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)' },
+                    plant.status === 'critical' && { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)' },
                 ]}>
                     <Text style={{ fontSize: 28 }}>{getPlantEmoji(plant.type)}</Text>
                 </View>
 
                 <View style={styles.plantInfo}>
-                    <Text style={styles.plantName} numberOfLines={1}>{plant.name}</Text>
-                    <Text style={styles.plantMeta}>{plant.type.charAt(0).toUpperCase() + plant.type.slice(1)}</Text>
-                    <View style={styles.lastCheckedContainer}>
-                        <Text style={styles.lastChecked}>Last checked: {plant.lastChecked}</Text>
+                    <Text style={[styles.plantName, { color: colors.text }]} numberOfLines={1}>{plant.name}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={[styles.plantMeta, { color: colors.subtext }]}>{plant.type.charAt(0).toUpperCase() + plant.type.slice(1)}</Text>
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.border, marginHorizontal: 8 }} />
+                        <Text style={[styles.lastChecked, { color: colors.subtext }]}>{formattedDate}</Text>
                     </View>
                 </View>
 
-                <View style={styles.plantHealth}>
+                <View style={[styles.plantHealth, { marginLeft: 12 }]}>
                     <Svg width={size} height={size}>
                         <Circle
                             cx={size / 2}
                             cy={size / 2}
                             r={radius}
-                            stroke="#f1f5f9"
+                            stroke={isDark ? '#334155' : '#f1f5f9'}
                             strokeWidth={strokeWidth}
                             fill="transparent"
                         />

@@ -7,6 +7,7 @@ import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { styles } from "../../constants/styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppTheme } from "../../hooks/use-app-theme";
 import {
   DISEASE_LIBRARY, DiseaseGuide,
   getSeverityColor, getSeverityLabel, getPlantColor,
@@ -18,6 +19,7 @@ const PLANT_FILTERS = ["All", "Mango", "Banana", "Guava", "Calamansi"];
 
 export default function LibraryScreen() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [selected, setSelected] = useState<DiseaseGuide | null>(null);
@@ -35,8 +37,8 @@ export default function LibraryScreen() {
   const openDetail = (d: DiseaseGuide) => { setSelected(d); setDetailTab("overview"); };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <LinearGradient
           colors={["#059669", "#10b981", "#34d399"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -53,40 +55,42 @@ export default function LibraryScreen() {
           {/* ── Search + Filter card — same visual as TrackingScreen ── */}
           <View
             style={{
-              backgroundColor: '#fff',
+              backgroundColor: colors.card,
               borderRadius: 24,
               padding: 20,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
+              shadowOpacity: isDark ? 0.3 : 0.05,
               shadowRadius: 12,
               elevation: 4,
               marginBottom: 20,
+              borderWidth: isDark ? 1 : 0,
+              borderColor: colors.border,
             }}
           >
             {/* Search bar */}
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#f8fafc',
+              backgroundColor: isDark ? colors.background : '#f8fafc',
               paddingHorizontal: 16,
               paddingVertical: 12,
               borderRadius: 14,
               borderWidth: 1,
-              borderColor: '#f1f5f9',
+              borderColor: colors.border,
               marginBottom: 16,
             }}>
-              <Feather name="search" size={20} color="#94a3b8" />
+              <Feather name="search" size={20} color={colors.subtext} />
               <TextInput
                 placeholder="Search diseases, plants..."
-                style={{ flex: 1, fontSize: 16, color: '#1e293b', fontWeight: '500', marginLeft: 12 }}
-                placeholderTextColor="#94a3b8"
+                style={{ flex: 1, fontSize: 16, color: colors.text, fontWeight: '500', marginLeft: 12 }}
+                placeholderTextColor={colors.subtext}
                 value={search}
                 onChangeText={setSearch}
               />
               {search.length > 0 && (
                 <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Feather name="x" size={16} color="#94a3b8" />
+                  <Feather name="x" size={16} color={colors.subtext} />
                 </TouchableOpacity>
               )}
             </View>
@@ -102,11 +106,11 @@ export default function LibraryScreen() {
                     onPress={() => setActiveFilter(f)}
                     activeOpacity={0.7}
                     style={[
-                      { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: active ? color : '#f1f5f9', borderWidth: 0 },
+                      { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: active ? color : colors.background, borderWidth: 1, borderColor: active ? color : colors.border },
                       active && { shadowColor: color, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
                     ]}
                   >
-                    <Text style={{ fontSize: 13, fontWeight: '700', color: active ? '#fff' : '#64748b' }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: active ? '#fff' : colors.subtext }}>
                       {f.toUpperCase()}
                     </Text>
                   </TouchableOpacity>
@@ -116,7 +120,7 @@ export default function LibraryScreen() {
           </View>
 
           {/* Result count */}
-          <Text style={{ fontSize: 11, fontWeight: "800", color: "#94a3b8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
+          <Text style={{ fontSize: 11, fontWeight: "800", color: colors.subtext, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
             {filtered.length} {filtered.length === 1 ? "entry" : "entries"} found
           </Text>
 
@@ -125,7 +129,7 @@ export default function LibraryScreen() {
             {filtered.map((disease) => (
               <View key={disease.id}>
                 <TouchableOpacity activeOpacity={0.85} onPress={() => openDetail(disease)}
-                  style={{ width: CARD_W, backgroundColor: "#fff", borderRadius: 20, overflow: "hidden", elevation: 4, borderWidth: 1, borderColor: "#f1f5f9" }}>
+                  style={{ width: CARD_W, backgroundColor: colors.card, borderRadius: 20, overflow: "hidden", elevation: 4, borderWidth: 1, borderColor: colors.border }}>
                   <View style={{ height: 120, position: "relative" }}>
                     <Image source={disease.thumbnail} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
                     <LinearGradient colors={["transparent", "rgba(0,0,0,0.55)"]} style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60 }} />
@@ -135,11 +139,11 @@ export default function LibraryScreen() {
                     </View>
                   </View>
                   <View style={{ padding: 12 }}>
-                    <Text style={{ fontSize: 14, fontWeight: "800", color: "#1e293b", marginBottom: 4 }} numberOfLines={1}>{disease.display_name}</Text>
-                    <Text style={{ fontSize: 11, color: "#64748b", fontWeight: "500", lineHeight: 15 }} numberOfLines={2}>{disease.tagline}</Text>
-                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: "#f1f5f9" }}>
+                    <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text, marginBottom: 4 }} numberOfLines={1}>{disease.display_name}</Text>
+                    <Text style={{ fontSize: 11, color: colors.subtext, fontWeight: "500", lineHeight: 15 }} numberOfLines={2}>{disease.tagline}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }}>
                       <Text style={{ fontSize: 10, fontWeight: "700", color: getSeverityColor(disease.severity), textTransform: "uppercase", letterSpacing: 0.5 }}>{disease.pathogen_type}</Text>
-                      <Feather name="chevron-right" size={13} color="#cbd5e1" />
+                      <Feather name="chevron-right" size={13} color={colors.subtext} />
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -153,7 +157,7 @@ export default function LibraryScreen() {
       <Modal visible={!!selected} animationType="slide" transparent onRequestClose={() => setSelected(null)}>
         {selected && (
           <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.4)" }}>
-            <View style={{ backgroundColor: "#fff", borderTopLeftRadius: 28, borderTopRightRadius: 28, height: SH - insets.top - 20, overflow: "hidden" }}>
+            <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, height: SH - insets.top - 20, overflow: "hidden" }}>
               {/* Hero */}
               <View style={{ height: 190, position: "relative", flexShrink: 0 }}>
                 <Image source={selected.thumbnail} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
@@ -174,11 +178,11 @@ export default function LibraryScreen() {
               </View>
 
               {/* Tabs */}
-              <View style={{ flexDirection: "row", backgroundColor: "#f8fafc", borderBottomWidth: 1, borderBottomColor: "#f1f5f9", flexShrink: 0 }}>
+              <View style={{ flexDirection: "row", backgroundColor: isDark ? colors.background : "#f8fafc", borderBottomWidth: 1, borderBottomColor: colors.border, flexShrink: 0 }}>
                 {(["overview", "symptoms", "treatment", "prevention"] as const).map((tab) => (
                   <TouchableOpacity key={tab} onPress={() => setDetailTab(tab)}
                     style={{ flex: 1, paddingVertical: 13, alignItems: "center", borderBottomWidth: 2.5, borderBottomColor: detailTab === tab ? getPlantColor(selected.plant) : "transparent" }}>
-                    <Text style={{ fontSize: 11, fontWeight: "800", color: detailTab === tab ? getPlantColor(selected.plant) : "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "800", color: detailTab === tab ? getPlantColor(selected.plant) : colors.subtext, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       {tab === "overview" ? "Info" : tab === "symptoms" ? "Signs" : tab === "treatment" ? "Treat" : "Prevent"}
                     </Text>
                   </TouchableOpacity>
@@ -193,26 +197,26 @@ export default function LibraryScreen() {
                         { icon: "alert-triangle", label: "Severity", value: getSeverityLabel(selected.severity), color: getSeverityColor(selected.severity) },
                         { icon: "zap", label: "Pathogen", value: selected.pathogen_type, color: getPlantColor(selected.plant) },
                       ].map((stat) => (
-                        <View key={stat.label} style={{ flex: 1, backgroundColor: "#f8fafc", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#f1f5f9" }}>
+                        <View key={stat.label} style={{ flex: 1, backgroundColor: isDark ? colors.background : "#f8fafc", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border }}>
                           <Feather name={stat.icon as any} size={14} color={stat.color} />
-                          <Text style={{ fontSize: 10, fontWeight: "700", color: "#94a3b8", marginTop: 6, letterSpacing: 0.5, textTransform: "uppercase" }}>{stat.label}</Text>
-                          <Text style={{ fontSize: 13, fontWeight: "800", color: "#1e293b", marginTop: 2 }}>{stat.value}</Text>
+                          <Text style={{ fontSize: 10, fontWeight: "700", color: colors.subtext, marginTop: 6, letterSpacing: 0.5, textTransform: "uppercase" }}>{stat.label}</Text>
+                          <Text style={{ fontSize: 13, fontWeight: "800", color: colors.text, marginTop: 2 }}>{stat.value}</Text>
                         </View>
                       ))}
                     </View>
                     {selected.scientific_name && (
-                      <InfoCard label="Scientific Name" color={getPlantColor(selected.plant)} icon="book-open">
-                        <Text style={{ fontSize: 14, fontStyle: "italic", color: "#475569", fontWeight: "500" }}>{selected.scientific_name}</Text>
+                      <InfoCard label="Scientific Name" color={getPlantColor(selected.plant)} icon="book-open" theme={colors} isDark={isDark}>
+                        <Text style={{ fontSize: 14, fontStyle: "italic", color: colors.text, fontWeight: "500" }}>{selected.scientific_name}</Text>
                       </InfoCard>
                     )}
-                    <InfoCard label="Overview" color={getPlantColor(selected.plant)} icon="info">
-                      <Text style={{ fontSize: 14, color: "#475569", lineHeight: 22 }}>{selected.overview}</Text>
+                    <InfoCard label="Overview" color={getPlantColor(selected.plant)} icon="info" theme={colors} isDark={isDark}>
+                      <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>{selected.overview}</Text>
                     </InfoCard>
-                    <InfoCard label="Pathogen Detail" color={getPlantColor(selected.plant)} icon="cpu">
-                      <Text style={{ fontSize: 14, color: "#475569", lineHeight: 22 }}>{selected.pathogen_detail}</Text>
+                    <InfoCard label="Pathogen Detail" color={getPlantColor(selected.plant)} icon="cpu" theme={colors} isDark={isDark}>
+                      <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>{selected.pathogen_detail}</Text>
                     </InfoCard>
                     {selected.affected_parts.length > 0 && (
-                      <InfoCard label="Affected Parts" color={getPlantColor(selected.plant)} icon="target">
+                      <InfoCard label="Affected Parts" color={getPlantColor(selected.plant)} icon="target" theme={colors} isDark={isDark}>
                         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                           {selected.affected_parts.map((p, i) => (
                             <View key={i} style={{ backgroundColor: getPlantColor(selected.plant) + "15", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 }}>
@@ -222,7 +226,7 @@ export default function LibraryScreen() {
                         </View>
                       </InfoCard>
                     )}
-                    <InfoCard label="Conditions Favoring Disease" color={getPlantColor(selected.plant)} icon="cloud-rain">
+                    <InfoCard label="Conditions Favoring Disease" color={getPlantColor(selected.plant)} icon="cloud-rain" theme={colors} isDark={isDark}>
                       {[
                         { k: "Temperature", v: selected.conditions.temperature },
                         { k: "Humidity", v: selected.conditions.humidity },
@@ -230,77 +234,77 @@ export default function LibraryScreen() {
                         { k: "Spread", v: selected.conditions.spread_method },
                       ].map((row, i) => (
                         <View key={i} style={{ flexDirection: "row", marginBottom: 8, gap: 8 }}>
-                          <Text style={{ fontSize: 12, fontWeight: "800", color: "#64748b", width: 90 }}>{row.k}:</Text>
-                          <Text style={{ flex: 1, fontSize: 13, color: "#475569", lineHeight: 18 }}>{row.v}</Text>
+                          <Text style={{ fontSize: 12, fontWeight: "800", color: colors.subtext, width: 90 }}>{row.k}:</Text>
+                          <Text style={{ flex: 1, fontSize: 13, color: colors.text, lineHeight: 18 }}>{row.v}</Text>
                         </View>
                       ))}
                     </InfoCard>
-                    <InfoCard label="Economic Impact" color="#ef4444" icon="trending-down">
-                      <Text style={{ fontSize: 14, color: "#475569", lineHeight: 22 }}>{selected.economic_impact}</Text>
+                    <InfoCard label="Economic Impact" color="#ef4444" icon="trending-down" theme={colors} isDark={isDark}>
+                      <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>{selected.economic_impact}</Text>
                     </InfoCard>
                     {selected.look_alikes.length > 0 && (
-                      <InfoCard label="Could Be Confused With" color="#f59e0b" icon="eye">
-                        {selected.look_alikes.map((item, i) => <BulletRow key={i} text={item} color="#f59e0b" />)}
+                      <InfoCard label="Could Be Confused With" color="#f59e0b" icon="eye" theme={colors} isDark={isDark}>
+                        {selected.look_alikes.map((item, i) => <BulletRow key={i} text={item} color="#f59e0b" theme={colors} />)}
                       </InfoCard>
                     )}
-                    <InfoCard label="Recovery Timeline" color={getPlantColor(selected.plant)} icon="clock">
-                      <Text style={{ fontSize: 14, color: "#475569", lineHeight: 22 }}>{selected.recovery_timeline}</Text>
+                    <InfoCard label="Recovery Timeline" color={getPlantColor(selected.plant)} icon="clock" theme={colors} isDark={isDark}>
+                      <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>{selected.recovery_timeline}</Text>
                     </InfoCard>
-                    <InfoCard label="Did You Know?" color="#8b5cf6" icon="star">
-                      <Text style={{ fontSize: 14, color: "#475569", lineHeight: 22, fontStyle: "italic" }}>{selected.fun_fact}</Text>
+                    <InfoCard label="Did You Know?" color="#8b5cf6" icon="star" theme={colors} isDark={isDark}>
+                      <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22, fontStyle: "italic" }}>{selected.fun_fact}</Text>
                     </InfoCard>
                   </View>
                 )}
                 {detailTab === "symptoms" && (
                   <View style={{ gap: 16 }}>
-                    <InfoCard label="Early Warning Signs" color="#f59e0b" icon="alert-circle">
-                      {selected.symptoms.early.map((s, i) => <BulletRow key={i} text={s} color="#f59e0b" />)}
+                    <InfoCard label="Early Warning Signs" color="#f59e0b" icon="alert-circle" theme={colors} isDark={isDark}>
+                      {selected.symptoms.early.map((s, i) => <BulletRow key={i} text={s} color="#f59e0b" theme={colors} />)}
                     </InfoCard>
-                    <InfoCard label="Advanced / Severe Symptoms" color="#ef4444" icon="alert-triangle">
-                      {selected.symptoms.advanced.map((s, i) => <BulletRow key={i} text={s} color="#ef4444" />)}
+                    <InfoCard label="Advanced / Severe Symptoms" color="#ef4444" icon="alert-triangle" theme={colors} isDark={isDark}>
+                      {selected.symptoms.advanced.map((s, i) => <BulletRow key={i} text={s} color="#ef4444" theme={colors} />)}
                     </InfoCard>
-                    <InfoCard label="How to Distinguish from Look-alikes" color={getPlantColor(selected.plant)} icon="crosshair">
-                      <Text style={{ fontSize: 14, color: "#475569", lineHeight: 22 }}>{selected.symptoms.distinguishing}</Text>
+                    <InfoCard label="How to Distinguish from Look-alikes" color={getPlantColor(selected.plant)} icon="crosshair" theme={colors} isDark={isDark}>
+                      <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>{selected.symptoms.distinguishing}</Text>
                     </InfoCard>
                   </View>
                 )}
                 {detailTab === "treatment" && (
                   <View style={{ gap: 16 }}>
-                    <InfoCard label="Immediate Actions" color="#ef4444" icon="zap">
-                      {selected.treatment.immediate.map((a, i) => <BulletRow key={i} text={a} color="#ef4444" icon="chevron-right" />)}
+                    <InfoCard label="Immediate Actions" color="#ef4444" icon="zap" theme={colors} isDark={isDark}>
+                      {selected.treatment.immediate.map((a, i) => <BulletRow key={i} text={a} color="#ef4444" icon="chevron-right" theme={colors} />)}
                     </InfoCard>
                     {selected.treatment.chemical.length > 0 && (
-                      <InfoCard label="Chemical Controls" color="#3b82f6" icon="droplet">
+                      <InfoCard label="Chemical Controls" color="#3b82f6" icon="droplet" theme={colors} isDark={isDark}>
                         {selected.treatment.chemical.map((c, i) => (
-                          <View key={i} style={{ backgroundColor: "#f8fafc", borderRadius: 14, padding: 12, marginBottom: 10, borderLeftWidth: 3, borderLeftColor: "#3b82f6" }}>
-                            <Text style={{ fontSize: 13, fontWeight: "800", color: "#1e293b", marginBottom: 4 }}>{c.product}</Text>
-                            <View style={{ backgroundColor: "#dbeafe", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, alignSelf: "flex-start" }}>
-                              <Text style={{ fontSize: 11, fontWeight: "700", color: "#2563eb" }}>Rate: {c.rate}</Text>
+                          <View key={i} style={{ backgroundColor: isDark ? colors.background : "#f8fafc", borderRadius: 14, padding: 12, marginBottom: 10, borderLeftWidth: 3, borderLeftColor: "#3b82f6" }}>
+                            <Text style={{ fontSize: 13, fontWeight: "800", color: colors.text, marginBottom: 4 }}>{c.product}</Text>
+                            <View style={{ backgroundColor: isDark ? "rgba(59, 130, 246, 0.2)" : "#dbeafe", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, alignSelf: "flex-start" }}>
+                              <Text style={{ fontSize: 11, fontWeight: "700", color: isDark ? "#60a5fa" : "#2563eb" }}>Rate: {c.rate}</Text>
                             </View>
-                            <Text style={{ fontSize: 12, color: "#64748b", marginTop: 6, lineHeight: 17 }}>⏱ {c.frequency}</Text>
+                            <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 6, lineHeight: 17 }}>⏱ {c.frequency}</Text>
                           </View>
                         ))}
                       </InfoCard>
                     )}
                     {selected.treatment.organic.length > 0 && (
-                      <InfoCard label="Organic / Biological Options" color="#10b981" icon="wind">
-                        {selected.treatment.organic.map((o, i) => <BulletRow key={i} text={o} color="#10b981" />)}
+                      <InfoCard label="Organic / Biological Options" color="#10b981" icon="wind" theme={colors} isDark={isDark}>
+                        {selected.treatment.organic.map((o, i) => <BulletRow key={i} text={o} color="#10b981" theme={colors} />)}
                       </InfoCard>
                     )}
                     {selected.treatment.cultural.length > 0 && (
-                      <InfoCard label="Cultural Practices" color="#8b5cf6" icon="tool">
-                        {selected.treatment.cultural.map((c, i) => <BulletRow key={i} text={c} color="#8b5cf6" />)}
+                      <InfoCard label="Cultural Practices" color="#8b5cf6" icon="tool" theme={colors} isDark={isDark}>
+                        {selected.treatment.cultural.map((c, i) => <BulletRow key={i} text={c} color="#8b5cf6" theme={colors} />)}
                       </InfoCard>
                     )}
                   </View>
                 )}
                 {detailTab === "prevention" && (
                   <View style={{ gap: 16 }}>
-                    <InfoCard label="Prevention Strategies" color={getPlantColor(selected.plant)} icon="shield">
-                      {selected.prevention.map((p, i) => <BulletRow key={i} text={p} color={getPlantColor(selected.plant)} />)}
+                    <InfoCard label="Prevention Strategies" color={getPlantColor(selected.plant)} icon="shield" theme={colors} isDark={isDark}>
+                      {selected.prevention.map((p, i) => <BulletRow key={i} text={p} color={getPlantColor(selected.plant)} theme={colors} />)}
                     </InfoCard>
-                    <InfoCard label="Monitoring Tips" color="#3b82f6" icon="activity">
-                      {selected.monitoring_tips.map((m, i) => <BulletRow key={i} text={m} color="#3b82f6" />)}
+                    <InfoCard label="Monitoring Tips" color="#3b82f6" icon="activity" theme={colors} isDark={isDark}>
+                      {selected.monitoring_tips.map((m, i) => <BulletRow key={i} text={m} color="#3b82f6" theme={colors} />)}
                     </InfoCard>
                   </View>
                 )}
@@ -313,27 +317,27 @@ export default function LibraryScreen() {
   );
 }
 
-function InfoCard({ label, color, icon, children }: { label: string; color: string; icon: string; children: React.ReactNode }) {
+function InfoCard({ label, color, icon, children, theme, isDark }: { label: string; color: string; icon: string; children: React.ReactNode, theme: any, isDark: boolean }) {
   return (
-    <View style={{ backgroundColor: "#fff", borderRadius: 18, padding: 16, borderWidth: 1, borderColor: "#f1f5f9", elevation: 2 }}>
+    <View style={{ backgroundColor: theme.card, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: theme.border, elevation: 2 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 12 }}>
         <View style={{ backgroundColor: color + "18", padding: 6, borderRadius: 9 }}>
           <Feather name={icon as any} size={13} color={color} />
         </View>
-        <Text style={{ fontSize: 11, fontWeight: "800", color: "#64748b", letterSpacing: 0.8, textTransform: "uppercase" }}>{label}</Text>
+        <Text style={{ fontSize: 11, fontWeight: "800", color: theme.subtext, letterSpacing: 0.8, textTransform: "uppercase" }}>{label}</Text>
       </View>
       {children}
     </View>
   );
 }
 
-function BulletRow({ text, color, icon = "check" }: { text: string; color: string; icon?: string }) {
+function BulletRow({ text, color, icon = "check", theme }: { text: string; color: string; icon?: string, theme: any }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
       <View style={{ backgroundColor: color + "18", padding: 4, borderRadius: 7, marginTop: 1 }}>
         <Feather name={icon as any} size={11} color={color} />
       </View>
-      <Text style={{ flex: 1, fontSize: 13, color: "#475569", lineHeight: 19, fontWeight: "500" }}>{text}</Text>
+      <Text style={{ flex: 1, fontSize: 13, color: theme.text, lineHeight: 19, fontWeight: "500" }}>{text}</Text>
     </View>
   );
 }

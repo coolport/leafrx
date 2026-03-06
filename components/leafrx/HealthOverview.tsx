@@ -3,9 +3,11 @@ import { View, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../constants/styles';
 import { usePlantStore } from '../../store/usePlantStore';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 export function HealthOverview() {
     const { plants } = usePlantStore();
+    const { isDark } = useAppTheme();
     
     const totalPlants = plants.length;
     const healthyCount = plants.filter(p => p.status === 'healthy').length;
@@ -17,7 +19,7 @@ export function HealthOverview() {
         : 100;
 
     return (
-        <View style={styles.healthOverview}>
+        <View style={[styles.healthOverview, isDark && { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.15)' }]}>
             <View style={styles.healthOverviewTop}>
                 <View>
                     <Text style={styles.healthLabel}>Farm Health Overview</Text>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StatusBar, Modal, Image, Alert, ActivityIndicator, Dimensions, StyleSheet } from 'react-native';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence, FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { styles } from '../../constants/styles';
 import * as ImagePicker from 'expo-image-picker';
@@ -14,12 +14,12 @@ import { AnalysisResponse, Plant, ScanResult } from '../../components/leafrx/typ
 import { usePlantStore } from '../../store/usePlantStore';
 import { useMutation } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 export default function ScanScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
+    const { colors, isDark } = useAppTheme();
     const params = useLocalSearchParams<{ plantId?: string; plantType?: string }>();
     const isUpdatingPlant = !!params.plantId;
 
@@ -107,7 +107,6 @@ export default function ScanScreen() {
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
-            // allowsEditing: true,
             allowsEditing: false,
             aspect: [4, 3],
             quality: 0.7,
@@ -123,7 +122,6 @@ export default function ScanScreen() {
         }
         let result = await ImagePicker.launchCameraAsync({
             mediaTypes: ['images'],
-            // allowsEditing: true,
             allowsEditing: false,
             aspect: [4, 3],
             quality: 0.7,
@@ -204,7 +202,7 @@ export default function ScanScreen() {
         : plants;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <StatusBar barStyle="light-content" />
             <Stack.Screen options={{ headerShown: false }} />
 
@@ -213,7 +211,6 @@ export default function ScanScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 140 }}
             >
-                {/* ── Header ── */}
                 <LinearGradient
                     colors={['#059669', '#10b981', '#34d399']}
                     start={{ x: 0, y: 0 }}
@@ -231,7 +228,6 @@ export default function ScanScreen() {
                                     : 'AI-powered disease detection'}
                             </Text>
                         </View>
-                        {/* Status pill */}
                         <View style={{
                             backgroundColor: 'rgba(255,255,255,0.2)',
                             paddingHorizontal: 14,
@@ -253,7 +249,7 @@ export default function ScanScreen() {
 
                 <View style={[styles.section, { marginTop: -20 }]}>
                     <View style={{
-                        backgroundColor: '#fff',
+                        backgroundColor: colors.card,
                         borderRadius: 24,
                         padding: 20,
                         shadowColor: '#000',
@@ -261,12 +257,13 @@ export default function ScanScreen() {
                         shadowOpacity: 0.05,
                         shadowRadius: 12,
                         elevation: 4,
+                        borderWidth: isDark ? 1 : 0,
+                        borderColor: colors.border,
                     }}>
 
-                        {/* ── Plant Type Selector ── */}
                         {!isUpdatingPlant && (
                             <View style={{ marginBottom: 20 }}>
-                                <Text style={styles.label}>Plant Type</Text>
+                                <Text style={[styles.label, { color: colors.subtext }]}>Plant Type</Text>
                                 <ScrollView
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
@@ -275,10 +272,10 @@ export default function ScanScreen() {
                                 >
                                     <TouchableOpacity
                                         activeOpacity={0.7}
-                                        style={!selectedPlantClass ? styles.chipSelected : styles.chip}
+                                        style={!selectedPlantClass ? styles.chipSelected : [styles.chip, { backgroundColor: isDark ? '#334155' : '#f3f4f6', borderColor: colors.border }]}
                                         onPress={() => setSelectedPlantClass(undefined)}
                                     >
-                                        <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>
+                                        <Text style={!selectedPlantClass ? styles.chipTextSelected : [styles.chipText, { color: colors.text }]}>
                                             ✦ Auto
                                         </Text>
                                     </TouchableOpacity>
@@ -286,10 +283,10 @@ export default function ScanScreen() {
                                         <TouchableOpacity
                                             key={type}
                                             activeOpacity={0.7}
-                                            style={selectedPlantClass === type ? styles.chipSelected : styles.chip}
+                                            style={selectedPlantClass === type ? styles.chipSelected : [styles.chip, { backgroundColor: isDark ? '#334155' : '#f3f4f6', borderColor: colors.border }]}
                                             onPress={() => setSelectedPlantClass(type)}
                                         >
-                                            <Text style={selectedPlantClass === type ? styles.chipTextSelected : styles.chipText}>
+                                            <Text style={selectedPlantClass === type ? styles.chipTextSelected : [styles.chipText, { color: colors.text }]}>
                                                 {type}
                                             </Text>
                                         </TouchableOpacity>
@@ -298,10 +295,10 @@ export default function ScanScreen() {
                             </View>
                         )}
 
-                        {/* ── Viewfinder ── */}
                         <Animated.View style={[styles.cameraArea, animatedPulseStyle, {
                             borderWidth: mutation.isPending ? 2 : 1,
-                            borderColor: mutation.isPending ? '#10b981' : '#f1f5f9',
+                            borderColor: mutation.isPending ? '#10b981' : colors.border,
+                            backgroundColor: isDark ? '#0f172a' : '#f8fafc',
                         }]}>
                             {selectedImageUri ? (
                                 <View style={{ width: '100%', height: '100%' }}>
@@ -311,23 +308,16 @@ export default function ScanScreen() {
                                     />
                                     {mutation.isPending && (
                                         <>
-                                            {/* Scan line */}
                                             <Animated.View style={[styles.scanningLine, animatedScanStyle]} />
-                                            {/* Corner brackets */}
                                             <View style={[StyleSheet.absoluteFill, { margin: 16 }]}>
-                                                {/* TL */}
                                                 <View style={{ position: 'absolute', top: 0, left: 0, width: 24, height: 24, borderTopWidth: 3, borderLeftWidth: 3, borderColor: '#10b981', borderTopLeftRadius: 6 }} />
-                                                {/* TR */}
                                                 <View style={{ position: 'absolute', top: 0, right: 0, width: 24, height: 24, borderTopWidth: 3, borderRightWidth: 3, borderColor: '#10b981', borderTopRightRadius: 6 }} />
-                                                {/* BL */}
                                                 <View style={{ position: 'absolute', bottom: 0, left: 0, width: 24, height: 24, borderBottomWidth: 3, borderLeftWidth: 3, borderColor: '#10b981', borderBottomLeftRadius: 6 }} />
-                                                {/* BR */}
                                                 <View style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderBottomWidth: 3, borderRightWidth: 3, borderColor: '#10b981', borderBottomRightRadius: 6 }} />
                                             </View>
-                                            {/* Center overlay */}
                                             <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
                                                 <View style={{
-                                                    backgroundColor: 'rgba(0,0,0,0.55)',
+                                                    backgroundColor: 'rgba(0,0,0,0.75)',
                                                     borderRadius: 20,
                                                     paddingHorizontal: 24,
                                                     paddingVertical: 16,
@@ -344,53 +334,31 @@ export default function ScanScreen() {
                                     )}
                                 </View>
                             ) : (
-                                /* Empty state */
                                 <View style={{ alignItems: 'center', width: '100%', height: '100%', justifyContent: 'center', gap: 0 }}>
-                                    <View style={styles.scannerFrame} />
-                                    {/* Icon bubble */}
+                                    <View style={[styles.scannerFrame, { borderColor: isDark ? '#1e293b' : '#10b981', opacity: isDark ? 0.3 : 0.5 }]} />
                                     <View style={{
                                         width: 76,
                                         height: 76,
-                                        backgroundColor: '#ecfdf5',
+                                        backgroundColor: isDark ? '#064e3b' : '#ecfdf5',
                                         borderRadius: 24,
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         marginBottom: 16,
                                         borderWidth: 1,
-                                        borderColor: '#d1fae5',
+                                        borderColor: isDark ? '#065f46' : '#d1fae5',
                                     }}>
                                         <Feather name="camera" size={34} color="#10b981" />
                                     </View>
-                                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#1e293b', letterSpacing: -0.3 }}>
+                                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text, letterSpacing: -0.3 }}>
                                         Scanner
                                     </Text>
-                                    <Text style={{ fontSize: 13, color: '#94a3b8', marginTop: 4, fontWeight: '500' }}>
+                                    <Text style={{ fontSize: 13, color: colors.subtext, marginTop: 4, fontWeight: '500' }}>
                                         Ensure good lighting &amp; focus
                                     </Text>
-                                    {/* {/* Tip row */} */}
-                                    {/* <View style={{ */}
-                                    {/*     flexDirection: 'row', */}
-                                    {/*     gap: 8, */}
-                                    {/*     marginTop: 20, */}
-                                    {/* }}> */}
-                                    {/*     {['🌿 Clear shot', '☀️ Good light', '🔍 Close up'].map(tip => ( */}
-                                    {/*         <View key={tip} style={{ */}
-                                    {/*             backgroundColor: 'rgba(16,185,129,0.08)', */}
-                                    {/*             paddingHorizontal: 10, */}
-                                    {/*             paddingVertical: 5, */}
-                                    {/*             borderRadius: 12, */}
-                                    {/*             borderWidth: 1, */}
-                                    {/*             borderColor: 'rgba(16,185,129,0.15)', */}
-                                    {/*         }}> */}
-                                    {/*             <Text style={{ fontSize: 11, color: '#059669', fontWeight: '600' }}>{tip}</Text> */}
-                                    {/*         </View> */}
-                                    {/*     ))} */}
-                                    {/* </View> */}
                                 </View>
                             )}
                         </Animated.View>
 
-                        {/* ── Image source label ── */}
                         {selectedImageUri && !mutation.isPending && (
                             <TouchableOpacity
                                 onPress={() => setSelectedImageUri(null)}
@@ -402,15 +370,13 @@ export default function ScanScreen() {
                                     gap: 6,
                                 }}
                             >
-                                <Feather name="refresh-ccw" size={13} color="#94a3b8" />
-                                <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600' }}>Tap to clear & rescan</Text>
+                                <Feather name="refresh-ccw" size={13} color={colors.subtext} />
+                                <Text style={{ fontSize: 12, color: colors.subtext, fontWeight: '600' }}>Tap to clear & rescan</Text>
                             </TouchableOpacity>
                         )}
                     </View>
 
-                    {/* ── Action Buttons ── */}
                     <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
-                        {/* Take Photo — primary */}
                         <TouchableOpacity
                             activeOpacity={0.8}
                             onPress={takePhoto}
@@ -418,7 +384,7 @@ export default function ScanScreen() {
                             style={{ flex: 1.5, opacity: mutation.isPending ? 0.55 : 1 }}
                         >
                             <LinearGradient
-                                colors={['#059669', '#10b981']}
+                                colors={isDark ? ['#065f46', '#059669'] : ['#059669', '#10b981']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 1 }}
                                 style={[styles.btnPrimary, { height: 60, borderRadius: 20 }]}
@@ -434,29 +400,27 @@ export default function ScanScreen() {
                             </LinearGradient>
                         </TouchableOpacity>
 
-                        {/* Gallery — secondary */}
                         <TouchableOpacity
-                            style={[styles.btnSecondary, { flex: 1, height: 60, borderRadius: 20, opacity: mutation.isPending ? 0.55 : 1 }]}
+                            style={[styles.btnSecondary, { flex: 1, height: 60, borderRadius: 20, opacity: mutation.isPending ? 0.55 : 1, backgroundColor: colors.card, borderColor: colors.border }]}
                             onPress={pickImage}
                             disabled={mutation.isPending}
                             activeOpacity={0.7}
                         >
                             <View style={{
-                                backgroundColor: '#f1f5f9',
+                                backgroundColor: isDark ? '#334155' : '#f1f5f9',
                                 padding: 6,
                                 borderRadius: 10,
                             }}>
-                                <Feather name="image" size={16} color="#64748b" />
+                                <Feather name="image" size={16} color={isDark ? '#94a3b8' : '#64748b'} />
                             </View>
-                            <Text style={styles.btnSecondaryText}>Gallery</Text>
+                            <Text style={[styles.btnSecondaryText, { color: colors.text }]}>Gallery</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* ── How it works ── */}
                     {!selectedImageUri && (
                         <View style={{
                             marginTop: 24,
-                            backgroundColor: '#fff',
+                            backgroundColor: colors.card,
                             borderRadius: 20,
                             padding: 20,
                             shadowColor: '#000',
@@ -464,8 +428,10 @@ export default function ScanScreen() {
                             shadowOpacity: 0.04,
                             shadowRadius: 8,
                             elevation: 2,
+                            borderWidth: isDark ? 1 : 0,
+                            borderColor: colors.border,
                         }}>
-                            <Text style={[styles.label, { marginBottom: 16 }]}>How It Works</Text>
+                            <Text style={[styles.label, { marginBottom: 16, color: colors.subtext }]}>How It Works</Text>
                             {[
                                 { icon: 'camera', step: '01', title: 'Capture', desc: 'Take or upload a clear photo of the affected leaf' },
                                 { icon: 'cpu', step: '02', title: 'Analyze', desc: 'AI model scans for diseases, pests & deficiencies' },
@@ -477,22 +443,21 @@ export default function ScanScreen() {
                                     gap: 14,
                                     marginBottom: i < 2 ? 16 : 0,
                                 }}>
-                                    {/* Step number + icon */}
                                     <View style={{ alignItems: 'center', gap: 4 }}>
                                         <View style={{
                                             width: 44,
                                             height: 44,
                                             borderRadius: 14,
-                                            backgroundColor: '#ecfdf5',
+                                            backgroundColor: isDark ? '#064e3b' : '#ecfdf5',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             borderWidth: 1,
-                                            borderColor: '#d1fae5',
+                                            borderColor: isDark ? '#065f46' : '#d1fae5',
                                         }}>
                                             <Feather name={item.icon as any} size={18} color="#10b981" />
                                         </View>
                                         {i < 2 && (
-                                            <View style={{ width: 2, height: 16, backgroundColor: '#e2e8f0', borderRadius: 1 }} />
+                                            <View style={{ width: 2, height: 16, backgroundColor: isDark ? '#334155' : '#e2e8f0', borderRadius: 1 }} />
                                         )}
                                     </View>
                                     <View style={{ flex: 1, paddingTop: 4 }}>
@@ -500,9 +465,9 @@ export default function ScanScreen() {
                                             <Text style={{ fontSize: 10, fontWeight: '800', color: '#10b981', letterSpacing: 1 }}>
                                                 {item.step}
                                             </Text>
-                                            <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b' }}>{item.title}</Text>
+                                            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>{item.title}</Text>
                                         </View>
-                                        <Text style={{ fontSize: 13, color: '#64748b', lineHeight: 18, fontWeight: '500' }}>{item.desc}</Text>
+                                        <Text style={{ fontSize: 13, color: colors.subtext, lineHeight: 18, fontWeight: '500' }}>{item.desc}</Text>
                                     </View>
                                 </View>
                             ))}
@@ -511,18 +476,16 @@ export default function ScanScreen() {
                 </View>
             </ScrollView>
 
-            {/* ── Results Modal ── */}
             <Modal
                 animationType="slide"
                 transparent={true}
                 visible={isResultsModalVisible}
                 onRequestClose={() => setResultsModalVisible(false)}
             >
-                <BlurView intensity={30} style={styles.modalContainer}>
-                    <View style={styles.bottomSheetContent}>
-                        <View style={styles.bottomSheetHandle} />
+                <BlurView intensity={isDark ? 40 : 30} tint={isDark ? 'dark' : 'light'} style={styles.modalContainer}>
+                    <View style={[styles.bottomSheetContent, { backgroundColor: colors.card }]}>
+                        <View style={[styles.bottomSheetHandle, { backgroundColor: isDark ? '#334155' : '#e5e7eb' }]} />
 
-                        {/* Header */}
                         <View style={{
                             flexDirection: 'row',
                             justifyContent: 'space-between',
@@ -531,14 +494,14 @@ export default function ScanScreen() {
                             paddingBottom: 16,
                         }}>
                             <View>
-                                <Text style={styles.modalTitle}>Diagnosis Results</Text>
-                                <Text style={{ fontSize: 13, color: '#94a3b8', fontWeight: '500', marginTop: 2 }}>
+                                <Text style={[styles.modalTitle, { color: colors.text }]}>Diagnosis Results</Text>
+                                <Text style={{ fontSize: 13, color: colors.subtext, fontWeight: '500', marginTop: 2 }}>
                                     AI-powered analysis
                                 </Text>
                             </View>
                             <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
-                                <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
-                                    <Feather name="x" size={20} color="#64748b" />
+                                <View style={{ backgroundColor: isDark ? '#334155' : '#f1f5f9', padding: 8, borderRadius: 20 }}>
+                                    <Feather name="x" size={20} color={isDark ? '#94a3b8' : '#64748b'} />
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -547,7 +510,6 @@ export default function ScanScreen() {
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}
                         >
-                            {/* Scanned image */}
                             {selectedImageUri && (
                                 <View style={{ marginBottom: 20 }}>
                                     <Image
@@ -555,13 +517,12 @@ export default function ScanScreen() {
                                         style={{ width: '100%', height: 220, borderRadius: 24 }}
                                         resizeMode="cover"
                                     />
-                                    {/* Health score badge over image */}
                                     {analysisResult && (
                                         <View style={{
                                             position: 'absolute',
                                             bottom: 12,
                                             right: 12,
-                                            backgroundColor: 'rgba(0,0,0,0.6)',
+                                            backgroundColor: 'rgba(0,0,0,0.7)',
                                             borderRadius: 16,
                                             paddingHorizontal: 14,
                                             paddingVertical: 8,
@@ -580,54 +541,50 @@ export default function ScanScreen() {
 
                             {analysisResult && (
                                 <>
-                                    {/* Primary finding card */}
                                     <View style={{
-                                        backgroundColor: getStatusColor(analysisResult?.status) + '12',
+                                        backgroundColor: getStatusColor(analysisResult?.status) + (isDark ? '25' : '12'),
                                         borderRadius: 24,
                                         padding: 20,
                                         marginBottom: 16,
                                         borderWidth: 1,
-                                        borderColor: getStatusColor(analysisResult?.status) + '30',
+                                        borderColor: getStatusColor(analysisResult?.status) + (isDark ? '40' : '30'),
                                     }}>
                                         <Text style={{ fontSize: 11, fontWeight: '800', color: getStatusColor(analysisResult?.status), letterSpacing: 1.5, marginBottom: 6 }}>
                                             PRIMARY FINDING
                                         </Text>
-                                        <Text style={{ fontSize: 26, fontWeight: '800', color: '#1e293b', letterSpacing: -0.5, marginBottom: 10 }}>
+                                        <Text style={{ fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.5, marginBottom: 10 }}>
                                             {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
                                         </Text>
 
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                            {/* Plant type tag */}
                                             <View style={{
-                                                backgroundColor: '#fff',
+                                                backgroundColor: isDark ? '#334155' : '#fff',
                                                 paddingHorizontal: 10,
                                                 paddingVertical: 4,
                                                 borderRadius: 10,
                                                 borderWidth: 1,
-                                                borderColor: '#e2e8f0',
+                                                borderColor: isDark ? '#475569' : '#e2e8f0',
                                             }}>
-                                                <Text style={{ fontSize: 12, fontWeight: '700', color: '#475569' }}>
+                                                <Text style={{ fontSize: 12, fontWeight: '700', color: isDark ? '#cbd5e1' : '#475569' }}>
                                                     {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
                                                 </Text>
                                             </View>
-                                            {/* Confidence */}
                                             <View style={{
                                                 flexDirection: 'row',
                                                 alignItems: 'center',
                                                 gap: 4,
                                             }}>
                                                 <Feather name="zap" size={12} color="#f59e0b" />
-                                                <Text style={{ fontSize: 13, color: '#64748b', fontWeight: '600' }}>
+                                                <Text style={{ fontSize: 13, color: colors.subtext, fontWeight: '600' }}>
                                                     {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}% confidence
                                                 </Text>
                                             </View>
                                         </View>
                                     </View>
 
-                                    {/* Recommendations */}
                                     {analysisResult?.predictions?.[0]?.recommendations && (
                                         <View style={{ marginBottom: 8 }}>
-                                            <Text style={styles.label}>Recommendations</Text>
+                                            <Text style={[styles.label, { color: colors.subtext }]}>Recommendations</Text>
                                             {analysisResult.predictions[0].recommendations.map((rec, i) => (
                                                 <View
                                                     key={i}
@@ -636,17 +593,17 @@ export default function ScanScreen() {
                                                         marginBottom: 10,
                                                         gap: 12,
                                                         alignItems: 'flex-start',
-                                                        backgroundColor: '#f8fafc',
+                                                        backgroundColor: isDark ? '#334155' : '#f8fafc',
                                                         borderRadius: 14,
                                                         padding: 12,
                                                         borderWidth: 1,
-                                                        borderColor: '#f1f5f9',
+                                                        borderColor: colors.border,
                                                     }}
                                                 >
-                                                    <View style={{ backgroundColor: '#dcfce7', padding: 6, borderRadius: 10, marginTop: 1 }}>
+                                                    <View style={{ backgroundColor: isDark ? '#064e3b' : '#dcfce7', padding: 6, borderRadius: 10, marginTop: 1 }}>
                                                         <Feather name="check" size={13} color="#10b981" />
                                                     </View>
-                                                    <Text style={{ flex: 1, fontSize: 14, color: '#475569', fontWeight: '500', lineHeight: 20 }}>
+                                                    <Text style={{ flex: 1, fontSize: 14, color: isDark ? '#cbd5e1' : '#475569', fontWeight: '500', lineHeight: 20 }}>
                                                         {rec}
                                                     </Text>
                                                 </View>
@@ -657,7 +614,6 @@ export default function ScanScreen() {
                             )}
                         </ScrollView>
 
-                        {/* CTA buttons */}
                         <View style={{
                             paddingHorizontal: 24,
                             paddingTop: 12,
@@ -665,7 +621,7 @@ export default function ScanScreen() {
                             flexDirection: 'row',
                             gap: 12,
                             borderTopWidth: 1,
-                            borderTopColor: '#f1f5f9',
+                            borderTopColor: colors.border,
                         }}>
                             {isUpdatingPlant ? (
                                 <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleUpdatePlant}>
@@ -680,12 +636,12 @@ export default function ScanScreen() {
                                 <>
                                     <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleAssignToPlant}>
                                         <View style={[styles.modalButton, {
-                                            backgroundColor: '#f1f5f9',
+                                            backgroundColor: isDark ? '#334155' : '#f1f5f9',
                                             marginHorizontal: 0,
                                             borderWidth: 1,
-                                            borderColor: '#e2e8f0',
+                                            borderColor: isDark ? '#475569' : '#e2e8f0',
                                         }]}>
-                                            <Text style={[styles.modalButtonText, { color: '#475569' }]}>Assign Existing</Text>
+                                            <Text style={[styles.modalButtonText, { color: isDark ? '#cbd5e1' : '#475569' }]}>Assign Existing</Text>
                                         </View>
                                     </TouchableOpacity>
                                     <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleSaveAsNewPlant}>

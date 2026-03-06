@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle, Line, Text as SvgText } from 'react-native-svg';
+import { useAppTheme } from '../../hooks/use-app-theme';
 
 const { width: SW } = Dimensions.get('window');
 const CARD_PADDING = 24;
@@ -14,6 +15,7 @@ type ChartProps = {
 };
 
 export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
+    const { colors, isDark } = useAppTheme();
     if (!data || data.length === 0) return null;
 
     const cardWidth = SW - 48; // section padding
@@ -69,25 +71,25 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
 
     return (
         <View style={{
-            backgroundColor: '#fff',
+            backgroundColor: colors.card,
             borderRadius: 24,
             padding: CARD_PADDING,
             marginBottom: 16,
             borderWidth: 1,
-            borderColor: '#f1f5f9',
+            borderColor: colors.border,
             elevation: 2,
         }}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                 <View>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#94a3b8', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.subtext, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
                         Health History
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-                        <Text style={{ fontSize: 32, fontWeight: '900', color: '#1e293b', lineHeight: 36 }}>
+                        <Text style={{ fontSize: 32, fontWeight: '900', color: colors.text, lineHeight: 36 }}>
                             {latestValue}
                         </Text>
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#94a3b8', marginBottom: 2 }}>/100</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.subtext, marginBottom: 2 }}>/100</Text>
                     </View>
                 </View>
 
@@ -111,7 +113,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                             flexDirection: 'row',
                             alignItems: 'center',
                             gap: 3,
-                            backgroundColor: trend === 'up' ? '#dcfce7' : trend === 'down' ? '#fee2e2' : '#f1f5f9',
+                            backgroundColor: trend === 'up' ? (isDark ? 'rgba(22, 163, 74, 0.2)' : '#dcfce7') : trend === 'down' ? (isDark ? 'rgba(220, 38, 38, 0.2)' : '#fee2e2') : colors.secondary,
                             paddingHorizontal: 8,
                             paddingVertical: 4,
                             borderRadius: 10,
@@ -119,7 +121,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                             <Text style={{
                                 fontSize: 11,
                                 fontWeight: '800',
-                                color: trend === 'up' ? '#16a34a' : trend === 'down' ? '#dc2626' : '#64748b',
+                                color: trend === 'up' ? '#16a34a' : trend === 'down' ? '#dc2626' : colors.subtext,
                             }}>
                                 {trend === 'up' ? '▲' : trend === 'down' ? '▼' : '●'} {Math.abs(delta)} pts
                             </Text>
@@ -139,7 +141,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                     paddingRight: 6,
                 }}>
                     {[...gridLines].reverse().map((g, i) => (
-                        <Text key={i} style={{ fontSize: 9, fontWeight: '700', color: '#cbd5e1' }}>
+                        <Text key={i} style={{ fontSize: 9, fontWeight: '700', color: colors.subtext }}>
                             {g.label}
                         </Text>
                     ))}
@@ -161,7 +163,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                                 key={i}
                                 x1={0} y1={g.y}
                                 x2={chartWidth} y2={g.y}
-                                stroke="#f1f5f9"
+                                stroke={colors.border}
                                 strokeWidth={1}
                                 strokeDasharray={i === 0 ? '0' : '4,4'}
                             />
@@ -183,7 +185,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                         {/* Data point dots */}
                         {points.map((pt, i) => (
                             <React.Fragment key={i}>
-                                <Circle cx={pt.x} cy={pt.y} r={4} fill="#fff" stroke={color} strokeWidth={2} />
+                                <Circle cx={pt.x} cy={pt.y} r={4} fill={colors.card} stroke={color} strokeWidth={2} />
                                 {i === points.length - 1 && (
                                     <Circle cx={pt.x} cy={pt.y} r={6} fill={color} opacity={0.2} />
                                 )}
@@ -202,7 +204,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                             <Text key={i} style={{
                                 fontSize: 9,
                                 fontWeight: '700',
-                                color: i === labels.length - 1 ? color : '#94a3b8',
+                                color: i === labels.length - 1 ? color : colors.subtext,
                                 textAlign: 'center',
                             }}>
                                 {label}
@@ -219,7 +221,7 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                     marginTop: 16,
                     paddingTop: 14,
                     borderTopWidth: 1,
-                    borderTopColor: '#f1f5f9',
+                    borderTopColor: colors.border,
                     gap: 0,
                 }}>
                     {[
@@ -229,8 +231,8 @@ export function Chart({ data, labels, color = '#10b981' }: ChartProps) {
                         { label: 'Lowest', value: Math.min(...data).toString() },
                     ].map((stat, i) => (
                         <View key={i} style={{ flex: 1, alignItems: 'center' }}>
-                            <Text style={{ fontSize: 16, fontWeight: '900', color: '#1e293b' }}>{stat.value}</Text>
-                            <Text style={{ fontSize: 10, fontWeight: '700', color: '#94a3b8', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{stat.label}</Text>
+                            <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>{stat.value}</Text>
+                            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.subtext, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{stat.label}</Text>
                         </View>
                     ))}
                 </View>

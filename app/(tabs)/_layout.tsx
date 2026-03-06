@@ -3,18 +3,17 @@ import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAppTheme } from '@/hooks/use-app-theme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { isDark, colors } = useAppTheme();
   const activeColor = '#10b981'; // App's primary green
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: activeColor,
-        tabBarInactiveTintColor: '#94a3b8',
+        tabBarInactiveTintColor: isDark ? '#64748b' : '#94a3b8',
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',
@@ -23,7 +22,7 @@ export default function TabLayout() {
           height: 84,
           paddingBottom: Platform.OS === 'ios' ? 28 : 12,
           paddingTop: 12,
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(245, 247, 250, 0.8)',
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : (isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)'),
           borderRadius: 32,
           marginHorizontal: 20,
           bottom: 24,
@@ -36,7 +35,7 @@ export default function TabLayout() {
           Platform.OS === 'ios' ? (
             <BlurView 
               intensity={80} 
-              tint={colorScheme === 'dark' ? 'dark' : 'light'} 
+              tint={isDark ? 'dark' : 'light'} 
               style={StyleSheet.absoluteFill} 
             />
           ) : null
@@ -85,4 +84,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
