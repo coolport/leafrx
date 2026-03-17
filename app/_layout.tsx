@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { initDatabase } from '../services/database';
 import { usePlantStore } from '../store/usePlantStore';
+import { notificationService } from '../services/notifications';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -20,6 +21,15 @@ export default function RootLayout() {
       try {
         await initDatabase();
         await initializeStore();
+        
+        // After hydration, check if notifications are enabled and schedule them
+        const state = usePlantStore.getState();
+        if (state.settings.notifications) {
+          const granted = await notificationService.requestPermissions();
+          if (granted) {
+            await notificationService.scheduleReminders();
+          }
+        }
       } catch (error) {
         console.error("Initialization error:", error);
       }

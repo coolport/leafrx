@@ -1,14 +1,45 @@
-import React, { useState } from 'react';
-import { ScrollView, View, Text, StatusBar, Switch, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, View, Text, StatusBar, Switch, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from '../../constants/styles';
 import { Feather } from '@expo/vector-icons';
+import { usePlantStore } from '../../store/usePlantStore';
+import { notificationService } from '../../services/notifications';
 
 export default function SettingsScreen() {
     const insets = useSafeAreaInsets();
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+    const { settings, updateSettings } = usePlantStore();
+
+    const toggleNotifications = async (value: boolean) => {
+        try {
+            if (value) {
+                const granted = await notificationService.requestPermissions();
+                if (granted) {
+                    await notificationService.scheduleReminders();
+                    await updateSettings({ notifications: true });
+                    // Optional: Send a test notification to confirm
+                    // await notificationService.sendTestNotification();
+                } else {
+                    Alert.alert(
+                        "Permission Denied",
+                        "Please enable notifications in your device settings to receive reminders.",
+                        [{ text: "OK" }]
+                    );
+                }
+            } else {
+                await notificationService.cancelAll();
+                await updateSettings({ notifications: false });
+            }
+        } catch (error) {
+            console.error("Error toggling notifications:", error);
+            Alert.alert("Error", "Failed to update notification settings.");
+        }
+    };
+
+    const toggleDarkMode = (value: boolean) => {
+        updateSettings({ darkMode: value });
+    };
 
     return (
         <View style={styles.container}>
@@ -39,8 +70,8 @@ export default function SettingsScreen() {
                             <Switch
                                 trackColor={{ false: '#e2e8f0', true: '#10b981' }}
                                 thumbColor={'#fff'}
-                                onValueChange={() => setNotificationsEnabled(previousState => !previousState)}
-                                value={notificationsEnabled}
+                                onValueChange={toggleNotifications}
+                                value={settings.notifications}
                             />
                         </View>
                         <View style={styles.settingsRow}>
@@ -53,14 +84,32 @@ export default function SettingsScreen() {
                             <Switch
                                 trackColor={{ false: '#e2e8f0', true: '#10b981' }}
                                 thumbColor={'#fff'}
-                                onValueChange={() => setDarkModeEnabled(previousState => !previousState)}
-                                value={darkModeEnabled}
+                                onValueChange={toggleDarkMode}
+                                value={settings.darkMode}
                             />
                         </View>
                     </View>
 
                     <Text style={styles.label}>About</Text>
                     <View style={styles.settingsSection}>
+                        <TouchableOpacity 
+                            style={[styles.settingsRow, styles.settingsRowNotLast]}
+                            onPress={async () => {
+                                if (settings.notifications) {
+                                    await notificationService.sendTestNotification();
+                                } else {
+                                    Alert.alert("Notifications Disabled", "Enable notifications first to send a test.");
+                                }
+                            }}
+                        >
+                            <View style={styles.settingsRowInfo}>
+                                <View style={[styles.settingsIconContainer, { backgroundColor: '#fef3c7' }]}>
+                                    <Feather name="zap" size={20} color="#eab308" />
+                                </View>
+                                <Text style={styles.settingsLabel}>Send Test Notification</Text>
+                            </View>
+                            <Feather name="chevron-right" size={20} color="#9ca3af" />
+                        </TouchableOpacity>
                         <TouchableOpacity style={[styles.settingsRow, styles.settingsRowNotLast]}>
                             <View style={styles.settingsRowInfo}>
                                 <View style={[styles.settingsIconContainer, { backgroundColor: '#fef3c7' }]}>
@@ -85,3 +134,4 @@ export default function SettingsScreen() {
         </View>
     );
 }
+
