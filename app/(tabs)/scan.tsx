@@ -367,25 +367,6 @@ export default function ScanScreen() {
                                     <Text style={{ fontSize: 13, color: '#94a3b8', marginTop: 4, fontWeight: '500' }}>
                                         Ensure good lighting &amp; focus
                                     </Text>
-                                    {/* {/* Tip row */} */}
-                                    {/* <View style={{ */}
-                                    {/*     flexDirection: 'row', */}
-                                    {/*     gap: 8, */}
-                                    {/*     marginTop: 20, */}
-                                    {/* }}> */}
-                                    {/*     {['🌿 Clear shot', '☀️ Good light', '🔍 Close up'].map(tip => ( */}
-                                    {/*         <View key={tip} style={{ */}
-                                    {/*             backgroundColor: 'rgba(16,185,129,0.08)', */}
-                                    {/*             paddingHorizontal: 10, */}
-                                    {/*             paddingVertical: 5, */}
-                                    {/*             borderRadius: 12, */}
-                                    {/*             borderWidth: 1, */}
-                                    {/*             borderColor: 'rgba(16,185,129,0.15)', */}
-                                    {/*         }}> */}
-                                    {/*             <Text style={{ fontSize: 11, color: '#059669', fontWeight: '600' }}>{tip}</Text> */}
-                                    {/*         </View> */}
-                                    {/*     ))} */}
-                                    {/* </View> */}
                                 </View>
                             )}
                         </Animated.View>
