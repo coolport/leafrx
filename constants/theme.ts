@@ -20,6 +20,7 @@ export const Colors = {
     headerGradient: ['#059669', '#10b981', '#34d399'],
     cardShadow: '#64748b',
     modalBackground: 'rgba(0,0,0,0.5)',
+    tabBarBackgroundAndroid: 'rgba(245, 247, 250, 0.92)',
   },
   dark: {
     text: '#f1f5f9',
@@ -40,6 +41,7 @@ export const Colors = {
     headerGradient: ['#064e3b', '#065f46', '#059669'],
     cardShadow: '#000000',
     modalBackground: 'rgba(0,0,0,0.7)',
+    tabBarBackgroundAndroid: 'rgba(15, 23, 42, 0.92)',
   },
 };
 

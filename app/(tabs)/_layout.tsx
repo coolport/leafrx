@@ -25,7 +25,7 @@ export default function TabLayout() {
           height: 84,
           paddingBottom: Platform.OS === 'ios' ? 28 : 12,
           paddingTop: 12,
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.card,
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.tabBarBackgroundAndroid,
           borderRadius: 32,
           marginHorizontal: 20,
           bottom: 24,
