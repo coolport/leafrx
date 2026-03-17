@@ -3,7 +3,8 @@ import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 import { HealthOverview } from '../../components/leafrx/HealthOverview';
 import { QuickActions } from '../../components/leafrx/QuickActions';
 import { PlantCard } from '../../components/leafrx/PlantCard';
@@ -15,6 +16,8 @@ import { apiService } from '../../services/api';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const styles = createStyles(colors);
   const { plants, scans } = usePlantStore();
 
   const { data: apiStatus } = useQuery({
@@ -34,7 +37,7 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 140 }}
       >
         <LinearGradient
-          colors={['#059669', '#10b981', '#34d399']}
+          colors={colors.headerGradient as any}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.header, { paddingTop: insets.top + 16 }]}
@@ -91,19 +94,19 @@ export default function HomeScreen() {
           ) : (
             <View style={{ 
               padding: 32, 
-              backgroundColor: '#fff', 
+              backgroundColor: colors.card, 
               borderRadius: 24, 
               alignItems: 'center',
               borderWidth: 1,
-              borderColor: '#f1f5f9',
-              shadowColor: '#000',
+              borderColor: colors.border,
+              shadowColor: colors.cardShadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 10,
               elevation: 2
             }}>
-              <Feather name="plus-circle" size={48} color="#cbd5e1" style={{ marginBottom: 16 }} />
-              <Text style={{ color: '#64748b', fontSize: 15, fontWeight: '500', textAlign: 'center' }}>
+              <Feather name="plus-circle" size={48} color={colors.textMuted} style={{ marginBottom: 16 }} />
+              <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '500', textAlign: 'center' }}>
                 No plants tracked yet. Start by scanning a leaf.
               </Text>
             </View>
@@ -118,7 +121,7 @@ export default function HomeScreen() {
             ))
           ) : (
             <View style={{ padding: 20, backgroundColor: 'transparent', borderRadius: 12, alignItems: 'center' }}>
-              <Text style={{ color: '#94a3b8', fontSize: 14 }}>No scans performed yet.</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>No scans performed yet.</Text>
             </View>
           )}
         </View>

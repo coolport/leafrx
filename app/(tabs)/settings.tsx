@@ -2,13 +2,16 @@ import React, { useEffect } from 'react';
 import { ScrollView, View, Text, StatusBar, Switch, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 import { Feather } from '@expo/vector-icons';
 import { usePlantStore } from '../../store/usePlantStore';
 import { notificationService } from '../../services/notifications';
 
 export default function SettingsScreen() {
     const insets = useSafeAreaInsets();
+    const colors = useColors();
+    const styles = createStyles(colors);
     const { settings, updateSettings } = usePlantStore();
 
     const toggleNotifications = async (value: boolean) => {
@@ -46,7 +49,7 @@ export default function SettingsScreen() {
             <StatusBar barStyle="light-content" />
             <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
                 <LinearGradient
-                    colors={['#059669', '#10b981', '#34d399']}
+                    colors={colors.headerGradient as any}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
@@ -68,7 +71,7 @@ export default function SettingsScreen() {
                                 <Text style={styles.settingsLabel}>Notifications</Text>
                             </View>
                             <Switch
-                                trackColor={{ false: '#e2e8f0', true: '#10b981' }}
+                                trackColor={{ false: colors.border, true: colors.primary }}
                                 thumbColor={'#fff'}
                                 onValueChange={toggleNotifications}
                                 value={settings.notifications}
@@ -82,7 +85,7 @@ export default function SettingsScreen() {
                                 <Text style={styles.settingsLabel}>Dark Mode</Text>
                             </View>
                             <Switch
-                                trackColor={{ false: '#e2e8f0', true: '#10b981' }}
+                                trackColor={{ false: colors.border, true: colors.primary }}
                                 thumbColor={'#fff'}
                                 onValueChange={toggleDarkMode}
                                 value={settings.darkMode}
@@ -108,7 +111,7 @@ export default function SettingsScreen() {
                                 </View>
                                 <Text style={styles.settingsLabel}>Send Test Notification</Text>
                             </View>
-                            <Feather name="chevron-right" size={20} color="#9ca3af" />
+                            <Feather name="chevron-right" size={20} color={colors.textMuted} />
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.settingsRow, styles.settingsRowNotLast]}>
                             <View style={styles.settingsRowInfo}>
@@ -126,7 +129,7 @@ export default function SettingsScreen() {
                                 </View>
                                 <Text style={styles.settingsLabel}>Support</Text>
                             </View>
-                            <Feather name="chevron-right" size={20} color="#9ca3af" />
+                            <Feather name="chevron-right" size={20} color={colors.textMuted} />
                         </TouchableOpacity>
                     </View>
                 </View>

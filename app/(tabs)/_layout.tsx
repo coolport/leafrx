@@ -5,16 +5,18 @@ import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColors } from '@/hooks/use-colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const activeColor = '#10b981'; // App's primary green
+  const colors = useColors();
+  const activeColor = colors.primary;
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: activeColor,
-        tabBarInactiveTintColor: '#94a3b8',
+        tabBarInactiveTintColor: colors.tabIconDefault,
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',
@@ -23,11 +25,11 @@ export default function TabLayout() {
           height: 84,
           paddingBottom: Platform.OS === 'ios' ? 28 : 12,
           paddingTop: 12,
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(245, 247, 250, 0.8)',
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.card,
           borderRadius: 32,
           marginHorizontal: 20,
           bottom: 24,
-          shadowColor: '#000',
+          shadowColor: colors.cardShadow,
           shadowOffset: { width: 0, height: 10 },
           shadowOpacity: 0.1,
           shadowRadius: 20,

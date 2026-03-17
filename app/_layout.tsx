@@ -45,7 +45,7 @@ export default function RootLayout() {
           <Stack.Screen name="plant/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="disease/[name]" options={{ headerShown: false }} />
         </Stack>
-        <StatusBar style="auto" />
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
     </QueryClientProvider>
   );
