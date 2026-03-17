@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { AnalysisResponse, Disease, DiseaseSummary } from '../components/leafrx/types';
 
-const BASE_URL = 'https://tth-production.up.railway.app';
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
