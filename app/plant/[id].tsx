@@ -590,20 +590,6 @@ export default function DetailScreen() {
                             ?.toUpperCase()}
                         </Text>
                       </View>
-                      <Text
-                        style={{
-                          fontSize: 13,
-                          color: "#64748b",
-                          marginLeft: 8,
-                        }}
-                      >
-                        Confidence:{" "}
-                        {Math.round(
-                          (analysisResult?.predictions?.[0]
-                            ?.disease_confidence || 0) * 100,
-                        )}
-                        %
-                      </Text>
                     </View>
                   </View>
                   <View

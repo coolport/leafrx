@@ -591,17 +591,6 @@ export default function ScanScreen() {
                                                     {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase()}
                                                 </Text>
                                             </View>
-                                            {/* Confidence */}
-                                            <View style={{
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                gap: 4,
-                                            }}>
-                                                <Feather name="zap" size={12} color="#f59e0b" />
-                                                <Text style={{ fontSize: 13, color: '#64748b', fontWeight: '600' }}>
-                                                    {Math.round((analysisResult?.predictions?.[0]?.disease_confidence || 0) * 100)}% confidence
-                                                </Text>
-                                            </View>
                                         </View>
                                     </View>
 
