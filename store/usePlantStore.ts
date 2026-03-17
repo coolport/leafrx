@@ -6,6 +6,10 @@ interface PlantState {
   plants: Plant[];
   scans: ScanResult[];
   isHydrated: boolean;
+  settings: {
+    notifications: boolean;
+    darkMode: boolean;
+  };
   
   // Lifecycle
   initialize: () => Promise<void>;
@@ -18,23 +22,52 @@ interface PlantState {
   // Scan Actions
   addScan: (scan: ScanResult) => Promise<void>;
   getPlantScans: (plantId: string) => ScanResult[];
+
+  // Settings Actions
+  updateSettings: (settings: Partial<PlantState['settings']>) => Promise<void>;
 }
 
 export const usePlantStore = create<PlantState>((set, get) => ({
   plants: [],
   scans: [],
   isHydrated: false,
+  settings: {
+    notifications: true,
+    darkMode: false,
+  },
 
   initialize: async () => {
     try {
-      const [dbPlants, dbScans] = await Promise.all([
+      const [dbPlants, dbScans, notifications, darkMode] = await Promise.all([
         dbService.getAllPlants(),
-        dbService.getAllScans()
+        dbService.getAllScans(),
+        dbService.getSetting('notifications', true),
+        dbService.getSetting('darkMode', false),
       ]);
-      set({ plants: dbPlants, scans: dbScans, isHydrated: true });
+      set({ 
+        plants: dbPlants, 
+        scans: dbScans, 
+        settings: { notifications, darkMode },
+        isHydrated: true 
+      });
     } catch (error) {
       console.error("Failed to hydrate store from SQLite:", error);
       set({ isHydrated: true });
+    }
+  },
+
+  updateSettings: async (newSettings) => {
+    const currentSettings = get().settings;
+    const updatedSettings = { ...currentSettings, ...newSettings };
+    
+    set({ settings: updatedSettings });
+
+    // Persist to DB
+    if (newSettings.notifications !== undefined) {
+      await dbService.saveSetting('notifications', newSettings.notifications);
+    }
+    if (newSettings.darkMode !== undefined) {
+      await dbService.saveSetting('darkMode', newSettings.darkMode);
     }
   },
 

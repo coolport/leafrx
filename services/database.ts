@@ -32,6 +32,10 @@ const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
             healthScore REAL NOT NULL,
             predictions TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY NOT NULL,
+            value TEXT NOT NULL
+        );
     `);
     
     dbInstance = db;
@@ -42,6 +46,20 @@ const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
 export const initDatabase = () => getDb();
 
 export const dbService = {
+    saveSetting: async (key: string, value: any) => {
+        const db = await getDb();
+        await db.runAsync(
+            'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+            [key, JSON.stringify(value)]
+        );
+    },
+
+    getSetting: async (key: string, defaultValue: any): Promise<any> => {
+        const db = await getDb();
+        const row: any = await db.getFirstAsync('SELECT value FROM settings WHERE key = ?', [key]);
+        return row ? JSON.parse(row.value) : defaultValue;
+    },
+
     savePlant: async (plant: Plant) => {
         const db = await getDb();
         await db.runAsync(
