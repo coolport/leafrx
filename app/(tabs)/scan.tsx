@@ -256,10 +256,10 @@ export default function ScanScreen() {
 
                 <View style={[styles.section, { marginTop: -20 }]}>
                     <View style={{
-                        backgroundColor: '#fff',
+                        backgroundColor: colors.card,
                         borderRadius: 24,
                         padding: 20,
-                        shadowColor: '#000',
+                        shadowColor: colors.cardShadow,
                         shadowOffset: { width: 0, height: 4 },
                         shadowOpacity: 0.05,
                         shadowRadius: 12,
@@ -387,8 +387,8 @@ export default function ScanScreen() {
                                     gap: 6,
                                 }}
                             >
-                                <Feather name="refresh-ccw" size={13} color="#94a3b8" />
-                                <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '600' }}>Tap to clear & rescan</Text>
+                                <Feather name="refresh-ccw" size={13} color={colors.textMuted} />
+                                <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '600' }}>Tap to clear & rescan</Text>
                             </TouchableOpacity>
                         )}
                     </View>
