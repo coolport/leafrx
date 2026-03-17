@@ -47,7 +47,8 @@ export default function LibraryScreen() {
         >
           <View style={{ paddingHorizontal: 24 }}>
             <Text style={styles.headerTitle}>Disease Library</Text>
-            <Text style={styles.headerSubtitle}>{DISEASE_LIBRARY.length} entries · Mango, Banana, Guava, Calamansi</Text>
+            {/* <Text style={styles.headerSubtitle}>{DISEASE_LIBRARY.length} entries · Mango, Banana, Guava, Calamansi</Text> */}
+            <Text style={styles.headerSubtitle}>16 entries · Mango, Banana, Guava, Calamansi</Text>
           </View>
         </LinearGradient>
 

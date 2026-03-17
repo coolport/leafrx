@@ -114,7 +114,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Scans</Text>
+          <Text style={[styles.sectionTitle,{marginBottom: 14}]}>Recent Scans</Text>
           {scans.length > 0 ? (
             scans.slice(0, 5).map((scan) => (
               <RecentScanItem key={scan.id} scan={scan} />
