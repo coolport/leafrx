@@ -87,7 +87,7 @@ function getPlantEmoji(type: string) {
     const t = type.toLowerCase();
     if (t.includes('mango')) return '🥭';
     if (t.includes('banana')) return '🍌';
-    if (t.includes('guava')) return '🍈';
-    if (t.includes('calamansi')) return '🍊';
+    if (t.includes('guava')) return '🍐';
+    if (t.includes('calamansi')) return '🫒';
     return '🌿';
 }

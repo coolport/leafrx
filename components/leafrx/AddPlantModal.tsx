@@ -26,14 +26,23 @@ function getPlantEmoji(type: string) {
 export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: AddPlantModalProps) {
     const colors = useColors();
     const styles = createStyles(colors);
+    
+    // Normalize plant type to match our list exactly
+    const getNormalizedType = (type?: string) => {
+        if (!type) return 'Mango';
+        const found = plantTypes.find(t => t.toLowerCase() === type.toLowerCase());
+        return found || 'Mango';
+    };
+
     const [plantName, setPlantName] = useState('');
-    const [plantType, setPlantType] = useState(initialPlantType || 'Mango');
+    const [plantType, setPlantType] = useState(getNormalizedType(initialPlantType));
 
     useEffect(() => {
-        if (initialPlantType && isVisible) setPlantType(initialPlantType);
+        if (isVisible) {
+            setPlantType(getNormalizedType(initialPlantType));
+        }
         if (!isVisible) {
             setPlantName('');
-            setPlantType(initialPlantType || 'Mango');
         }
     }, [initialPlantType, isVisible]);
 
