@@ -24,7 +24,7 @@ export function HealthOverview() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                         <Feather name="trending-up" size={14} color="#4ade80" />
                         <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginLeft: 4, fontWeight: '600' }}>
-                            Better than last week
+                            Keep it up!
                         </Text>
                     </View>
                 </View>
