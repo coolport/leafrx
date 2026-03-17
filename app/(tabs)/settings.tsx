@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { ScrollView, View, Text, StatusBar, Switch, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Image, View, Text, StatusBar, Switch, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { createStyles } from '../../constants/styles';
@@ -13,6 +13,7 @@ export default function SettingsScreen() {
     const colors = useColors();
     const styles = createStyles(colors);
     const { settings, updateSettings } = usePlantStore();
+    const [isSupportModalVisible, setSupportModalVisible] = useState(false);
 
     const toggleNotifications = async (value: boolean) => {
         try {
@@ -122,7 +123,10 @@ export default function SettingsScreen() {
                             </View>
                             <Text style={styles.settingsDescription}>1.0.0</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.settingsRow}>
+                        <TouchableOpacity 
+                            style={styles.settingsRow}
+                            onPress={() => setSupportModalVisible(true)}
+                        >
                             <View style={styles.settingsRowInfo}>
                                 <View style={[styles.settingsIconContainer, { backgroundColor: '#ffe4e6' }]}>
                                     <Feather name="heart" size={20} color="#f43f5e" />
@@ -134,7 +138,90 @@ export default function SettingsScreen() {
                     </View>
                 </View>
             </ScrollView>
+
+            {/* Support / Creators Modal */}
+            <Modal
+                visible={isSupportModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setSupportModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+
+                        <Image
+                            source={require('../../assets/images/leafy.png')}
+                            style={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: 30,
+                                alignSelf: 'center',
+                                marginBottom: 14,
+                            }}
+                            resizeMode="cover"
+                        />
+
+                        {/* Title */}
+                        <Text style={[styles.modalTitle, { textAlign: 'center', marginBottom: 4 }]}>
+                            LeafRx
+                        </Text>
+                        <Text style={{ fontSize: 13, color: colors.textMuted, textAlign: 'center', marginBottom: 20 }}>
+                            CS402 2026
+                        </Text>
+
+                        {/* Team list */}
+                        <View style={{
+                            backgroundColor: colors.background,
+                            borderRadius: 14,
+                            overflow: 'hidden',
+                            marginBottom: 24,
+                            borderWidth: 1,
+                            borderColor: colors.border,
+                        }}>
+                            {[
+                                { name: 'Aidan Alcayde',         role: 'Lead Developer' },
+                                { name: 'Rod Manzon',             role: 'Frontend Developer' },
+                                { name: 'Rhonnmark Helorentino',  role: 'Frontend Developer' },
+                            ].map((member, i, arr) => (
+                                    <View
+                                        key={member.name}
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            paddingHorizontal: 16,
+                                            paddingVertical: 13,
+                                            borderBottomWidth: i < arr.length - 1 ? 1 : 0,
+                                            borderBottomColor: colors.border,
+                                        }}
+                                    >
+                                        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+                                            {member.name}
+                                        </Text>
+                                        <Text style={{ fontSize: 13, color: colors.textMuted }}>
+                                            {member.role}
+                                        </Text>
+                                    </View>
+                                ))}
+                        </View>
+
+                        {/* Close button */}
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setSupportModalVisible(false)}
+                            style={{
+                                backgroundColor: colors.primary,
+                                paddingVertical: 15,
+                                borderRadius: 16,
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Close</Text>
+                        </TouchableOpacity>
+
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
-
