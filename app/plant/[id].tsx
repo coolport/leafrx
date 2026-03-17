@@ -86,16 +86,29 @@ export default function DetailScreen() {
 
   const saveScanToStore = async (result: AnalysisResponse) => {
     if (!selectedPlant) return;
-    const [_, disease] = result.primary_disease?.split("_") || [
-      "Unknown",
-      "Unknown",
-    ];
+    
+    // Extract disease and plant type from predictions or primary_disease
+    const firstPrediction = result.predictions?.[0];
+    let diseaseName = "Unknown";
+    
+    if (firstPrediction) {
+      diseaseName = firstPrediction.disease;
+    } else if (result.primary_disease) {
+      const parts = result.primary_disease.split("_");
+      diseaseName = parts.length > 1 ? parts[1] : parts[0];
+    }
+    
+    // Normalize "healthy" string
+    if (diseaseName.toLowerCase() === 'healthy') {
+      diseaseName = 'Healthy';
+    }
+
     const scanRecord: ScanResult = {
       id: result.image_id || Math.random().toString(),
       plantId: selectedPlant.id,
       plantName: selectedPlant.name,
-      disease: disease || "Unknown",
-      severity: result.predictions?.[0]?.severity || "Unknown",
+      disease: diseaseName,
+      severity: result.predictions?.[0]?.severity || "none",
       date: new Date().toISOString(),
       healthScore: result.overall_health_score || 0,
       predictions: result.predictions || [],
@@ -561,9 +574,11 @@ export default function DetailScreen() {
                         color: colors.text,
                       }}
                     >
-                      {analysisResult?.primary_disease
-                        ?.split("_")[1]
-                        ?.toUpperCase() || "Healthy"}
+                      {(analysisResult?.predictions?.[0]?.disease || 
+                        (analysisResult?.primary_disease?.includes("_") 
+                          ? analysisResult.primary_disease.split("_")[1] 
+                          : analysisResult?.primary_disease) || 
+                        "Healthy").toUpperCase()}
                     </Text>
                     <View
                       style={{
@@ -587,9 +602,9 @@ export default function DetailScreen() {
                             color: colors.text,
                           }}
                         >
-                          {analysisResult?.primary_disease
-                            ?.split("_")[0]
-                            ?.toUpperCase() || ""}
+                          {(analysisResult?.predictions?.[0]?.plant_type || 
+                            analysisResult?.primary_disease?.split("_")[0] || 
+                            selectedPlant.type).toUpperCase()}
                         </Text>
                       </View>
                     </View>

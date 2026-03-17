@@ -177,13 +177,29 @@ export default function ScanScreen() {
     const saveScanToStore = async (plantIdToSave?: string) => {
         if (!analysisResult) return;
         const plantInfo = usePlantStore.getState().plants.find(p => p.id === plantIdToSave);
-        const [_, disease] = analysisResult.primary_disease?.split('_') || ['Unknown', 'Unknown'];
+        
+        // Extract disease and plant type from predictions or primary_disease
+        const firstPrediction = analysisResult.predictions?.[0];
+        let diseaseName = "Unknown";
+        
+        if (firstPrediction) {
+            diseaseName = firstPrediction.disease;
+        } else if (analysisResult.primary_disease) {
+            const parts = analysisResult.primary_disease.split("_");
+            diseaseName = parts.length > 1 ? parts[1] : parts[0];
+        }
+        
+        // Normalize "healthy" string
+        if (diseaseName.toLowerCase() === 'healthy') {
+            diseaseName = 'Healthy';
+        }
+
         const scanRecord: ScanResult = {
             id: analysisResult.image_id || Math.random().toString(),
             plantId: plantIdToSave,
             plantName: plantInfo?.name || 'Unassigned',
-            disease: disease || 'Unknown',
-            severity: analysisResult.predictions?.[0]?.severity || 'Unknown',
+            disease: diseaseName,
+            severity: analysisResult.predictions?.[0]?.severity || 'none',
             date: new Date().toISOString(),
             healthScore: analysisResult.overall_health_score || 0,
             predictions: analysisResult.predictions || [],
@@ -200,8 +216,9 @@ export default function ScanScreen() {
         }
     };
 
-    const detectedPlantType = analysisResult?.primary_disease?.split('_')[0];
-    const filterType = selectedPlantClass || detectedPlantType;
+    const detectedPlantType = analysisResult?.predictions?.[0]?.plant_type || 
+                             analysisResult?.primary_disease?.split('_')[0];
+    const filterType = selectedPlantClass || (detectedPlantType?.toLowerCase() === 'healthy' ? undefined : detectedPlantType);
     const filteredPlantsForAssignment = filterType
         ? plants.filter(p => p.type.toLowerCase() === filterType.toLowerCase())
         : plants;
@@ -578,7 +595,11 @@ export default function ScanScreen() {
                                             PRIMARY FINDING
                                         </Text>
                                         <Text style={{ fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.5, marginBottom: 10 }}>
-                                            {analysisResult?.primary_disease?.split('_')[1]?.toUpperCase() || 'HEALTHY'}
+                                            {(analysisResult?.predictions?.[0]?.disease || 
+                                              (analysisResult?.primary_disease?.includes("_") 
+                                                ? analysisResult.primary_disease.split("_")[1] 
+                                                : analysisResult?.primary_disease) || 
+                                              "Healthy").toUpperCase()}
                                         </Text>
 
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -592,7 +613,9 @@ export default function ScanScreen() {
                                                 borderColor: colors.border,
                                             }}>
                                                 <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary }}>
-                                                    {analysisResult?.primary_disease?.split('_')[0]?.toUpperCase() || ""}
+                                                    {(analysisResult?.predictions?.[0]?.plant_type || 
+                                                      analysisResult?.primary_disease?.split('_')[0] || 
+                                                      "").toUpperCase()}
                                                 </Text>
                                             </View>
                                         </View>
@@ -681,7 +704,7 @@ export default function ScanScreen() {
                 isVisible={isAddPlantModalVisible}
                 onClose={() => setAddPlantModalVisible(false)}
                 onSave={onAddPlantSave}
-                initialPlantType={selectedPlantClass}
+                initialPlantType={filterType}
             />
 
             <AssignPlantModal
