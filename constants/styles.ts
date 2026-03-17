@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import { ThemeColors } from './theme';
 
-export const styles = StyleSheet.create({
+export const createStyles = (colors: ThemeColors) => StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#f8fafc', // Softer background
+      backgroundColor: colors.background,
     },
     screen: {
       flex: 1,
@@ -15,7 +16,7 @@ export const styles = StyleSheet.create({
       borderBottomLeftRadius: 32,
       borderBottomRightRadius: 32,
       // Shadows for depth
-      shadowColor: '#000',
+      shadowColor: colors.cardShadow,
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.1,
       shadowRadius: 15,
@@ -30,7 +31,7 @@ export const styles = StyleSheet.create({
     },
     headerTitle: {
       fontSize: 28,
-      fontWeight: '800', // Thicker font
+      fontWeight: '800',
       color: '#fff',
       letterSpacing: -0.5,
     },
@@ -111,13 +112,13 @@ export const styles = StyleSheet.create({
     sectionTitle: {
       fontSize: 20,
       fontWeight: '700',
-      color: '#1e293b',
+      color: colors.text,
       letterSpacing: -0.3,
     },
     viewAll: {
       fontSize: 14,
       fontWeight: '600',
-      color: '#059669',
+      color: colors.primary,
     },
   
     // Quick Actions
@@ -133,8 +134,7 @@ export const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       gap: 12,
-      // Depth
-      shadowColor: '#000',
+      shadowColor: colors.cardShadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -158,15 +158,14 @@ export const styles = StyleSheet.create({
   
     // Plant Cards
     plantCard: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderRadius: 24,
       padding: 16,
       marginBottom: 16,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 16,
-      // Soft shadow
-      shadowColor: '#64748b',
+      shadowColor: colors.cardShadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.08,
       shadowRadius: 12,
@@ -185,13 +184,13 @@ export const styles = StyleSheet.create({
     plantName: {
       fontSize: 17,
       fontWeight: '700',
-      color: '#1e293b',
+      color: colors.text,
       marginBottom: 4,
     },
     plantMeta: {
       fontSize: 13,
       fontWeight: '500',
-      color: '#64748b',
+      color: colors.textSecondary,
     },
     lastCheckedContainer: {
         flexDirection: 'row',
@@ -211,25 +210,25 @@ export const styles = StyleSheet.create({
     lastChecked: {
       fontSize: 11,
       fontWeight: '500',
-      color: '#94a3b8',
+      color: colors.textMuted,
     },
   
     // Recent Scans
     scanDate: {
       fontSize: 12,
-      color: '#9ca3af',
+      color: colors.textMuted,
     },
 
     // Recent Scans (New Card Style)
     recentScanCard: {
-        backgroundColor: '#ffffff',
+        backgroundColor: colors.card,
         borderRadius: 12,
         padding: 16,
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#f3f4f6',
+        borderColor: colors.border,
     },
     recentScanIconContainer: {
         width: 48,
@@ -245,141 +244,37 @@ export const styles = StyleSheet.create({
     recentScanPlantName: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#1f2937',
+        color: colors.text,
         marginBottom: 2,
     },
     recentScanDisease: {
         fontSize: 13,
-        color: '#6b7280',
+        color: colors.textSecondary,
     },
     recentScanDate: {
         fontSize: 13,
-        color: '#9ca3af',
+        color: colors.textMuted,
         fontWeight: '500',
     },
   
     // Page Header
     pageHeader: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       padding: 16,
       borderBottomWidth: 1,
-      borderBottomColor: '#e5e7eb',
+      borderBottomColor: colors.border,
     },
     pageTitle: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: '#1f2937',
+      color: colors.text,
       marginBottom: 4,
     },
     pageSubtitle: {
       fontSize: 14,
-      color: '#6b7280',
+      color: colors.textSecondary,
     },
   
-    // // Camera Area
-    // cameraArea: {
-    //   backgroundColor: '#fff',
-    //   borderRadius: 32,
-    //   aspectRatio: 1,
-    //   alignItems: 'center',
-    //   justifyContent: 'center',
-    //   marginVertical: 24,
-    //   overflow: 'hidden',
-    //   // Depth
-    //   shadowColor: '#000',
-    //   shadowOffset: { width: 0, height: 8 },
-    //   shadowOpacity: 0.1,
-    //   shadowRadius: 16,
-    //   elevation: 6,
-    //   borderWidth: 1,
-    //   borderColor: '#f1f5f9',
-    // },
-    // scannerFrame: {
-    //   position: 'absolute',
-    //   top: 20,
-    //   left: 20,
-    //   right: 20,
-    //   bottom: 20,
-    //   borderWidth: 2,
-    //   borderColor: '#10b981',
-    //   borderRadius: 24,
-    //   borderStyle: 'dashed',
-    // },
-    // scanningLine: {
-    //   position: 'absolute',
-    //   left: 0,
-    //   right: 0,
-    //   height: 4,
-    //   backgroundColor: '#10b981',
-    //   shadowColor: '#10b981',
-    //   shadowOffset: { width: 0, height: 0 },
-    //   shadowOpacity: 0.8,
-    //   shadowRadius: 10,
-    // },
-    // cameraText: {
-    //   fontSize: 18,
-    //   fontWeight: '700',
-    //   color: '#1e293b',
-    //   marginTop: 20,
-    //   marginBottom: 8,
-    // },
-    // cameraHint: {
-    //   fontSize: 14,
-    //   color: '#64748b',
-    //   textAlign: 'center',
-    //   paddingHorizontal: 40,
-    //   lineHeight: 20,
-    // },
-    //
-    // // Scan Screen Header
-    // scanHeader: {
-    //     paddingTop: 16,
-    //     paddingBottom: 24,
-    //     paddingHorizontal: 24,
-    //     backgroundColor: '#fff',
-    //     borderBottomLeftRadius: 32,
-    //     borderBottomRightRadius: 32,
-    //     shadowColor: '#000',
-    //     shadowOffset: { width: 0, height: 4 },
-    //     shadowOpacity: 0.05,
-    //     shadowRadius: 10,
-    //     elevation: 3,
-    // },
-
-    // // Bottom Sheet (Modal Content)
-    // bottomSheetContent: {
-    //     backgroundColor: '#fff',
-    //     borderTopLeftRadius: 32,
-    //     borderTopRightRadius: 32,
-    //     paddingTop: 8,
-    //     paddingBottom: 40,
-    //     width: '100%',
-    //     maxHeight: '90%',
-    //     shadowColor: '#000',
-    //     shadowOffset: { width: 0, height: -10 },
-    //     shadowOpacity: 0.1,
-    //     shadowRadius: 20,
-    //     elevation: 20,
-    // },
-    // bottomSheetHandle: {
-    //     width: 40,
-    //     height: 5,
-    //     backgroundColor: '#e2e8f0',
-    //     borderRadius: 3,
-    //     alignSelf: 'center',
-    //     marginVertical: 12,
-    // },
-    //
-    // // Labels
-    // label: {
-    //     fontSize: 14,
-    //     fontWeight: '700',
-    //     color: '#475569',
-    //     marginBottom: 8,
-    //     textTransform: 'uppercase',
-    //     letterSpacing: 0.5,
-    // },
-
     // Chips Container
     chipsScroll: {
         paddingBottom: 8,
@@ -387,16 +282,16 @@ export const styles = StyleSheet.create({
     filterPill: {
       paddingHorizontal: 16,
       paddingVertical: 6,
-      backgroundColor: '#f3f4f6',
+      backgroundColor: colors.border,
       borderRadius: 20,
       marginRight: 8,
     },
     filterPillActive: {
-      backgroundColor: '#22c55e',
+      backgroundColor: colors.primary,
     },
     filterPillText: {
       fontSize: 14,
-      color: '#374151',
+      color: colors.textSecondary,
     },
     filterPillTextActive: {
       color: '#fff',
@@ -405,7 +300,7 @@ export const styles = StyleSheet.create({
     // Progress Bar
     progressBar: {
       height: 8,
-      backgroundColor: '#e5e7eb',
+      backgroundColor: colors.border,
       borderRadius: 4,
       marginTop: 8,
       overflow: 'hidden',
@@ -420,12 +315,12 @@ export const styles = StyleSheet.create({
     },
     plantCardFooterText: {
       fontSize: 12,
-      color: '#6b7280',
+      color: colors.textSecondary,
     },
   
     // Detail Header
     detailHeader: {
-      backgroundColor: '#22c55e',
+      backgroundColor: colors.primary,
       padding: 24,
     },
     backBtn: {
@@ -467,9 +362,9 @@ export const styles = StyleSheet.create({
   
     // Chart
     chartContainer: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
@@ -481,16 +376,16 @@ export const styles = StyleSheet.create({
       marginBottom: 16,
     },
     chartSelect: {
-      backgroundColor: '#f9fafb',
+      backgroundColor: colors.background,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
       borderRadius: 8,
       paddingHorizontal: 12,
       paddingVertical: 6,
     },
     chartSelectText: {
       fontSize: 14,
-      color: '#4b5563',
+      color: colors.textSecondary,
     },
     chart: {
       height: 200,
@@ -508,13 +403,13 @@ export const styles = StyleSheet.create({
     },
     bar: {
       width: '100%',
-      backgroundColor: '#22c55e',
+      backgroundColor: colors.primary,
       borderTopLeftRadius: 4,
       borderTopRightRadius: 4,
     },
     barLabel: {
       fontSize: 12,
-      color: '#6b7280',
+      color: colors.textSecondary,
     },
   
     // Stats Grid
@@ -525,9 +420,9 @@ export const styles = StyleSheet.create({
     },
     statCard: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
       borderRadius: 12,
       padding: 12,
       alignItems: 'center',
@@ -535,21 +430,21 @@ export const styles = StyleSheet.create({
     statValue: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: '#1f2937',
+      color: colors.text,
       marginTop: 8,
     },
     statLabel: {
       fontSize: 12,
-      color: '#6b7280',
+      color: colors.textSecondary,
       textAlign: 'center',
       marginTop: 4,
     },
   
     // Timeline
     timeline: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
       borderRadius: 12,
       padding: 16,
     },
@@ -569,7 +464,7 @@ export const styles = StyleSheet.create({
     timelineLine: {
       width: 2,
       flex: 1,
-      backgroundColor: '#e5e7eb',
+      backgroundColor: colors.border,
       marginTop: 4,
     },
     timelineContent: {
@@ -584,14 +479,14 @@ export const styles = StyleSheet.create({
     timelineDate: {
       fontSize: 14,
       fontWeight: '500',
-      color: '#1f2937',
+      color: colors.text,
     },
     timelineTime: {
       fontSize: 14,
-      color: '#6b7280',
+      color: colors.textSecondary,
     },
     timelineCard: {
-      backgroundColor: '#f9fafb',
+      backgroundColor: colors.background,
       borderRadius: 8,
       padding: 12,
     },
@@ -603,7 +498,7 @@ export const styles = StyleSheet.create({
     },
     timelineCardLabel: {
       fontSize: 14,
-      color: '#6b7280',
+      color: colors.textSecondary,
     },
     timelineCardScore: {
       fontSize: 14,
@@ -611,7 +506,7 @@ export const styles = StyleSheet.create({
     },
     timelineCardNote: {
       fontSize: 14,
-      color: '#374151',
+      color: colors.text,
     },
   
     // Severity Badge
@@ -631,9 +526,9 @@ export const styles = StyleSheet.create({
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderTopWidth: 1,
-      borderTopColor: '#e5e7eb',
+      borderTopColor: colors.border,
       flexDirection: 'row',
       paddingVertical: 8,
       paddingBottom: 20,
@@ -645,18 +540,18 @@ export const styles = StyleSheet.create({
     },
     navText: {
       fontSize: 12,
-      color: '#6b7280',
+      color: colors.textSecondary,
       marginTop: 4,
     },
     navTextActive: {
-      color: '#22c55e',
+      color: colors.primary,
     },
 
     // Settings
     settingsSection: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
       borderRadius: 12,
       paddingHorizontal: 16,
       marginBottom: 16,
@@ -669,7 +564,7 @@ export const styles = StyleSheet.create({
     },
     settingsRowNotLast: {
       borderBottomWidth: 1,
-      borderBottomColor: '#f3f4f6',
+      borderBottomColor: colors.border,
     },
     settingsRowInfo: {
       flexDirection: 'row',
@@ -685,11 +580,11 @@ export const styles = StyleSheet.create({
     },
     settingsLabel: {
       fontSize: 16,
-      color: '#1f2937',
+      color: colors.text,
     },
     settingsDescription: {
       fontSize: 12,
-      color: '#6b7280',
+      color: colors.textSecondary,
       marginTop: 2,
     },
 
@@ -701,7 +596,7 @@ export const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       gap: 10,
-      shadowColor: '#10b981',
+      shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.2,
       shadowRadius: 8,
@@ -714,9 +609,9 @@ export const styles = StyleSheet.create({
     },
     btnSecondary: {
       height: 56,
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
       borderRadius: 16,
       flexDirection: 'row',
       alignItems: 'center',
@@ -726,7 +621,7 @@ export const styles = StyleSheet.create({
     btnSecondaryText: {
       fontSize: 16,
       fontWeight: '600',
-      color: '#4b5563',
+      color: colors.textSecondary,
     },
     
     // Modal & Bottom Sheet
@@ -734,15 +629,15 @@ export const styles = StyleSheet.create({
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: colors.modalBackground,
       padding: 20,
     },
     bottomSheetContent: {
-      backgroundColor: '#fff',
-      borderRadius: 32, // Rounded all around
+      backgroundColor: colors.card,
+      borderRadius: 32,
       width: '100%',
       maxHeight: '90%',
-      shadowColor: '#000',
+      shadowColor: colors.cardShadow,
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.1,
       shadowRadius: 20,
@@ -752,7 +647,7 @@ export const styles = StyleSheet.create({
     bottomSheetHandle: {
       width: 40,
       height: 5,
-      backgroundColor: '#e5e7eb',
+      backgroundColor: colors.border,
       borderRadius: 3,
       alignSelf: 'center',
       marginVertical: 12,
@@ -760,7 +655,7 @@ export const styles = StyleSheet.create({
     modalTitle: {
       fontSize: 22,
       fontWeight: '800',
-      color: '#1f2937',
+      color: colors.text,
     },
     modalButton: {
       height: 52,
@@ -777,14 +672,14 @@ export const styles = StyleSheet.create({
 
     // Camera / Viewfinder Area
     cameraArea: {
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.background,
       borderRadius: 20,
       aspectRatio: 1,
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
       borderWidth: 1,
-      borderColor: '#f1f5f9',
+      borderColor: colors.border,
     },
     scannerFrame: {
       position: 'absolute',
@@ -793,7 +688,7 @@ export const styles = StyleSheet.create({
       right: 20,
       bottom: 20,
       borderWidth: 2,
-      borderColor: '#10b981',
+      borderColor: colors.primary,
       borderRadius: 24,
       borderStyle: 'dashed',
       opacity: 0.5,
@@ -803,8 +698,8 @@ export const styles = StyleSheet.create({
       left: 0,
       right: 0,
       height: 3,
-      backgroundColor: '#10b981',
-      shadowColor: '#10b981',
+      backgroundColor: colors.primary,
+      shadowColor: colors.primary,
       shadowOpacity: 0.8,
       shadowRadius: 10,
     },
@@ -813,7 +708,7 @@ export const styles = StyleSheet.create({
     label: {
       fontSize: 13,
       fontWeight: '700',
-      color: '#6b7280',
+      color: colors.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
       marginBottom: 12,
@@ -822,22 +717,22 @@ export const styles = StyleSheet.create({
       paddingHorizontal: 16,
       paddingVertical: 8,
       borderRadius: 20,
-      backgroundColor: '#f3f4f6',
+      backgroundColor: colors.background,
       borderWidth: 1,
-      borderColor: '#e5e7eb',
+      borderColor: colors.border,
     },
     chipSelected: {
       paddingHorizontal: 16,
       paddingVertical: 8,
       borderRadius: 20,
-      backgroundColor: '#10b981',
+      backgroundColor: colors.primary,
       borderWidth: 1,
-      borderColor: '#10b981',
+      borderColor: colors.primary,
     },
     chipText: {
       fontSize: 14,
       fontWeight: '600',
-      color: '#4b5563',
+      color: colors.textSecondary,
     },
     chipTextSelected: {
       fontSize: 14,
@@ -845,16 +740,14 @@ export const styles = StyleSheet.create({
       color: '#fff',
     },
     modalContent: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderRadius: 32,
       padding: 24,
       width: '100%',
-      shadowColor: '#000',
+      shadowColor: colors.cardShadow,
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.1,
       shadowRadius: 20,
       elevation: 10,
     },
   });
-  
-  
