@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 import { ScanResult } from './types';
 
 interface TimelineProps {
@@ -8,12 +9,15 @@ interface TimelineProps {
 }
 
 export function Timeline({ scans = [] }: TimelineProps) {
+    const colors = useColors();
+    const styles = createStyles(colors);
+
     if (scans.length === 0) {
         return (
             <View style={styles.timeline}>
                 <Text style={styles.sectionTitle}>Timeline</Text>
                 <View style={{ padding: 20, alignItems: 'center' }}>
-                    <Text style={{ color: '#9ca3af', fontStyle: 'italic' }}>No scan history yet.</Text>
+                    <Text style={{ color: colors.textMuted, fontStyle: 'italic' }}>No scan history yet.</Text>
                 </View>
             </View>
         );
@@ -26,7 +30,7 @@ export function Timeline({ scans = [] }: TimelineProps) {
             {scans.map((scan, i) => {
                 const date = new Date(scan.date);
                 const status = scan.healthScore >= 80 ? 'healthy' : scan.healthScore >= 60 ? 'warning' : 'critical';
-                const statusColor = status === 'healthy' ? '#22c55e' : status === 'warning' ? '#eab308' : '#ef4444';
+                const statusColor = status === 'healthy' ? colors.success : status === 'warning' ? colors.warning : colors.danger;
                 
                 return (
                     <View key={scan.id} style={styles.timelineItem}>

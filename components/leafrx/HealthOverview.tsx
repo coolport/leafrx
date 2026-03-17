@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 import { usePlantStore } from '../../store/usePlantStore';
 
 export function HealthOverview() {
     const { plants } = usePlantStore();
+    const colors = useColors();
+    const styles = createStyles(colors);
     
     const totalPlants = plants.length;
     const healthyCount = plants.filter(p => p.status === 'healthy').length;
@@ -37,15 +40,15 @@ export function HealthOverview() {
             
             <View style={styles.healthBadges}>
                 <View style={styles.badge}>
-                    <View style={[styles.dot, { backgroundColor: '#10b981' }]} />
+                    <View style={[styles.dot, { backgroundColor: colors.success }]} />
                     <Text style={styles.badgeText}>{healthyCount} Healthy</Text>
                 </View>
                 <View style={styles.badge}>
-                    <View style={[styles.dot, { backgroundColor: '#f59e0b' }]} />
+                    <View style={[styles.dot, { backgroundColor: colors.warning }]} />
                     <Text style={styles.badgeText}>{warningCount} Warning</Text>
                 </View>
                 <View style={styles.badge}>
-                    <View style={[styles.dot, { backgroundColor: '#ef4444' }]} />
+                    <View style={[styles.dot, { backgroundColor: colors.danger }]} />
                     <Text style={styles.badgeText}>{criticalCount} Critical</Text>
                 </View>
             </View>

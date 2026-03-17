@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 import { ScanResult } from './types';
 import { useRouter } from 'expo-router';
 
@@ -11,11 +12,13 @@ type RecentScanItemProps = {
 
 export function RecentScanItem({ scan }: RecentScanItemProps) {
     const router = useRouter();
+    const colors = useColors();
+    const styles = createStyles(colors);
 
     const getStatusColor = () => {
-        if (scan.healthScore > 85) return '#10b981';
-        if (scan.healthScore > 60) return '#f59e0b';
-        return '#ef4444';
+        if (scan.healthScore > 85) return colors.success;
+        if (scan.healthScore > 60) return colors.warning;
+        return colors.danger;
     };
 
     const handlePress = () => {
@@ -46,7 +49,7 @@ export function RecentScanItem({ scan }: RecentScanItemProps) {
 
             <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.recentScanDate}>{formattedDate}</Text>
-                {scan.plantId && <Feather name="chevron-right" size={16} color="#9ca3af" style={{ marginTop: 4 }} />}
+                {scan.plantId && <Feather name="chevron-right" size={16} color={colors.textMuted} style={{ marginTop: 4 }} />}
             </View>
         </TouchableOpacity>
     );

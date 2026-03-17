@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 import { Plant } from './types';
 import { Link } from 'expo-router';
 
@@ -10,6 +11,8 @@ type PlantCardProps = {
 };
 
 export function PlantCard({ plant }: PlantCardProps) {
+    const colors = useColors();
+    const styles = createStyles(colors);
     const size = 56;
     const strokeWidth = 5;
     const radius = (size - strokeWidth) / 2;
@@ -18,9 +21,9 @@ export function PlantCard({ plant }: PlantCardProps) {
     const offset = circumference - (progress * circumference);
 
     const getStatusColor = () => {
-        if (plant.status === 'healthy') return '#10b981';
-        if (plant.status === 'warning') return '#f59e0b';
-        return '#ef4444';
+        if (plant.status === 'healthy') return colors.success;
+        if (plant.status === 'warning') return colors.warning;
+        return colors.danger;
     };
 
     return (
@@ -31,9 +34,9 @@ export function PlantCard({ plant }: PlantCardProps) {
             >
                 <View style={[
                     styles.plantIcon,
-                    plant.status === 'healthy' && { backgroundColor: 'rgba(16, 185, 129, 0.1)' },
-                    plant.status === 'warning' && { backgroundColor: 'rgba(245, 158, 11, 0.1)' },
-                    plant.status === 'critical' && { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+                    plant.status === 'healthy' && { backgroundColor: `${colors.success}1A` },
+                    plant.status === 'warning' && { backgroundColor: `${colors.warning}1A` },
+                    plant.status === 'critical' && { backgroundColor: `${colors.danger}1A` },
                 ]}>
                     <Text style={{ fontSize: 28 }}>{getPlantEmoji(plant.type)}</Text>
                 </View>
@@ -52,7 +55,7 @@ export function PlantCard({ plant }: PlantCardProps) {
                             cx={size / 2}
                             cy={size / 2}
                             r={radius}
-                            stroke="#f1f5f9"
+                            stroke={colors.border}
                             strokeWidth={strokeWidth}
                             fill="transparent"
                         />

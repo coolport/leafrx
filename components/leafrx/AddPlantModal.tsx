@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
-import { styles } from '../../constants/styles';
+import { createStyles } from '../../constants/styles';
+import { useColors } from '../../hooks/use-colors';
 
 type AddPlantModalProps = {
     isVisible: boolean;
@@ -23,6 +24,8 @@ function getPlantEmoji(type: string) {
 }
 
 export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: AddPlantModalProps) {
+    const colors = useColors();
+    const styles = createStyles(colors);
     const [plantName, setPlantName] = useState('');
     const [plantType, setPlantType] = useState(initialPlantType || 'Mango');
 
@@ -63,44 +66,44 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                         <View>
                             <Text style={styles.modalTitle}>Add New Plant</Text>
-                            <Text style={{ fontSize: 13, color: '#94a3b8', fontWeight: '500', marginTop: 3 }}>
+                            <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '500', marginTop: 3 }}>
                                 Give your plant a name & type
                             </Text>
                         </View>
                         <TouchableOpacity onPress={handleClose}>
-                            <View style={{ backgroundColor: '#f1f5f9', padding: 8, borderRadius: 20 }}>
-                                <Feather name="x" size={18} color="#64748b" />
+                            <View style={{ backgroundColor: colors.background, padding: 8, borderRadius: 20 }}>
+                                <Feather name="x" size={18} color={colors.textSecondary} />
                             </View>
                         </TouchableOpacity>
                     </View>
 
                     {/* Divider */}
-                    <View style={{ height: 1, backgroundColor: '#f1f5f9', marginVertical: 16 }} />
+                    <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 16 }} />
 
                     {/* Plant Name */}
                     <Text style={styles.label}>Plant Name</Text>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        backgroundColor: '#f8fafc',
+                        backgroundColor: colors.background,
                         borderRadius: 16,
                         borderWidth: 1.5,
-                        borderColor: plantName ? '#10b981' : '#e2e8f0',
+                        borderColor: plantName ? colors.primary : colors.border,
                         paddingHorizontal: 14,
                         marginBottom: 20,
                         gap: 10,
                     }}>
-                        <Feather name="tag" size={16} color={plantName ? '#10b981' : '#94a3b8'} />
+                        <Feather name="tag" size={16} color={plantName ? colors.primary : colors.textMuted} />
                         <TextInput
                             style={{
                                 flex: 1,
                                 height: 50,
                                 fontSize: 15,
                                 fontWeight: '600',
-                                color: '#1e293b',
+                                color: colors.text,
                             }}
                             placeholder="e.g. My Backyard Mango"
-                            placeholderTextColor="#cbd5e1"
+                            placeholderTextColor={colors.textMuted}
                             value={plantName}
                             onChangeText={setPlantName}
                         />
@@ -125,14 +128,14 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                                         borderWidth: 1.5,
                                     },
                                     plantType === type
-                                        ? { backgroundColor: '#ecfdf5', borderColor: '#10b981' }
-                                        : { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' },
+                                        ? { backgroundColor: `${colors.primary}1A`, borderColor: colors.primary }
+                                        : { backgroundColor: colors.background, borderColor: colors.border },
                                 ]}
                             >
                                 <Text style={{ fontSize: 18 }}>{getPlantEmoji(type)}</Text>
                                 <Text style={[
                                     { fontSize: 14, fontWeight: '700' },
-                                    plantType === type ? { color: '#059669' } : { color: '#64748b' },
+                                    plantType === type ? { color: colors.primary } : { color: colors.textSecondary },
                                 ]}>
                                     {type}
                                 </Text>
@@ -141,7 +144,7 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                                         width: 16,
                                         height: 16,
                                         borderRadius: 8,
-                                        backgroundColor: '#10b981',
+                                        backgroundColor: colors.primary,
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                     }}>
@@ -153,7 +156,7 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                     </View>
 
                     {/* Divider */}
-                    <View style={{ height: 1, backgroundColor: '#f1f5f9', marginBottom: 16 }} />
+                    <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 16 }} />
 
                     {/* Buttons */}
                     <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -171,7 +174,7 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
                             onPress={handleSave}
                         >
                             <LinearGradient
-                                colors={['#059669', '#10b981']}
+                                colors={[colors.primaryDark, colors.primary]}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 1 }}
                                 style={[styles.btnPrimary]}
