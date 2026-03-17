@@ -15,9 +15,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/icon2.png",
-        "backgroundImage": "./assets/images/icon2.png",
-        "monochromeImage": "./assets/images/icon2.png"
+        "foregroundImage": "./assets/images/leafy.png",
+        "backgroundImage": "./assets/images/leafy.png",
+        "monochromeImage": "./assets/images/leafy.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -25,14 +25,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/icon2.png"
+      "favicon": "./assets/images/leafy.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icon2.png",
+          "image": "./assets/images/leafy.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
