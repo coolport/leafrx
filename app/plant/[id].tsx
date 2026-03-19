@@ -1,6 +1,16 @@
 import React, { useState } from "react";
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert, Image, ActivityIndicator, Modal, } from "react-native";
-import { useSafeAreaInsets, SafeAreaView, } from "react-native-safe-area-context";
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  StatusBar,
+  Alert,
+  Image,
+  ActivityIndicator,
+  Modal,
+} from "react-native";
+import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -31,13 +41,10 @@ export default function DetailScreen() {
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
-    null,
-  );
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
 
   const mutation = useMutation({
-    mutationFn: ({ uri, type }: { uri: string; type?: string }) =>
-      apiService.analyzeImage(uri, type),
+    mutationFn: ({ uri, type }: { uri: string; type?: string }) => apiService.analyzeImage(uri, type),
     onSuccess: (data) => {
       if (data.success) {
         setAnalysisResult(data);
@@ -86,21 +93,21 @@ export default function DetailScreen() {
 
   const saveScanToStore = async (result: AnalysisResponse) => {
     if (!selectedPlant) return;
-    
+
     // Extract disease and plant type from predictions or primary_disease
     const firstPrediction = result.predictions?.[0];
     let diseaseName = "Unknown";
-    
+
     if (firstPrediction) {
       diseaseName = firstPrediction.disease;
     } else if (result.primary_disease) {
       const parts = result.primary_disease.split("_");
       diseaseName = parts.length > 1 ? parts[1] : parts[0];
     }
-    
+
     // Normalize "healthy" string
-    if (diseaseName.toLowerCase() === 'healthy') {
-      diseaseName = 'Healthy';
+    if (diseaseName.toLowerCase() === "healthy") {
+      diseaseName = "Healthy";
     }
 
     const scanRecord: ScanResult = {
@@ -145,12 +152,7 @@ export default function DetailScreen() {
           }}
         >
           <Feather name="alert-circle" size={48} color={colors.textMuted} />
-          <Text
-            style={[
-              styles.pageSubtitle,
-              { marginTop: 16, textAlign: "center" },
-            ]}
-          >
+          <Text style={[styles.pageSubtitle, { marginTop: 16, textAlign: "center" }]}>
             Plant information not found.
           </Text>
           <TouchableOpacity onPress={handleBack} style={{ marginTop: 24 }}>
@@ -166,8 +168,7 @@ export default function DetailScreen() {
     return `${date.getMonth() + 1}/${date.getDate()}`;
   });
 
-  const trendData =
-    selectedPlant.healthTrend.length > 0 ? selectedPlant.healthTrend : [100];
+  const trendData = selectedPlant.healthTrend.length > 0 ? selectedPlant.healthTrend : [100];
   const displayLabels = chartLabels.length > 0 ? chartLabels : ["Start"];
 
   const getStatusColors = (status: string): [string, string, string] => {
@@ -208,12 +209,7 @@ export default function DetailScreen() {
             },
           ]}
         >
-          <View
-            style={[
-              styles.detailTop,
-              { paddingHorizontal: 24, marginBottom: 12 },
-            ]}
-          >
+          <View style={[styles.detailTop, { paddingHorizontal: 24, marginBottom: 12 }]}>
             <View
               style={[
                 styles.detailIcon,
@@ -224,9 +220,7 @@ export default function DetailScreen() {
                 },
               ]}
             >
-              <Text style={{ fontSize: 36 }}>
-                {getPlantEmoji(selectedPlant.type)}
-              </Text>
+              <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
@@ -239,12 +233,7 @@ export default function DetailScreen() {
                   alignSelf: "flex-start",
                 }}
               >
-                <Text
-                  style={[
-                    styles.detailMeta,
-                    { color: "#fff", fontWeight: "700" },
-                  ]}
-                >
+                <Text style={[styles.detailMeta, { color: "#fff", fontWeight: "700" }]}>
                   {selectedPlant.type.toUpperCase()}
                 </Text>
               </View>
@@ -253,33 +242,25 @@ export default function DetailScreen() {
               {mutation.isPending ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={styles.detailScore}>
-                  {Math.round(selectedPlant.health)}%
-                </Text>
+                <Text style={styles.detailScore}>{Math.round(selectedPlant.health)}%</Text>
               )}
-              <Text style={[styles.detailLabel, { fontWeight: "700" }]}>
-                Health
-              </Text>
+              <Text style={[styles.detailLabel, { fontWeight: "700" }]}>Health</Text>
             </View>
           </View>
         </LinearGradient>
 
         <View style={styles.section}>
-          <Chart
-            data={trendData}
-            labels={displayLabels}
-            color={statusColors[1]}
-          />
+          <Chart data={trendData} labels={displayLabels} color={statusColors[1]} />
 
           <View style={[styles.statsGrid, { marginTop: 8 }]}>
             <View style={{ flex: 1 }}>
               <StatCard
                 icon="calendar"
                 label="Last Check"
-                value={new Date(selectedPlant.lastChecked).toLocaleDateString(
-                  undefined,
-                  { month: "short", day: "numeric" },
-                )}
+                value={new Date(selectedPlant.lastChecked).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })}
                 color={colors.secondary}
               />
             </View>
@@ -295,10 +276,7 @@ export default function DetailScreen() {
               <StatCard
                 icon="alert-triangle"
                 label="Status"
-                value={
-                  selectedPlant.status.charAt(0).toUpperCase() +
-                  selectedPlant.status.slice(1)
-                }
+                value={selectedPlant.status.charAt(0).toUpperCase() + selectedPlant.status.slice(1)}
                 color={getStatusColor(selectedPlant.status)}
               />
             </View>
@@ -438,9 +416,7 @@ export default function DetailScreen() {
               <Feather name="trash-2" size={24} color={colors.danger} />
             </View>
 
-            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 8 }]}>
-              Delete Plant
-            </Text>
+            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 8 }]}>Delete Plant</Text>
 
             <Text
               style={{
@@ -456,7 +432,14 @@ export default function DetailScreen() {
 
             <TouchableOpacity
               activeOpacity={0.8}
-              style={[styles.modalButton, { backgroundColor: colors.danger, width: "100%", marginBottom: 10 }]}
+              style={[
+                styles.modalButton,
+                {
+                  backgroundColor: colors.danger,
+                  width: "100%",
+                  marginBottom: 10,
+                },
+              ]}
               onPress={async () => {
                 setShowDeleteModal(false);
                 await deletePlant(plantId);
@@ -497,14 +480,7 @@ export default function DetailScreen() {
                 paddingVertical: 16,
               }}
             >
-              <Text
-                style={[
-                  styles.modalTitle,
-                  { textAlign: "left", marginBottom: 0 },
-                ]}
-              >
-                Diagnosis Results
-              </Text>
+              <Text style={[styles.modalTitle, { textAlign: "left", marginBottom: 0 }]}>Diagnosis Results</Text>
               <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
                 <View
                   style={{
@@ -540,8 +516,7 @@ export default function DetailScreen() {
 
               <View
                 style={{
-                  backgroundColor:
-                    getStatusColor(analysisResult?.status) + "15",
+                  backgroundColor: getStatusColor(analysisResult?.status) + "15",
                   borderRadius: 24,
                   padding: 20,
                   marginBottom: 20,
@@ -574,11 +549,13 @@ export default function DetailScreen() {
                         color: colors.text,
                       }}
                     >
-                      {(analysisResult?.predictions?.[0]?.disease || 
-                        (analysisResult?.primary_disease?.includes("_") 
-                          ? analysisResult.primary_disease.split("_")[1] 
-                          : analysisResult?.primary_disease) || 
-                        "Healthy").toUpperCase()}
+                      {(
+                        analysisResult?.predictions?.[0]?.disease ||
+                        (analysisResult?.primary_disease?.includes("_")
+                          ? analysisResult.primary_disease.split("_")[1]
+                          : analysisResult?.primary_disease) ||
+                        "Healthy"
+                      ).toUpperCase()}
                     </Text>
                     <View
                       style={{
@@ -602,9 +579,11 @@ export default function DetailScreen() {
                             color: colors.text,
                           }}
                         >
-                          {(analysisResult?.predictions?.[0]?.plant_type || 
-                            analysisResult?.primary_disease?.split("_")[0] || 
-                            selectedPlant.type).toUpperCase()}
+                          {(
+                            analysisResult?.predictions?.[0]?.plant_type ||
+                            analysisResult?.primary_disease?.split("_")[0] ||
+                            selectedPlant.type
+                          ).toUpperCase()}
                         </Text>
                       </View>
                     </View>
@@ -649,44 +628,48 @@ export default function DetailScreen() {
               {analysisResult?.predictions?.[0]?.recommendations && (
                 <View style={{ marginBottom: 20 }}>
                   <Text style={styles.label}>Recommendations</Text>
-                  {analysisResult.predictions[0].recommendations.map(
-                    (rec, i) => (
+                  {analysisResult.predictions[0].recommendations.map((rec, i) => (
+                    <View
+                      key={i}
+                      style={{
+                        flexDirection: "row",
+                        marginBottom: 6,
+                        gap: 12,
+                        alignItems: "center",
+                      }}
+                    >
                       <View
-                        key={i}
                         style={{
-                          flexDirection: "row",
-                          marginBottom: 6,
-                          gap: 12,
-                          alignItems: "center",
+                          backgroundColor: `${colors.success}1A`,
+                          padding: 6,
+                          borderRadius: 10,
                         }}
                       >
-                        <View
-                          style={{
-                            backgroundColor: `${colors.success}1A`,
-                            padding: 6,
-                            borderRadius: 10,
-                          }}
-                        >
-                          <Feather name="check" size={14} color={colors.success} />
-                        </View>
-                        <Text
-                          style={{
-                            flex: 1,
-                            fontSize: 14,
-                            color: colors.textSecondary,
-                            fontWeight: "500",
-                          }}
-                        >
-                          {rec || ""}
-                        </Text>
+                        <Feather name="check" size={14} color={colors.success} />
                       </View>
-                    ),
-                  )}
+                      <Text
+                        style={{
+                          flex: 1,
+                          fontSize: 14,
+                          color: colors.textSecondary,
+                          fontWeight: "500",
+                        }}
+                      >
+                        {rec || ""}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
               )}
             </ScrollView>
 
-            <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 }}>
+            <View
+              style={{
+                paddingHorizontal: 24,
+                paddingTop: 16,
+                paddingBottom: 40,
+              }}
+            >
               <TouchableOpacity
                 activeOpacity={0.8}
                 style={{ width: "100%" }}
@@ -696,9 +679,7 @@ export default function DetailScreen() {
                   colors={[colors.primaryDark, colors.primary] as any}
                   style={[styles.modalButton, { marginHorizontal: 0 }]}
                 >
-                  <Text style={styles.modalButtonText}>
-                    Close & Update Stats
-                  </Text>
+                  <Text style={styles.modalButtonText}>Close & Update Stats</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>

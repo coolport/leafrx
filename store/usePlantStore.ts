@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { Plant, ScanResult } from '../components/leafrx/types';
-import { dbService } from '../services/database';
+import { create } from "zustand";
+import { Plant, ScanResult } from "../components/leafrx/types";
+import { dbService } from "../services/database";
 
 interface PlantState {
   plants: Plant[];
@@ -10,21 +10,21 @@ interface PlantState {
     notifications: boolean;
     darkMode: boolean;
   };
-  
+
   // Lifecycle
   initialize: () => Promise<void>;
-  
+
   // Plant Actions
-  addPlant: (plant: Omit<Plant, 'id' | 'entries' | 'healthTrend'>) => Promise<void>;
+  addPlant: (plant: Omit<Plant, "id" | "entries" | "healthTrend">) => Promise<void>;
   updatePlant: (id: string, updates: Partial<Plant>) => Promise<void>;
   deletePlant: (id: string) => Promise<void>;
-  
+
   // Scan Actions
   addScan: (scan: ScanResult) => Promise<void>;
   getPlantScans: (plantId: string) => ScanResult[];
 
   // Settings Actions
-  updateSettings: (settings: Partial<PlantState['settings']>) => Promise<void>;
+  updateSettings: (settings: Partial<PlantState["settings"]>) => Promise<void>;
 }
 
 export const usePlantStore = create<PlantState>((set, get) => ({
@@ -41,14 +41,14 @@ export const usePlantStore = create<PlantState>((set, get) => ({
       const [dbPlants, dbScans, notifications, darkMode] = await Promise.all([
         dbService.getAllPlants(),
         dbService.getAllScans(),
-        dbService.getSetting('notifications', true),
-        dbService.getSetting('darkMode', false),
+        dbService.getSetting("notifications", true),
+        dbService.getSetting("darkMode", false),
       ]);
-      set({ 
-        plants: dbPlants, 
-        scans: dbScans, 
+      set({
+        plants: dbPlants,
+        scans: dbScans,
         settings: { notifications, darkMode },
-        isHydrated: true 
+        isHydrated: true,
       });
     } catch (error) {
       console.error("Failed to hydrate store from SQLite:", error);
@@ -59,15 +59,15 @@ export const usePlantStore = create<PlantState>((set, get) => ({
   updateSettings: async (newSettings) => {
     const currentSettings = get().settings;
     const updatedSettings = { ...currentSettings, ...newSettings };
-    
+
     set({ settings: updatedSettings });
 
     // Persist to DB
     if (newSettings.notifications !== undefined) {
-      await dbService.saveSetting('notifications', newSettings.notifications);
+      await dbService.saveSetting("notifications", newSettings.notifications);
     }
     if (newSettings.darkMode !== undefined) {
-      await dbService.saveSetting('darkMode', newSettings.darkMode);
+      await dbService.saveSetting("darkMode", newSettings.darkMode);
     }
   },
 
@@ -78,19 +78,19 @@ export const usePlantStore = create<PlantState>((set, get) => ({
       entries: 0,
       healthTrend: [plantData.health],
     };
-    
+
     await dbService.savePlant(newPlant);
     set((state) => ({ plants: [newPlant, ...state.plants] }));
   },
 
   updatePlant: async (id, updates) => {
     const state = get();
-    const plant = state.plants.find(p => p.id === id);
+    const plant = state.plants.find((p) => p.id === id);
     if (!plant) return;
 
     const updatedPlant = { ...plant, ...updates };
     await dbService.savePlant(updatedPlant);
-    
+
     set((state) => ({
       plants: state.plants.map((p) => (p.id === id ? updatedPlant : p)),
     }));
@@ -106,10 +106,10 @@ export const usePlantStore = create<PlantState>((set, get) => ({
 
   addScan: async (scan) => {
     await dbService.saveScan(scan);
-    
+
     set((state) => {
       const updatedScans = [scan, ...state.scans];
-      
+
       if (scan.plantId) {
         const updatedPlants = state.plants.map((p) => {
           if (p.id === scan.plantId) {
@@ -120,7 +120,7 @@ export const usePlantStore = create<PlantState>((set, get) => ({
               lastChecked: scan.date,
               entries: p.entries + 1,
               healthTrend: newTrend,
-              status: scan.healthScore >= 80 ? 'healthy' : scan.healthScore >= 60 ? 'warning' : 'critical' as any,
+              status: scan.healthScore >= 80 ? "healthy" : scan.healthScore >= 60 ? "warning" : ("critical" as any),
             };
             // Side effect: Async save updated plant stats to DB
             dbService.savePlant(updatedPlant);
@@ -130,7 +130,7 @@ export const usePlantStore = create<PlantState>((set, get) => ({
         });
         return { scans: updatedScans, plants: updatedPlants };
       }
-      
+
       return { scans: updatedScans };
     });
   },

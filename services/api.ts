@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { AnalysisResponse, Disease, DiseaseSummary } from '../components/leafrx/types';
+import axios from "axios";
+import { AnalysisResponse, Disease, DiseaseSummary } from "../components/leafrx/types";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -13,7 +13,7 @@ export const apiService = {
    * Check if the API is online
    */
   getHealth: async () => {
-    const response = await api.get('/api/health');
+    const response = await api.get("/api/health");
     return response.data;
   },
 
@@ -21,7 +21,7 @@ export const apiService = {
    * Get list of supported plant types
    */
   getPlantTypes: async (): Promise<string[]> => {
-    const response = await api.get('/api/plant-types');
+    const response = await api.get("/api/plant-types");
     return response.data.plant_types;
   },
 
@@ -29,7 +29,7 @@ export const apiService = {
    * Get all diseases or filter by plant
    */
   getDiseases: async (): Promise<DiseaseSummary> => {
-    const response = await api.get('/api/diseases');
+    const response = await api.get("/api/diseases");
     return response.data;
   },
 
@@ -46,26 +46,26 @@ export const apiService = {
    */
   analyzeImage: async (imageUri: string, plantType?: string): Promise<AnalysisResponse> => {
     const formData = new FormData();
-    
+
     // In React Native, we need to handle the image file differently for FormData
-    const uriParts = imageUri.split('.');
+    const uriParts = imageUri.split(".");
     const fileType = uriParts[uriParts.length - 1];
 
     // @ts-ignore - React Native FormData requires this structure
-    formData.append('image', {
+    formData.append("image", {
       uri: imageUri,
       name: `photo.${fileType}`,
-      type: `image/${fileType === 'jpg' ? 'jpeg' : fileType}`,
+      type: `image/${fileType === "jpg" ? "jpeg" : fileType}`,
     });
 
     if (plantType) {
-      formData.append('plant_type', plantType);
+      formData.append("plant_type", plantType);
     }
 
     try {
-      const response = await api.post<AnalysisResponse>('/api/analyze', formData, {
+      const response = await api.post<AnalysisResponse>("/api/analyze", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
@@ -75,8 +75,8 @@ export const apiService = {
       }
       return {
         success: false,
-        error: 'Network error or server timeout',
-        suggestion: 'Please check your connection and try again.'
+        error: "Network error or server timeout",
+        suggestion: "Please check your connection and try again.",
       };
     }
   },

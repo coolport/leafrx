@@ -1,11 +1,11 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { Feather } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useColors } from '@/hooks/use-colors';
+import { Tabs } from "expo-router";
+import React from "react";
+import { Platform, StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
+import { Feather } from "@expo/vector-icons";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useColors } from "@/hooks/use-colors";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -19,13 +19,13 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.tabIconDefault,
         headerShown: false,
         tabBarStyle: {
-          position: 'absolute',
+          position: "absolute",
           borderTopWidth: 0,
           elevation: 0,
           height: 84,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingBottom: Platform.OS === "ios" ? 28 : 12,
           paddingTop: 12,
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.tabBarBackgroundAndroid,
+          backgroundColor: Platform.OS === "ios" ? "transparent" : colors.tabBarBackgroundAndroid,
           borderRadius: 32,
           marginHorizontal: 20,
           bottom: 24,
@@ -34,57 +34,52 @@ export default function TabLayout() {
           shadowOpacity: 0.1,
           shadowRadius: 20,
         },
-        tabBarBackground: () => (
-          Platform.OS === 'ios' ? (
-            <BlurView 
-              intensity={80} 
-              tint={colorScheme === 'dark' ? 'dark' : 'light'} 
-              style={StyleSheet.absoluteFill} 
-            />
-          ) : null
-        ),
+        tabBarBackground: () =>
+          Platform.OS === "ios" ? (
+            <BlurView intensity={80} tint={colorScheme === "dark" ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+          ) : null,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '700',
+          fontWeight: "700",
           marginTop: 4,
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color }) => <Feather name="grid" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="scan"
         options={{
-          title: 'Scan',
+          title: "Scan",
           tabBarIcon: ({ color }) => <Feather name="maximize" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="tracking"
         options={{
-          title: 'Tracker',
+          title: "Tracker",
           tabBarIcon: ({ color }) => <Feather name="layers" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="library"
         options={{
-          title: 'Library',
+          title: "Library",
           tabBarIcon: ({ color }) => <Feather name="book" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: "Settings",
           tabBarIcon: ({ color }) => <Feather name="sliders" size={24} color={color} />,
         }}
       />
     </Tabs>
   );
 }
-
