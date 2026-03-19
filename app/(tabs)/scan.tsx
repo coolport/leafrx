@@ -99,7 +99,7 @@ export default function ScanScreen() {
       scanLinePos.value = 0;
       pulseScale.value = 1;
     }
-  }, [mutation.isPending]);
+  }, [mutation.isPending, pulseScale, scanLinePos]);
 
   const animatedScanStyle = useAnimatedStyle(() => ({
     top: `${scanLinePos.value * 100}%`,
@@ -123,7 +123,7 @@ export default function ScanScreen() {
       } else {
         setSelectedPlantClass(params.plantType);
       }
-    }, [params.plantId, params.plantType])
+    }, [params.plantId, params.plantType, mutation])
   );
 
   const processImage = async (uri: string) => {

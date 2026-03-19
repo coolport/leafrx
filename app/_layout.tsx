@@ -35,7 +35,7 @@ export default function RootLayout() {
       }
     }
     setup();
-  }, []);
+  }, [initializeStore]);
 
   return (
     <QueryClientProvider client={queryClient}>
