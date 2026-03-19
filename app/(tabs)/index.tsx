@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, View, Text, TouchableOpacity, StatusBar } from "react-native";
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,12 +13,38 @@ import { Link } from "expo-router";
 import { usePlantStore } from "../../store/usePlantStore";
 import { useQuery } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
+import { notificationService } from "../../services/notifications";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = createStyles(colors);
-  const { plants, scans } = usePlantStore();
+  const { plants, scans, settings, updateSettings } = usePlantStore();
+
+  const toggleNotifications = async () => {
+    const newValue = !settings.notifications;
+    try {
+      if (newValue) {
+        const granted = await notificationService.requestPermissions();
+        if (granted) {
+          await notificationService.scheduleReminders();
+          await updateSettings({ notifications: true });
+        } else {
+          Alert.alert(
+            "Permission Denied",
+            "Please enable notifications in your device settings to receive reminders.",
+            [{ text: "OK" }]
+          );
+        }
+      } else {
+        await notificationService.cancelAll();
+        await updateSettings({ notifications: false });
+      }
+    } catch (error) {
+      console.error("Error toggling notifications:", error);
+      Alert.alert("Error", "Failed to update notification settings.");
+    }
+  };
 
   const { data: apiStatus } = useQuery({
     queryKey: ["api-health"],
@@ -74,8 +100,8 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.bellBtn} activeOpacity={0.7}>
-              <Feather name="bell" size={20} color="#fff" />
+            <TouchableOpacity style={styles.bellBtn} activeOpacity={0.7} onPress={toggleNotifications}>
+              <Feather name={settings.notifications ? "bell" : "bell-off"} size={20} color="#fff" />
             </TouchableOpacity>
           </View>
 
