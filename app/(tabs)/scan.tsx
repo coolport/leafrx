@@ -9,10 +9,9 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  Dimensions,
   StyleSheet,
 } from "react-native";
-import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,9 +22,6 @@ import Animated, {
   withTiming,
   Easing,
   withSequence,
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
 } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { createStyles } from "../../constants/styles";
@@ -37,8 +33,6 @@ import { AnalysisResponse, Plant, ScanResult } from "../../components/leafrx/typ
 import { usePlantStore } from "../../store/usePlantStore";
 import { useMutation } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();

@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, Dimensions } from "react-native";
-import Svg, { Path, Defs, LinearGradient, Stop, Circle, Line, Text as SvgText } from "react-native-svg";
-import { createStyles } from "../../constants/styles";
+import Svg, { Path, Defs, LinearGradient, Stop, Circle, Line } from "react-native-svg";
 import { useColors } from "../../hooks/use-colors";
 
 const { width: SW } = Dimensions.get("window");
@@ -17,7 +16,6 @@ type ChartProps = {
 
 export function Chart({ data: rawData, labels, color: propColor }: ChartProps) {
   const colors = useColors();
-  const styles = createStyles(colors);
   const color = propColor || colors.primary;
 
   // Filter and ensure numeric data

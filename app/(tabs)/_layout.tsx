@@ -3,7 +3,6 @@ import React from "react";
 import { Platform, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useColors } from "@/hooks/use-colors";
 

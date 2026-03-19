@@ -3,7 +3,6 @@ import { Modal, View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { Plant } from "./types";
 
 type AssignPlantModalProps = {
