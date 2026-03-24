@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Plant, ScanResult } from "../components/leafrx/types";
 import { dbService } from "../services/database";
+import { Language } from "../constants/translations";
 
 interface PlantState {
   plants: Plant[];
@@ -9,6 +10,7 @@ interface PlantState {
   settings: {
     notifications: boolean;
     darkMode: boolean;
+    language: Language;
   };
 
   // Lifecycle
@@ -34,20 +36,22 @@ export const usePlantStore = create<PlantState>((set, get) => ({
   settings: {
     notifications: true,
     darkMode: false,
+    language: "en",
   },
 
   initialize: async () => {
     try {
-      const [dbPlants, dbScans, notifications, darkMode] = await Promise.all([
+      const [dbPlants, dbScans, notifications, darkMode, language] = await Promise.all([
         dbService.getAllPlants(),
         dbService.getAllScans(),
         dbService.getSetting("notifications", true),
         dbService.getSetting("darkMode", false),
+        dbService.getSetting("language", "en"),
       ]);
       set({
         plants: dbPlants,
         scans: dbScans,
-        settings: { notifications, darkMode },
+        settings: { notifications, darkMode, language },
         isHydrated: true,
       });
     } catch (error) {
@@ -68,6 +72,9 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     }
     if (newSettings.darkMode !== undefined) {
       await dbService.saveSetting("darkMode", newSettings.darkMode);
+    }
+    if (newSettings.language !== undefined) {
+      await dbService.saveSetting("language", newSettings.language);
     }
   },
 
