@@ -1,6 +1,6 @@
 import { usePlantStore } from "@/store/usePlantStore";
 
 export function useColorScheme() {
-  const settings = usePlantStore((state) => state.settings);
-  return settings.darkMode ? "dark" : "light";
+  const darkMode = usePlantStore((state) => state.settings.darkMode);
+  return darkMode ? "dark" : "light";
 }
