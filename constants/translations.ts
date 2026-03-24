@@ -1,0 +1,78 @@
+export type Language = "en" | "fil";
+
+export const translations = {
+  en: {
+    settings: {
+      title: "Settings",
+      subtitle: "Manage your preferences",
+      general: "General",
+      notifications: "Notifications",
+      darkMode: "Dark Mode",
+      language: "Language",
+      about: "About",
+      sendTestNotification: "Send Test Notification",
+      version: "Version",
+      support: "Support",
+      permissionDenied: "Permission Denied",
+      enableNotificationsMsg: "Please enable notifications in your device settings to receive reminders.",
+      notificationsDisabled: "Notifications Disabled",
+      enableFirstMsg: "Enable notifications first to send a test.",
+      error: "Error",
+      failedUpdateSettings: "Failed to update notification settings.",
+      close: "Close",
+      teamRole: "Lead Developer",
+      frontendRole: "Frontend Developer",
+      tagline: "CS402 2026",
+      selectLanguage: "Select Language",
+    },
+    tabs: {
+      home: "Home",
+      scan: "Scan",
+      tracker: "Tracker",
+      library: "Library",
+      settings: "Settings",
+    },
+    languages: {
+      en: "English",
+      fil: "Filipino (Tagalog)",
+    },
+  },
+  fil: {
+    settings: {
+      title: "Mga Setting",
+      subtitle: "Pamahalaan ang iyong mga kagustuhan",
+      general: "Pangkalahatan",
+      notifications: "Mga Abiso",
+      darkMode: "Dark Mode",
+      language: "Wika",
+      about: "Tungkol sa",
+      sendTestNotification: "Magpadala ng Test Notification",
+      version: "Bersyon",
+      support: "Suporta",
+      permissionDenied: "Tinanggihan ang Pahintulot",
+      enableNotificationsMsg: "Mangyaring paganahin ang mga abiso sa iyong mga setting ng device upang makatanggap ng mga paalala.",
+      notificationsDisabled: "Naka-disable ang mga Abiso",
+      enableFirstMsg: "Paganahin muna ang mga abiso upang magpadala ng test.",
+      error: "Error",
+      failedUpdateSettings: "Nabigong i-update ang mga setting ng abiso.",
+      close: "Isara",
+      teamRole: "Lead Developer",
+      frontendRole: "Frontend Developer",
+      tagline: "CS402 2026",
+      selectLanguage: "Pumili ng Wika",
+    },
+    tabs: {
+      home: "Home",
+      scan: "I-scan",
+      tracker: "Tracker",
+      library: "Aklatan",
+      settings: "Settings",
+    },
+    languages: {
+      en: "Ingles",
+      fil: "Filipino (Tagalog)",
+    },
+  },
+};
+
+export type TranslationKeys = typeof translations.en;
