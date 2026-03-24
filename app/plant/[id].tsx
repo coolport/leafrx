@@ -34,9 +34,13 @@ export default function DetailScreen() {
   const { id } = useLocalSearchParams();
   const plantId = Array.isArray(id) ? id[0] : id;
 
-  const { plants, getPlantScans, deletePlant, addScan } = usePlantStore();
+  const plants = usePlantStore((state) => state.plants);
+  const getPlantScans = usePlantStore((state) => state.getPlantScans);
+  const deletePlant = usePlantStore((state) => state.deletePlant);
+  const addScan = usePlantStore((state) => state.addScan);
+
   const selectedPlant = plants.find((p) => p.id === plantId);
-  const plantScans = getPlantScans(plantId);
+  const plantScans = getPlantScans(plantId as string);
 
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);

@@ -14,12 +14,18 @@ import { usePlantStore } from "../../store/usePlantStore";
 import { useQuery } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
 import { notificationService } from "../../services/notifications";
+import { useTranslations } from "../../hooks/use-translations";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = createStyles(colors);
-  const { plants, scans, settings, updateSettings } = usePlantStore();
+  const { t } = useTranslations();
+  
+  const plants = usePlantStore((state) => state.plants);
+  const scans = usePlantStore((state) => state.scans);
+  const settings = usePlantStore((state) => state.settings);
+  const updateSettings = usePlantStore((state) => state.updateSettings);
 
   const toggleNotifications = async () => {
     const newValue = !settings.notifications;
@@ -31,8 +37,8 @@ export default function HomeScreen() {
           await updateSettings({ notifications: true });
         } else {
           Alert.alert(
-            "Permission Denied",
-            "Please enable notifications in your device settings to receive reminders.",
+            t.settings.permissionDenied,
+            t.settings.enableNotificationsMsg,
             [{ text: "OK" }]
           );
         }
@@ -42,7 +48,7 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error("Error toggling notifications:", error);
-      Alert.alert("Error", "Failed to update notification settings.");
+      Alert.alert(t.settings.error, t.settings.failedUpdateSettings);
     }
   };
 
@@ -78,7 +84,7 @@ export default function HomeScreen() {
                   marginTop: 4,
                 }}
               >
-                <Text style={styles.headerSubtitle}>Monitor your trees health</Text>
+                <Text style={styles.headerSubtitle}>{t.settings.subtitle}</Text>
                 <View
                   style={{
                     width: 6,

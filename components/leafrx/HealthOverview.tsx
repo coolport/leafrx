@@ -6,7 +6,7 @@ import { useColors } from "../../hooks/use-colors";
 import { usePlantStore } from "../../store/usePlantStore";
 
 export function HealthOverview() {
-  const { plants } = usePlantStore();
+  const plants = usePlantStore((state) => state.plants);
   const colors = useColors();
   const styles = createStyles(colors);
 

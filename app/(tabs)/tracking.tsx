@@ -13,7 +13,8 @@ export default function TrackingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = createStyles(colors);
-  const { plants, addPlant } = usePlantStore();
+  const plants = usePlantStore((state) => state.plants);
+  const addPlant = usePlantStore((state) => state.addPlant);
   const [isAddModalVisible, setAddModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");

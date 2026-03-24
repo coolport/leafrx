@@ -5,10 +5,12 @@ import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useColors } from "@/hooks/use-colors";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = useColors();
+  const { t } = useTranslations();
   const activeColor = colors.primary;
 
   return (
@@ -47,35 +49,35 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t.tabs.home,
           tabBarIcon: ({ color }) => <Feather name="grid" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="scan"
         options={{
-          title: "Scan",
+          title: t.tabs.scan,
           tabBarIcon: ({ color }) => <Feather name="maximize" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="tracking"
         options={{
-          title: "Tracker",
+          title: t.tabs.tracker,
           tabBarIcon: ({ color }) => <Feather name="layers" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="library"
         options={{
-          title: "Library",
+          title: t.tabs.library,
           tabBarIcon: ({ color }) => <Feather name="book" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: t.tabs.settings,
           tabBarIcon: ({ color }) => <Feather name="sliders" size={24} color={color} />,
         }}
       />

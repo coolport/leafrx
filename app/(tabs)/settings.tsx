@@ -7,13 +7,17 @@ import { useColors } from "../../hooks/use-colors";
 import { Feather } from "@expo/vector-icons";
 import { usePlantStore } from "../../store/usePlantStore";
 import { notificationService } from "../../services/notifications";
+import { useTranslations } from "../../hooks/use-translations";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = createStyles(colors);
-  const { settings, updateSettings } = usePlantStore();
+  const settings = usePlantStore((state) => state.settings);
+  const updateSettings = usePlantStore((state) => state.updateSettings);
+  const { t, language } = useTranslations();
   const [isSupportModalVisible, setSupportModalVisible] = useState(false);
+  const [isLanguageModalVisible, setLanguageModalVisible] = useState(false);
 
   const toggleNotifications = async (value: boolean) => {
     try {
@@ -22,14 +26,8 @@ export default function SettingsScreen() {
         if (granted) {
           await notificationService.scheduleReminders();
           await updateSettings({ notifications: true });
-          // Optional: Send a test notification to confirm
-          // await notificationService.sendTestNotification();
         } else {
-          Alert.alert(
-            "Permission Denied",
-            "Please enable notifications in your device settings to receive reminders.",
-            [{ text: "OK" }]
-          );
+          Alert.alert(t.settings.permissionDenied, t.settings.enableNotificationsMsg, [{ text: "OK" }]);
         }
       } else {
         await notificationService.cancelAll();
@@ -37,12 +35,17 @@ export default function SettingsScreen() {
       }
     } catch (error) {
       console.error("Error toggling notifications:", error);
-      Alert.alert("Error", "Failed to update notification settings.");
+      Alert.alert(t.settings.error, t.settings.failedUpdateSettings);
     }
   };
 
   const toggleDarkMode = (value: boolean) => {
     updateSettings({ darkMode: value });
+  };
+
+  const handleLanguageSelect = (lang: "en" | "fil") => {
+    updateSettings({ language: lang });
+    setLanguageModalVisible(false);
   };
 
   return (
@@ -56,20 +59,20 @@ export default function SettingsScreen() {
           style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 32 }]}
         >
           <View style={{ paddingHorizontal: 24 }}>
-            <Text style={styles.headerTitle}>Settings</Text>
-            <Text style={styles.headerSubtitle}>Manage your preferences</Text>
+            <Text style={styles.headerTitle}>{t.settings.title}</Text>
+            <Text style={styles.headerSubtitle}>{t.settings.subtitle}</Text>
           </View>
         </LinearGradient>
 
         <View style={[styles.section, { marginTop: 0 }]}>
-          <Text style={styles.label}>General</Text>
+          <Text style={styles.label}>{t.settings.general}</Text>
           <View style={styles.settingsSection}>
             <View style={[styles.settingsRow, styles.settingsRowNotLast]}>
               <View style={styles.settingsRowInfo}>
                 <View style={[styles.settingsIconContainer, { backgroundColor: "#dbeafe" }]}>
                   <Feather name="bell" size={20} color="#3b82f6" />
                 </View>
-                <Text style={styles.settingsLabel}>Notifications</Text>
+                <Text style={styles.settingsLabel}>{t.settings.notifications}</Text>
               </View>
               <Switch
                 trackColor={{ false: colors.border, true: colors.primary }}
@@ -78,12 +81,12 @@ export default function SettingsScreen() {
                 value={settings.notifications}
               />
             </View>
-            <View style={styles.settingsRow}>
+            <View style={[styles.settingsRow, styles.settingsRowNotLast]}>
               <View style={styles.settingsRowInfo}>
                 <View style={[styles.settingsIconContainer, { backgroundColor: "#e0f2fe" }]}>
                   <Feather name="moon" size={20} color="#0284c7" />
                 </View>
-                <Text style={styles.settingsLabel}>Dark Mode</Text>
+                <Text style={styles.settingsLabel}>{t.settings.darkMode}</Text>
               </View>
               <Switch
                 trackColor={{ false: colors.border, true: colors.primary }}
@@ -92,9 +95,21 @@ export default function SettingsScreen() {
                 value={settings.darkMode}
               />
             </View>
+            <TouchableOpacity style={styles.settingsRow} onPress={() => setLanguageModalVisible(true)}>
+              <View style={styles.settingsRowInfo}>
+                <View style={[styles.settingsIconContainer, { backgroundColor: "#f0fdf4" }]}>
+                  <Feather name="globe" size={20} color="#22c55e" />
+                </View>
+                <Text style={styles.settingsLabel}>{t.settings.language}</Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.settingsDescription}>{language === "en" ? "English" : "Filipino"}</Text>
+                <Feather name="chevron-right" size={20} color={colors.textMuted} style={{ marginLeft: 8 }} />
+              </View>
+            </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>About</Text>
+          <Text style={styles.label}>{t.settings.about}</Text>
           <View style={styles.settingsSection}>
             <TouchableOpacity
               style={[styles.settingsRow, styles.settingsRowNotLast]}
@@ -102,7 +117,7 @@ export default function SettingsScreen() {
                 if (settings.notifications) {
                   await notificationService.sendTestNotification();
                 } else {
-                  Alert.alert("Notifications Disabled", "Enable notifications first to send a test.");
+                  Alert.alert(t.settings.notificationsDisabled, t.settings.enableFirstMsg);
                 }
               }}
             >
@@ -110,7 +125,7 @@ export default function SettingsScreen() {
                 <View style={[styles.settingsIconContainer, { backgroundColor: "#fef3c7" }]}>
                   <Feather name="zap" size={20} color="#eab308" />
                 </View>
-                <Text style={styles.settingsLabel}>Send Test Notification</Text>
+                <Text style={styles.settingsLabel}>{t.settings.sendTestNotification}</Text>
               </View>
               <Feather name="chevron-right" size={20} color={colors.textMuted} />
             </TouchableOpacity>
@@ -119,7 +134,7 @@ export default function SettingsScreen() {
                 <View style={[styles.settingsIconContainer, { backgroundColor: "#fef3c7" }]}>
                   <Feather name="info" size={20} color="#eab308" />
                 </View>
-                <Text style={styles.settingsLabel}>Version</Text>
+                <Text style={styles.settingsLabel}>{t.settings.version}</Text>
               </View>
               <Text style={styles.settingsDescription}>1.0.0</Text>
             </TouchableOpacity>
@@ -128,13 +143,76 @@ export default function SettingsScreen() {
                 <View style={[styles.settingsIconContainer, { backgroundColor: "#ffe4e6" }]}>
                   <Feather name="heart" size={20} color="#f43f5e" />
                 </View>
-                <Text style={styles.settingsLabel}>Support</Text>
+                <Text style={styles.settingsLabel}>{t.settings.support}</Text>
               </View>
               <Feather name="chevron-right" size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={isLanguageModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLanguageModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 24 }]}>{t.settings.selectLanguage}</Text>
+
+            <View style={{ gap: 12, marginBottom: 24 }}>
+              {[
+                { code: "en", label: "English", sub: "US English" },
+                { code: "fil", label: "Filipino", sub: "Tagalog" },
+              ].map((item) => (
+                <TouchableOpacity
+                  key={item.code}
+                  onPress={() => handleLanguageSelect(item.code as any)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: 16,
+                    borderRadius: 16,
+                    backgroundColor: language === item.code ? `${colors.primary}10` : colors.background,
+                    borderWidth: 1,
+                    borderColor: language === item.code ? colors.primary : colors.border,
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "700",
+                        color: language === item.code ? colors.primary : colors.text,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textMuted }}>{item.sub}</Text>
+                  </View>
+                  {language === item.code && <Feather name="check-circle" size={20} color={colors.primary} />}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setLanguageModalVisible(false)}
+              style={{
+                backgroundColor: colors.border,
+                paddingVertical: 15,
+                borderRadius: 16,
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: colors.textSecondary, fontWeight: "700", fontSize: 15 }}>{t.settings.close}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Support / Creators Modal */}
       <Modal
@@ -167,7 +245,7 @@ export default function SettingsScreen() {
                 marginBottom: 20,
               }}
             >
-              CS402 2026
+              {t.settings.tagline}
             </Text>
 
             {/* Team list */}
@@ -182,9 +260,9 @@ export default function SettingsScreen() {
               }}
             >
               {[
-                { name: "Aidan Alcayde", role: "Lead Developer" },
-                { name: "Rod Manzon", role: "Frontend Developer" },
-                { name: "Rhonnmark Helorentino", role: "Frontend Developer" },
+                { name: "Aidan Alcayde", role: t.settings.teamRole },
+                { name: "Rod Manzon", role: t.settings.frontendRole },
+                { name: "Rhonnmark Helorentino", role: t.settings.frontendRole },
               ].map((member, i, arr) => (
                 <View
                   key={member.name}
@@ -223,7 +301,7 @@ export default function SettingsScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>Close</Text>
+              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>{t.settings.close}</Text>
             </TouchableOpacity>
           </View>
         </View>

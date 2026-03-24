@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ScrollView,
   View,
@@ -33,19 +33,23 @@ import { AnalysisResponse, Plant, ScanResult } from "../../components/leafrx/typ
 import { usePlantStore } from "../../store/usePlantStore";
 import { useMutation } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
+import { useTranslations } from "../../hooks/use-translations";
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const colors = useColors();
   const styles = createStyles(colors);
+  const { t } = useTranslations();
   const params = useLocalSearchParams<{
     plantId?: string;
     plantType?: string;
   }>();
   const isUpdatingPlant = !!params.plantId;
 
-  const { plants, addScan, addPlant } = usePlantStore();
+  const plants = usePlantStore((state) => state.plants);
+  const addScan = usePlantStore((state) => state.addScan);
+  const addPlant = usePlantStore((state) => state.addPlant);
 
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
   const [isAddPlantModalVisible, setAddPlantModalVisible] = useState(false);
@@ -63,11 +67,11 @@ export default function ScanScreen() {
         setAnalysisResult(data);
         setResultsModalVisible(true);
       } else {
-        Alert.alert("Analysis Failed", data.error || "Unknown error occurred");
+        Alert.alert(t.settings.error, data.error || "Unknown error occurred");
       }
     },
     onError: () => {
-      Alert.alert("Connection Error", "Failed to connect to the server.");
+      Alert.alert(t.settings.error, "Failed to connect to the server.");
     },
   });
 
@@ -111,7 +115,7 @@ export default function ScanScreen() {
   }));
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       if (!params.plantId) {
         setResultsModalVisible(false);
         setAddPlantModalVisible(false);
@@ -123,7 +127,7 @@ export default function ScanScreen() {
       } else {
         setSelectedPlantClass(params.plantType);
       }
-    }, [params.plantId, params.plantType, mutation])
+    }, [params.plantId, params.plantType])
   );
 
   const processImage = async (uri: string) => {
@@ -145,7 +149,7 @@ export default function ScanScreen() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission Denied", "Camera permission is required.");
+      Alert.alert(t.settings.permissionDenied, "Camera permission is required.");
       return;
     }
     let result = await ImagePicker.launchCameraAsync({
@@ -278,7 +282,7 @@ export default function ScanScreen() {
         >
           <View style={[styles.headerTop, { marginBottom: 0 }]}>
             <View>
-              <Text style={styles.headerTitle}>{isUpdatingPlant ? "New Scan" : "Leaf Diagnosis"}</Text>
+              <Text style={styles.headerTitle}>{isUpdatingPlant ? "New Scan" : t.tabs.scan}</Text>
               <Text style={styles.headerSubtitle}>
                 {isUpdatingPlant
                   ? `For: ${plants.find((p) => p.id === params.plantId)?.name}`
@@ -1016,3 +1020,4 @@ export default function ScanScreen() {
     </View>
   );
 }
+
