@@ -76,7 +76,7 @@ LeafRx uses Expo Router's file-based system.
 ## 5. UI & Design System
 
 ### 5.1 Theming
-- **`constants/theme.ts`:** Defines the color palette (Primary: `#059669`, Success: `#10b981`, Warning: `#f59e0b`, Critical: `#ef4444`).
+- **`constants/theme.ts`:** Defines the color palette (Primary: `#059669`, Success: `#10b981`, Warning: `#f59e0b`, Diseased: `#ef4444`).
 - **`constants/styles.ts`:** Contains common shared styles (containers, headers, buttons).
 
 ### 5.2 Component Guidelines

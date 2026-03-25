@@ -72,7 +72,7 @@
 **Key field notes:**
 
 - `overall_health_score` — `0–100`, percentage of healthy leaves. Drive your health bar/ring UI from this.
-- `status` — `"healthy"` (≥80%), `"warning"` (60–79%), `"critical"` (<60%). Drive color coding from this.
+- `status` — `"healthy"` (≥80%), `"warning"` (60–79%), `"diseased"` (<60%). Drive color coding from this.
 - `primary_disease` — format is always `"planttype_disease"` e.g. `"mango_anthracnose"`. Strip the plant prefix to display just the disease name.
 - `disease_distribution` — keys are `"planttype_disease"` strings, values are leaf counts.
 - `predictions[].severity` — `"none"` | `"early"` | `"moderate"` | `"severe"`
