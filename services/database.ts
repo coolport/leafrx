@@ -20,7 +20,8 @@ const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
             lastChecked TEXT NOT NULL,
             status TEXT NOT NULL,
             entries INTEGER DEFAULT 0,
-            healthTrend TEXT NOT NULL
+            healthTrend TEXT NOT NULL,
+            imageUri TEXT
         );
         CREATE TABLE IF NOT EXISTS scans (
             id TEXT PRIMARY KEY NOT NULL,
@@ -40,6 +41,12 @@ const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
 
   try {
     await db.execAsync("ALTER TABLE scans ADD COLUMN status TEXT");
+  } catch {
+    // Column already exists.
+  }
+
+  try {
+    await db.execAsync("ALTER TABLE plants ADD COLUMN imageUri TEXT");
   } catch {
     // Column already exists.
   }
@@ -65,7 +72,7 @@ export const dbService = {
   savePlant: async (plant: Plant) => {
     const db = await getDb();
     await db.runAsync(
-      "INSERT OR REPLACE INTO plants (id, name, type, health, lastChecked, status, entries, healthTrend) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT OR REPLACE INTO plants (id, name, type, health, lastChecked, status, entries, healthTrend, imageUri) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         plant.id,
         plant.name,
@@ -75,6 +82,7 @@ export const dbService = {
         normalizeHealthStatus(plant.status, plant.health),
         plant.entries ?? 0,
         JSON.stringify(plant.healthTrend || []),
+        plant.imageUri || null,
       ]
     );
   },
@@ -86,6 +94,7 @@ export const dbService = {
       ...row,
       status: normalizeHealthStatus(row.status, row.health),
       healthTrend: JSON.parse(row.healthTrend || "[]"),
+      imageUri: row.imageUri || undefined,
     }));
   },
 
