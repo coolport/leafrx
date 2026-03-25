@@ -1,4 +1,4 @@
-export type HealthStatus = "healthy" | "warning" | "critical";
+export type HealthStatus = "healthy" | "warning" | "diseased";
 
 const LEGACY_TO_STATUS: Record<string, HealthStatus> = {
   optimal: "healthy",
@@ -7,13 +7,13 @@ const LEGACY_TO_STATUS: Record<string, HealthStatus> = {
   poor: "warning",
   healthy: "healthy",
   warning: "warning",
-  critical: "critical",
+  critical: "diseased",
 };
 
 export const getHealthStatus = (score: number): HealthStatus => {
   if (score >= 80) return "healthy";
   if (score >= 60) return "warning";
-  return "critical";
+  return "diseased";
 };
 
 export const normalizeHealthStatus = (status?: string | null, score?: number): HealthStatus => {
@@ -31,7 +31,7 @@ export const getHealthColor = (status: HealthStatus, colors: any) => {
       return colors.success;
     case "warning":
       return colors.warning;
-    case "critical":
+    case "diseased":
       return colors.danger;
     default:
       return colors.textMuted;

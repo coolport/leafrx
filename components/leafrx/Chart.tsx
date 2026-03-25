@@ -10,7 +10,7 @@ type ChartProps = {
   labels: string[];
 };
 
-const LEVEL_ORDER: HealthStatus[] = ["healthy", "warning", "critical"];
+const LEVEL_ORDER: HealthStatus[] = ["healthy", "warning", "diseased"];
 const CHART_HEIGHT = 150;
 const CARD_PADDING = 20;
 const Y_LABEL_WIDTH = 68;
@@ -31,13 +31,13 @@ export function Chart({ statuses, labels }: ChartProps) {
       acc[status] += 1;
       return acc;
     },
-    { healthy: 0, warning: 0, critical: 0 } as Record<HealthStatus, number>
+    { healthy: 0, warning: 0, diseased: 0 } as Record<HealthStatus, number>
   );
 
   const yPositions = {
     healthy: 18,
     warning: CHART_HEIGHT / 2,
-    critical: CHART_HEIGHT - 18,
+    diseased: CHART_HEIGHT - 18,
   } satisfies Record<HealthStatus, number>;
 
   const points = normalizedStatuses.map((status, index) => {

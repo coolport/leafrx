@@ -16,7 +16,7 @@ export function HealthOverview() {
   const totalPlants = plants.length;
   const healthyCount = plants.filter((p) => p.status === "healthy").length;
   const warningCount = plants.filter((p) => p.status === "warning").length;
-  const criticalCount = plants.filter((p) => p.status === "critical").length;
+  const criticalCount = plants.filter((p) => p.status === "diseased").length;
 
   const averageHealth = totalPlants > 0 ? Math.round(plants.reduce((acc, p) => acc + p.health, 0) / totalPlants) : 100;
   const healthStatus = getHealthStatus(averageHealth);
@@ -78,7 +78,7 @@ export function HealthOverview() {
         </View>
         <View style={styles.badge}>
           <View style={[styles.dot, { backgroundColor: colors.danger }]} />
-          <Text style={styles.badgeText}>{criticalCount} {t.home.critical}</Text>
+          <Text style={styles.badgeText}>{criticalCount} {t.home.diseased}</Text>
         </View>
       </View>
     </View>

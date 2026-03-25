@@ -46,7 +46,7 @@ export const translations = {
       keepItUp: "Keep it up!",
       healthy: "Healthy",
       warning: "Warning",
-      critical: "Critical",
+      diseased: "Diseased",
     },
     scan: {
       title: "Leaf Diagnosis",
@@ -91,7 +91,7 @@ export const translations = {
       good: "Good",
       fair: "Fair",
       poor: "Poor",
-      critical: "Critical",
+      diseased: "Diseased",
       label: "Health",
     },
     languages: {
@@ -144,7 +144,7 @@ export const translations = {
       keepItUp: "Ipagpatuloy lang!",
       healthy: "Mabuti",
       warning: "Babala",
-      critical: "Kritikal",
+      diseased: "May Sakit",
     },
     scan: {
       title: "Diagnosis ng Dahon",
@@ -189,7 +189,7 @@ export const translations = {
       good: "Mabuti",
       fair: "Katamtaman",
       poor: "Hindi Mabuti",
-      critical: "Kritikal",
+      diseased: "May Sakit",
       label: "Kalusugan",
     },
     languages: {

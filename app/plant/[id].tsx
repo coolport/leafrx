@@ -207,7 +207,7 @@ export default function DetailScreen() {
         return ["#059669", "#10b981", "#34d399"];
       case "warning":
         return ["#d97706", "#f59e0b", "#fbbf24"];
-      case "critical":
+      case "diseased":
         return ["#dc2626", "#ef4444", "#f87171"];
       default:
         return ["#475569", "#64748b", "#94a3b8"];
