@@ -3,6 +3,8 @@ import { View, Text } from "react-native";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { ScanResult } from "./types";
+import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
+import { useTranslations } from "../../hooks/use-translations";
 
 interface TimelineProps {
   scans?: ScanResult[];
@@ -11,6 +13,7 @@ interface TimelineProps {
 export function Timeline({ scans = [] }: TimelineProps) {
   const colors = useColors();
   const styles = createStyles(colors);
+  const { t } = useTranslations();
 
   if (scans.length === 0) {
     return (
@@ -29,9 +32,8 @@ export function Timeline({ scans = [] }: TimelineProps) {
 
       {scans.map((scan, i) => {
         const date = new Date(scan.date);
-        const status = scan.healthScore >= 80 ? "healthy" : scan.healthScore >= 60 ? "warning" : "critical";
-        const statusColor =
-          status === "healthy" ? colors.success : status === "warning" ? colors.warning : colors.danger;
+        const status = normalizeHealthStatus(scan.status, scan.healthScore);
+        const statusColor = getHealthColor(status, colors);
 
         return (
           <View key={scan.id} style={styles.timelineItem}>
@@ -52,9 +54,7 @@ export function Timeline({ scans = [] }: TimelineProps) {
               <View style={styles.timelineCard}>
                 <View style={styles.timelineCardHeader}>
                   <Text style={styles.timelineCardLabel}>{scan.disease.toUpperCase()}</Text>
-                  <Text style={[styles.timelineCardScore, { color: statusColor }]}>
-                    {Math.round(scan.healthScore)}%
-                  </Text>
+                  <Text style={[styles.timelineCardScore, { color: statusColor }]}>{t.home[status].toUpperCase()}</Text>
                 </View>
                 <Text style={styles.timelineCardNote}>
                   Severity: {scan.severity}. Detected {scan.predictions.length} leaf areas.

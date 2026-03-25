@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Plant, ScanResult } from "../components/leafrx/types";
 import { dbService } from "../services/database";
 import { Language } from "../constants/translations";
+import { normalizeHealthStatus } from "../constants/health";
 
 interface PlantState {
   plants: Plant[];
@@ -12,20 +13,12 @@ interface PlantState {
     darkMode: boolean;
     language: Language;
   };
-
-  // Lifecycle
   initialize: () => Promise<void>;
-
-  // Plant Actions
   addPlant: (plant: Omit<Plant, "id" | "entries" | "healthTrend">) => Promise<void>;
   updatePlant: (id: string, updates: Partial<Plant>) => Promise<void>;
   deletePlant: (id: string) => Promise<void>;
-
-  // Scan Actions
   addScan: (scan: ScanResult) => Promise<void>;
   getPlantScans: (plantId: string) => ScanResult[];
-
-  // Settings Actions
   updateSettings: (settings: Partial<PlantState["settings"]>) => Promise<void>;
 }
 
@@ -66,7 +59,6 @@ export const usePlantStore = create<PlantState>((set, get) => ({
 
     set({ settings: updatedSettings });
 
-    // Persist to DB
     if (newSettings.notifications !== undefined) {
       await dbService.saveSetting("notifications", newSettings.notifications);
     }
@@ -82,8 +74,9 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     const newPlant: Plant = {
       ...plantData,
       id: Math.random().toString(36).substring(7),
-      entries: 0,
+      entries: 1,
       healthTrend: [plantData.health],
+      status: normalizeHealthStatus(plantData.status, plantData.health),
     };
 
     await dbService.savePlant(newPlant);
@@ -96,6 +89,11 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     if (!plant) return;
 
     const updatedPlant = { ...plant, ...updates };
+
+    if (updates.health !== undefined || updates.status !== undefined) {
+      updatedPlant.status = normalizeHealthStatus(updates.status ?? updatedPlant.status, updates.health ?? updatedPlant.health);
+    }
+
     await dbService.savePlant(updatedPlant);
 
     set((state) => ({
@@ -121,15 +119,15 @@ export const usePlantStore = create<PlantState>((set, get) => ({
         const updatedPlants = state.plants.map((p) => {
           if (p.id === scan.plantId) {
             const newTrend = [...p.healthTrend, scan.healthScore].slice(-10);
+            const avgHealth = Math.round(newTrend.reduce((a, b) => a + b, 0) / newTrend.length);
             const updatedPlant = {
               ...p,
-              health: scan.healthScore,
+              health: avgHealth,
               lastChecked: scan.date,
               entries: p.entries + 1,
               healthTrend: newTrend,
-              status: scan.healthScore >= 80 ? "healthy" : scan.healthScore >= 60 ? "warning" : ("critical" as any),
+              status: normalizeHealthStatus(scan.status, avgHealth),
             };
-            // Side effect: Async save updated plant stats to DB
             dbService.savePlant(updatedPlant);
             return updatedPlant;
           }

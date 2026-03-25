@@ -25,12 +25,15 @@ import { usePlantStore } from "../../store/usePlantStore";
 import { useMutation } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
 import { AnalysisResponse, ScanResult } from "../../components/leafrx/types";
+import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
+import { useTranslations } from "../../hooks/use-translations";
 
 export default function DetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const colors = useColors();
   const styles = createStyles(colors);
+  const { t } = useTranslations();
   const { id } = useLocalSearchParams();
   const plantId = Array.isArray(id) ? id[0] : id;
 
@@ -41,6 +44,9 @@ export default function DetailScreen() {
 
   const selectedPlant = plants.find((p) => p.id === plantId);
   const plantScans = getPlantScans(plantId as string);
+
+  const healthStatus = selectedPlant ? normalizeHealthStatus(selectedPlant.status, selectedPlant.health) : "warning";
+  const healthColor = getHealthColor(healthStatus, colors);
 
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -122,6 +128,7 @@ export default function DetailScreen() {
       severity: result.predictions?.[0]?.severity || "none",
       date: new Date().toISOString(),
       healthScore: result.overall_health_score || 0,
+      status: normalizeHealthStatus(result.status, result.overall_health_score),
       predictions: result.predictions || [],
     };
     await addScan(scanRecord);
@@ -131,17 +138,8 @@ export default function DetailScreen() {
     router.back();
   };
 
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "healthy":
-        return colors.success;
-      case "warning":
-        return colors.warning;
-      case "critical":
-        return colors.danger;
-      default:
-        return colors.textMuted;
-    }
+  const getStatusColor = (status?: string, score?: number) => {
+    return getHealthColor(normalizeHealthStatus(status, score), colors);
   };
 
   if (!selectedPlant) {
@@ -167,13 +165,18 @@ export default function DetailScreen() {
     );
   }
 
-  const chartLabels = plantScans.slice(-6).map((s) => {
-    const date = new Date(s.date);
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  });
-
-  const trendData = selectedPlant.healthTrend.length > 0 ? selectedPlant.healthTrend : [100];
-  const displayLabels = chartLabels.length > 0 ? chartLabels : ["Start"];
+  const historyScans = [...plantScans].slice(0, 6).reverse();
+  const chartStatuses =
+    historyScans.length > 0
+      ? historyScans.map((scan) => normalizeHealthStatus(scan.status, scan.healthScore))
+      : [normalizeHealthStatus(selectedPlant.status, selectedPlant.health)];
+  const chartLabels =
+    historyScans.length > 0
+      ? historyScans.map((scan) => {
+          const date = new Date(scan.date);
+          return String(date.getMonth() + 1) + "/" + String(date.getDate());
+        })
+      : ["Latest"];
 
   const getStatusColors = (status: string): [string, string, string] => {
     switch (status) {
@@ -188,7 +191,7 @@ export default function DetailScreen() {
     }
   };
 
-  const statusColors = getStatusColors(selectedPlant.status);
+  const statusColors = getStatusColors(normalizeHealthStatus(selectedPlant.status, selectedPlant.health));
 
   return (
     <View style={styles.container}>
@@ -246,15 +249,26 @@ export default function DetailScreen() {
               {mutation.isPending ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={styles.detailScore}>{Math.round(selectedPlant.health)}%</Text>
+                <View
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16, textTransform: "uppercase" }}>
+                    {t.home[healthStatus]}
+                  </Text>
+                </View>
               )}
-              <Text style={[styles.detailLabel, { fontWeight: "700" }]}>Health</Text>
+              <Text style={[styles.detailLabel, { fontWeight: "700", marginTop: 4 }]}>{t.healthLevels.label}</Text>
             </View>
           </View>
         </LinearGradient>
 
         <View style={styles.section}>
-          <Chart data={trendData} labels={displayLabels} color={statusColors[1]} />
+          <Chart statuses={chartStatuses} labels={chartLabels} />
 
           <View style={[styles.statsGrid, { marginTop: 8 }]}>
             <View style={{ flex: 1 }}>
@@ -280,8 +294,8 @@ export default function DetailScreen() {
               <StatCard
                 icon="alert-triangle"
                 label="Status"
-                value={selectedPlant.status.charAt(0).toUpperCase() + selectedPlant.status.slice(1)}
-                color={getStatusColor(selectedPlant.status)}
+                value={t.home[healthStatus]}
+                color={healthColor}
               />
             </View>
           </View>
@@ -520,12 +534,12 @@ export default function DetailScreen() {
 
               <View
                 style={{
-                  backgroundColor: getStatusColor(analysisResult?.status) + "15",
+                  backgroundColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "15",
                   borderRadius: 24,
                   padding: 20,
                   marginBottom: 20,
                   borderLeftWidth: 6,
-                  borderLeftColor: getStatusColor(analysisResult?.status),
+                  borderLeftColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
                 }}
               >
                 <View
@@ -594,9 +608,9 @@ export default function DetailScreen() {
                   </View>
                   <View
                     style={{
-                      width: 80,
+                      width: 100,
                       height: 80,
-                      borderRadius: 40,
+                      borderRadius: 20,
                       backgroundColor: colors.card,
                       alignItems: "center",
                       justifyContent: "center",
@@ -605,25 +619,29 @@ export default function DetailScreen() {
                       shadowOpacity: 0.1,
                       shadowRadius: 10,
                       elevation: 5,
+                      paddingHorizontal: 8,
                     }}
                   >
                     <Text
                       style={{
-                        fontSize: 24,
-                        fontWeight: "800",
-                        color: getStatusColor(analysisResult?.status),
+                        fontSize: 14,
+                        fontWeight: "900",
+                        color: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
+                        textTransform: "uppercase",
+                        textAlign: "center",
                       }}
                     >
-                      {analysisResult?.overall_health_score ?? 0}
+                      {t.home[normalizeHealthStatus(analysisResult?.status, analysisResult?.overall_health_score)]}
                     </Text>
                     <Text
                       style={{
                         fontSize: 10,
                         fontWeight: "700",
                         color: colors.textMuted,
+                        marginTop: 2,
                       }}
                     >
-                      HEALTH
+                      {t.healthLevels.label.toUpperCase()}
                     </Text>
                   </View>
                 </View>

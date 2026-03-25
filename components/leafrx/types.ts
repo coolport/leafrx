@@ -1,10 +1,12 @@
+import { HealthStatus } from "../../constants/health";
+
 export type Plant = {
-  id: string; // Changed to string to support UUIDs or API IDs
+  id: string;
   name: string;
   type: string;
   health: number;
   lastChecked: string;
-  status: "healthy" | "warning" | "critical";
+  status: HealthStatus;
   entries: number;
   healthTrend: number[];
 };
@@ -28,7 +30,7 @@ export type AnalysisResponse = {
   timestamp?: string;
   processing_time_seconds?: number;
   overall_health_score?: number;
-  status?: "healthy" | "warning" | "critical";
+  status?: HealthStatus;
   leaves_detected?: number;
   leaves_analyzed?: number;
   healthy_leaves?: number;
@@ -48,6 +50,7 @@ export type ScanResult = {
   severity: string;
   date: string;
   healthScore: number;
+  status: HealthStatus;
   predictions: Prediction[];
 };
 
@@ -55,7 +58,7 @@ export type TimelineEntry = {
   date: string;
   time: string;
   health: number;
-  status: "healthy" | "warning" | "critical";
+  status: HealthStatus;
   note: string;
 };
 

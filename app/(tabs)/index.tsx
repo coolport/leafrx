@@ -84,7 +84,7 @@ export default function HomeScreen() {
                   marginTop: 4,
                 }}
               >
-                <Text style={styles.headerSubtitle}>{t.settings.subtitle}</Text>
+                <Text style={styles.headerSubtitle}>{t.home.subtitle}</Text>
                 <View
                   style={{
                     width: 6,
@@ -102,7 +102,7 @@ export default function HomeScreen() {
                     fontWeight: "600",
                   }}
                 >
-                  {isApiOnline ? "API Online" : "API Offline"}
+                  {isApiOnline ? t.home.apiOnline : t.home.apiOffline}
                 </Text>
               </View>
             </View>
@@ -115,17 +115,17 @@ export default function HomeScreen() {
         </LinearGradient>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>{t.home.quickActions}</Text>
           <QuickActions />
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>My Plants</Text>
+            <Text style={styles.sectionTitle}>{t.home.myPlants}</Text>
             {plants.length > 0 && (
               <Link href="/(tabs)/tracking" asChild>
                 <TouchableOpacity activeOpacity={0.6}>
-                  <Text style={styles.viewAll}>View All →</Text>
+                  <Text style={styles.viewAll}>{t.home.viewAll} →</Text>
                 </TouchableOpacity>
               </Link>
             )}
@@ -158,14 +158,14 @@ export default function HomeScreen() {
                   textAlign: "center",
                 }}
               >
-                No plants tracked yet. Start by scanning a leaf.
+                {t.home.noPlants}
               </Text>
             </View>
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { marginBottom: 14 }]}>Recent Scans</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 14 }]}>{t.home.recentScans}</Text>
           {scans.length > 0 ? (
             scans.slice(0, 5).map((scan) => <RecentScanItem key={scan.id} scan={scan} />)
           ) : (
@@ -177,7 +177,7 @@ export default function HomeScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.textMuted, fontSize: 14 }}>No scans performed yet.</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>{t.home.noScans}</Text>
             </View>
           )}
         </View>

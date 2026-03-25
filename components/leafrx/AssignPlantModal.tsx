@@ -4,6 +4,8 @@ import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { Feather } from "@expo/vector-icons";
 import { Plant } from "./types";
+import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
+import { useTranslations } from "../../hooks/use-translations";
 
 type AssignPlantModalProps = {
   isVisible: boolean;
@@ -24,18 +26,12 @@ function getPlantEmoji(type: string) {
 export function AssignPlantModal({ isVisible, onClose, plants, onSelectPlant }: AssignPlantModalProps) {
   const colors = useColors();
   const styles = createStyles(colors);
-
-  const getHealthColor = (health: number) => {
-    if (health >= 75) return colors.success;
-    if (health >= 45) return colors.warning;
-    return colors.danger;
-  };
+  const { t } = useTranslations();
 
   return (
     <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          {/* Header */}
           <View
             style={{
               flexDirection: "row",
@@ -70,7 +66,6 @@ export function AssignPlantModal({ isVisible, onClose, plants, onSelectPlant }: 
             </TouchableOpacity>
           </View>
 
-          {/* Divider */}
           <View
             style={{
               height: 1,
@@ -79,81 +74,94 @@ export function AssignPlantModal({ isVisible, onClose, plants, onSelectPlant }: 
             }}
           />
 
-          {/* Plant list */}
           <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
             {plants.length > 0 ? (
-              plants.map((plant, index) => (
-                <TouchableOpacity
-                  key={plant.id}
-                  activeOpacity={0.7}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 14,
-                    paddingVertical: 12,
-                    paddingHorizontal: 14,
-                    backgroundColor: colors.background,
-                    borderRadius: 16,
-                    marginBottom: 8,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
-                  onPress={() => onSelectPlant(plant)}
-                >
-                  {/* Emoji icon */}
-                  <View
+              plants.map((plant) => {
+                const healthStatus = normalizeHealthStatus(plant.status, plant.health);
+                const healthColor = getHealthColor(healthStatus, colors);
+
+                return (
+                  <TouchableOpacity
+                    key={plant.id}
+                    activeOpacity={0.7}
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 14,
-                      backgroundColor: `${colors.primary}1A`,
+                      flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "center",
+                      gap: 14,
+                      paddingVertical: 12,
+                      paddingHorizontal: 14,
+                      backgroundColor: colors.background,
+                      borderRadius: 16,
+                      marginBottom: 8,
                       borderWidth: 1,
-                      borderColor: `${colors.primary}33`,
+                      borderColor: colors.border,
                     }}
+                    onPress={() => onSelectPlant(plant)}
                   >
-                    <Text style={{ fontSize: 22 }}>{getPlantEmoji(plant.type)}</Text>
-                  </View>
+                    <View
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 14,
+                        backgroundColor: colors.primary + "1A",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderWidth: 1,
+                        borderColor: colors.primary + "33",
+                      }}
+                    >
+                      <Text style={{ fontSize: 22 }}>{getPlantEmoji(plant.type)}</Text>
+                    </View>
 
-                  {/* Info */}
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "700",
-                        color: colors.text,
-                        marginBottom: 2,
-                      }}
-                    >
-                      {plant.name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: colors.textMuted,
-                        fontWeight: "500",
-                      }}
-                    >
-                      {plant.type}
-                    </Text>
-                  </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: "700",
+                          color: colors.text,
+                          marginBottom: 2,
+                        }}
+                      >
+                        {plant.name}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: colors.textMuted,
+                          fontWeight: "500",
+                        }}
+                      >
+                        {plant.type}
+                      </Text>
+                    </View>
 
-                  {/* Health score */}
-                  <View style={{ alignItems: "flex-end", gap: 4 }}>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "800",
-                        color: getHealthColor(plant.health),
-                      }}
-                    >
-                      {Math.round(plant.health)}%
-                    </Text>
-                    <Feather name="chevron-right" size={16} color={colors.textMuted} />
-                  </View>
-                </TouchableOpacity>
-              ))
+                    <View style={{ alignItems: "flex-end", gap: 4 }}>
+                      <View
+                        style={{
+                          backgroundColor: healthColor + "15",
+                          borderWidth: 1,
+                          borderColor: healthColor + "30",
+                          borderRadius: 999,
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "800",
+                            color: healthColor,
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {t.home[healthStatus]}
+                        </Text>
+                      </View>
+                      <Feather name="chevron-right" size={16} color={colors.textMuted} />
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 32, gap: 10 }}>
                 <View
@@ -191,7 +199,6 @@ export function AssignPlantModal({ isVisible, onClose, plants, onSelectPlant }: 
             )}
           </ScrollView>
 
-          {/* Divider */}
           <View
             style={{
               height: 1,
@@ -200,7 +207,6 @@ export function AssignPlantModal({ isVisible, onClose, plants, onSelectPlant }: 
             }}
           />
 
-          {/* Cancel button */}
           <TouchableOpacity activeOpacity={0.7} style={[styles.btnSecondary, { width: "100%" }]} onPress={onClose}>
             <Text style={styles.btnSecondaryText}>Cancel</Text>
           </TouchableOpacity>

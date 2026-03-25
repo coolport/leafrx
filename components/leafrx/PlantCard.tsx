@@ -1,10 +1,11 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import Svg, { Circle } from "react-native-svg";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { Plant } from "./types";
 import { Link } from "expo-router";
+import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
+import { useTranslations } from "../../hooks/use-translations";
 
 type PlantCardProps = {
   plant: Plant;
@@ -13,36 +14,14 @@ type PlantCardProps = {
 export function PlantCard({ plant }: PlantCardProps) {
   const colors = useColors();
   const styles = createStyles(colors);
-  const size = 56;
-  const strokeWidth = 5;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const progress = plant.health / 100;
-  const offset = circumference - progress * circumference;
-
-  const getStatusColor = () => {
-    if (plant.status === "healthy") return colors.success;
-    if (plant.status === "warning") return colors.warning;
-    return colors.danger;
-  };
+  const { t } = useTranslations();
+  const healthStatus = normalizeHealthStatus(plant.status, plant.health);
+  const healthColor = getHealthColor(healthStatus, colors);
 
   return (
     <Link href={`/plant/${plant.id}`} asChild>
       <TouchableOpacity style={styles.plantCard} activeOpacity={0.7}>
-        <View
-          style={[
-            styles.plantIcon,
-            plant.status === "healthy" && {
-              backgroundColor: `${colors.success}1A`,
-            },
-            plant.status === "warning" && {
-              backgroundColor: `${colors.warning}1A`,
-            },
-            plant.status === "critical" && {
-              backgroundColor: `${colors.danger}1A`,
-            },
-          ]}
-        >
+        <View style={[styles.plantIcon, { backgroundColor: `${healthColor}1A` }]}>
           <Text style={{ fontSize: 28 }}>{getPlantEmoji(plant.type)}</Text>
         </View>
 
@@ -56,32 +35,22 @@ export function PlantCard({ plant }: PlantCardProps) {
           </View>
         </View>
 
-        <View style={styles.plantHealth}>
-          <Svg width={size} height={size}>
-            <Circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke={colors.border}
-              strokeWidth={strokeWidth}
-              fill="transparent"
-            />
-            <Circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke={getStatusColor()}
-              strokeWidth={strokeWidth}
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
-              strokeLinecap="round"
-              fill="transparent"
-              transform={`rotate(-90, ${size / 2}, ${size / 2})`}
-            />
-          </Svg>
-          <View style={{ position: "absolute" }}>
-            <Text style={[styles.healthScoreText, { color: getStatusColor() }]}>{Math.round(plant.health)}</Text>
-          </View>
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor: `${healthColor}15`,
+              borderColor: `${healthColor}30`,
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 10,
+            },
+          ]}
+        >
+          <Text style={{ fontSize: 11, fontWeight: "800", color: healthColor, textTransform: "uppercase" }}>
+            {t.home[healthStatus]}
+          </Text>
         </View>
       </TouchableOpacity>
     </Link>

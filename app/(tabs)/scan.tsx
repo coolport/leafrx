@@ -34,6 +34,7 @@ import { usePlantStore } from "../../store/usePlantStore";
 import { useMutation } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
 import { useTranslations } from "../../hooks/use-translations";
+import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
@@ -185,7 +186,7 @@ export default function ScanScreen() {
       type,
       health: analysisResult.overall_health_score || 0,
       lastChecked: new Date().toISOString(),
-      status: analysisResult.status || "warning",
+      status: normalizeHealthStatus(analysisResult.status, analysisResult.overall_health_score),
     });
     const updatedPlants = usePlantStore.getState().plants;
     const newPlant = updatedPlants[0];
@@ -230,22 +231,14 @@ export default function ScanScreen() {
       severity: analysisResult.predictions?.[0]?.severity || "none",
       date: new Date().toISOString(),
       healthScore: analysisResult.overall_health_score || 0,
+      status: normalizeHealthStatus(analysisResult.status, analysisResult.overall_health_score),
       predictions: analysisResult.predictions || [],
     };
     await addScan(scanRecord);
   };
 
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "healthy":
-        return colors.success;
-      case "warning":
-        return colors.warning;
-      case "critical":
-        return colors.danger;
-      default:
-        return colors.textMuted;
-    }
+  const getStatusColor = (status?: string, score?: number) => {
+    return getHealthColor(normalizeHealthStatus(status, score), colors);
   };
 
   const detectedPlantType =
@@ -282,11 +275,11 @@ export default function ScanScreen() {
         >
           <View style={[styles.headerTop, { marginBottom: 0 }]}>
             <View>
-              <Text style={styles.headerTitle}>{isUpdatingPlant ? "New Scan" : t.tabs.scan}</Text>
+              <Text style={styles.headerTitle}>{isUpdatingPlant ? t.scan.newScan : t.scan.title}</Text>
               <Text style={styles.headerSubtitle}>
                 {isUpdatingPlant
-                  ? `For: ${plants.find((p) => p.id === params.plantId)?.name}`
-                  : "AI-powered disease detection"}
+                  ? `${t.scan.forPlant}: ${plants.find((p) => p.id === params.plantId)?.name}`
+                  : t.scan.subtitle}
               </Text>
             </View>
             {/* Status pill */}
@@ -312,7 +305,7 @@ export default function ScanScreen() {
                 }}
               />
               <Text style={{ color: "#fff", fontWeight: "700", fontSize: 12 }}>
-                {mutation.isPending ? "SCANNING" : "READY"}
+                {mutation.isPending ? t.scan.scanning : t.scan.ready}
               </Text>
             </View>
           </View>
@@ -334,7 +327,7 @@ export default function ScanScreen() {
             {/* ── Plant Type Selector ── */}
             {!isUpdatingPlant && (
               <View style={{ marginBottom: 20 }}>
-                <Text style={styles.label}>Plant Type</Text>
+                <Text style={styles.label}>{t.scan.plantType}</Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -346,7 +339,7 @@ export default function ScanScreen() {
                     style={!selectedPlantClass ? styles.chipSelected : styles.chip}
                     onPress={() => setSelectedPlantClass(undefined)}
                   >
-                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>✦ Auto</Text>
+                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>✦ {t.scan.auto}</Text>
                   </TouchableOpacity>
                   {plantTypes.map((type) => (
                     <TouchableOpacity
@@ -466,7 +459,7 @@ export default function ScanScreen() {
                               letterSpacing: 1,
                             }}
                           >
-                            ANALYZING...
+                            {t.scan.analyzing}
                           </Text>
                         </View>
                       </View>
@@ -509,7 +502,7 @@ export default function ScanScreen() {
                       letterSpacing: -0.3,
                     }}
                   >
-                    Scanner
+                    {t.scan.viewfinder}
                   </Text>
                   <Text
                     style={{
@@ -519,7 +512,7 @@ export default function ScanScreen() {
                       fontWeight: "500",
                     }}
                   >
-                    Ensure good lighting &amp; focus
+                    {t.scan.viewfinderSub}
                   </Text>
                 </View>
               )}
@@ -545,7 +538,7 @@ export default function ScanScreen() {
                     fontWeight: "600",
                   }}
                 >
-                  Tap to clear & rescan
+                  {t.scan.clearRescan}
                 </Text>
               </TouchableOpacity>
             )}
@@ -575,7 +568,7 @@ export default function ScanScreen() {
                 >
                   <Feather name="camera" size={18} color="#fff" />
                 </View>
-                <Text style={styles.btnPrimaryText}>Take Photo</Text>
+                <Text style={styles.btnPrimaryText}>{t.scan.takePhoto}</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -603,7 +596,7 @@ export default function ScanScreen() {
               >
                 <Feather name="image" size={16} color={colors.textSecondary} />
               </View>
-              <Text style={styles.btnSecondaryText}>Gallery</Text>
+              <Text style={styles.btnSecondaryText}>{t.scan.gallery}</Text>
             </TouchableOpacity>
           </View>
 
@@ -622,25 +615,25 @@ export default function ScanScreen() {
                 elevation: 2,
               }}
             >
-              <Text style={[styles.label, { marginBottom: 16 }]}>How It Works</Text>
+              <Text style={[styles.label, { marginBottom: 16 }]}>{t.scan.howItWorks}</Text>
               {[
                 {
                   icon: "camera",
                   step: "01",
-                  title: "Capture",
-                  desc: "Take or upload a clear photo of the affected leaf",
+                  title: t.scan.step1Title,
+                  desc: t.scan.step1Desc,
                 },
                 {
                   icon: "cpu",
                   step: "02",
-                  title: "Analyze",
-                  desc: "AI model scans for diseases, pests & deficiencies",
+                  title: t.scan.step2Title,
+                  desc: t.scan.step2Desc,
                 },
                 {
                   icon: "clipboard",
                   step: "03",
-                  title: "Results",
-                  desc: "Get instant diagnosis with treatment recommendations",
+                  title: t.scan.step3Title,
+                  desc: t.scan.step3Desc,
                 },
               ].map((item, i) => (
                 <View
@@ -748,7 +741,7 @@ export default function ScanScreen() {
               }}
             >
               <View>
-                <Text style={styles.modalTitle}>Diagnosis Results</Text>
+                <Text style={styles.modalTitle}>{t.scan.resultsTitle}</Text>
                 <Text
                   style={{
                     fontSize: 13,
@@ -757,7 +750,7 @@ export default function ScanScreen() {
                     marginTop: 2,
                   }}
                 >
-                  AI-powered analysis
+                  {t.scan.aiAnalysis}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setResultsModalVisible(false)}>
@@ -809,7 +802,7 @@ export default function ScanScreen() {
                           width: 8,
                           height: 8,
                           borderRadius: 4,
-                          backgroundColor: getStatusColor(analysisResult?.status),
+                          backgroundColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
                         }}
                       />
                       <Text
@@ -819,7 +812,7 @@ export default function ScanScreen() {
                           fontSize: 13,
                         }}
                       >
-                        {analysisResult?.overall_health_score ?? 0}% Health
+                        {t.home[normalizeHealthStatus(analysisResult?.status, analysisResult?.overall_health_score)]} {t.healthLevels.label}
                       </Text>
                     </View>
                   )}
@@ -831,24 +824,24 @@ export default function ScanScreen() {
                   {/* Primary finding card */}
                   <View
                     style={{
-                      backgroundColor: getStatusColor(analysisResult?.status) + "12",
+                      backgroundColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "12",
                       borderRadius: 24,
                       padding: 20,
                       marginBottom: 16,
                       borderWidth: 1,
-                      borderColor: getStatusColor(analysisResult?.status) + "30",
+                      borderColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "30",
                     }}
                   >
                     <Text
                       style={{
                         fontSize: 11,
                         fontWeight: "800",
-                        color: getStatusColor(analysisResult?.status),
+                        color: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
                         letterSpacing: 1.5,
                         marginBottom: 6,
                       }}
                     >
-                      PRIMARY FINDING
+                      {t.scan.primaryFinding}
                     </Text>
                     <Text
                       style={{
@@ -906,7 +899,7 @@ export default function ScanScreen() {
                   {/* Recommendations */}
                   {analysisResult?.predictions?.[0]?.recommendations && (
                     <View style={{ marginBottom: 8 }}>
-                      <Text style={styles.label}>Recommendations</Text>
+                      <Text style={styles.label}>{t.scan.recommendations}</Text>
                       {analysisResult.predictions[0].recommendations.map((rec, i) => (
                         <View
                           key={i}
@@ -969,7 +962,7 @@ export default function ScanScreen() {
                     colors={[colors.primaryDark, colors.primary] as any}
                     style={[styles.modalButton, { marginHorizontal: 0 }]}
                   >
-                    <Text style={styles.modalButtonText}>Update Plant Info</Text>
+                    <Text style={styles.modalButtonText}>{t.scan.updateInfo}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               ) : (
@@ -986,7 +979,7 @@ export default function ScanScreen() {
                         },
                       ]}
                     >
-                      <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Assign Existing</Text>
+                      <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>{t.scan.assignExisting}</Text>
                     </View>
                   </TouchableOpacity>
                   <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleSaveAsNewPlant}>
@@ -994,7 +987,7 @@ export default function ScanScreen() {
                       colors={[colors.primaryDark, colors.primary] as any}
                       style={[styles.modalButton, { marginHorizontal: 0 }]}
                     >
-                      <Text style={styles.modalButtonText}>Save as New</Text>
+                      <Text style={styles.modalButtonText}>{t.scan.saveAsNew}</Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </>
@@ -1020,4 +1013,3 @@ export default function ScanScreen() {
     </View>
   );
 }
-

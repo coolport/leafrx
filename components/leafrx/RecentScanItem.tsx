@@ -5,6 +5,7 @@ import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { ScanResult } from "./types";
 import { useRouter } from "expo-router";
+import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
 
 type RecentScanItemProps = {
   scan: ScanResult;
@@ -14,12 +15,8 @@ export function RecentScanItem({ scan }: RecentScanItemProps) {
   const router = useRouter();
   const colors = useColors();
   const styles = createStyles(colors);
-
-  const getStatusColor = () => {
-    if (scan.healthScore >= 80) return colors.success;
-    if (scan.healthScore >= 60) return colors.warning;
-    return colors.danger;
-  };
+  const healthStatus = normalizeHealthStatus(scan.status, scan.healthScore);
+  const healthColor = getHealthColor(healthStatus, colors);
 
   const handlePress = () => {
     if (scan.plantId) {
@@ -36,8 +33,8 @@ export function RecentScanItem({ scan }: RecentScanItemProps) {
 
   return (
     <TouchableOpacity style={styles.recentScanCard} onPress={handlePress} disabled={!scan.plantId}>
-      <View style={[styles.recentScanIconContainer, { backgroundColor: getStatusColor() + "1A" }]}>
-        <Feather name="shield" size={24} color={getStatusColor()} />
+      <View style={[styles.recentScanIconContainer, { backgroundColor: `${healthColor}1A` }]}>
+        <Feather name="shield" size={24} color={healthColor} />
       </View>
 
       <View style={styles.recentScanInfo}>

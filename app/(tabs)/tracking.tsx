@@ -8,11 +8,13 @@ import { useColors } from "../../hooks/use-colors";
 import { PlantCard } from "../../components/leafrx/PlantCard";
 import { AddPlantModal } from "../../components/leafrx/AddPlantModal";
 import { usePlantStore } from "../../store/usePlantStore";
+import { useTranslations } from "../../hooks/use-translations";
 
 export default function TrackingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const styles = createStyles(colors);
+  const { t } = useTranslations();
   const plants = usePlantStore((state) => state.plants);
   const addPlant = usePlantStore((state) => state.addPlant);
   const [isAddModalVisible, setAddModalVisible] = useState(false);
@@ -66,8 +68,8 @@ export default function TrackingScreen() {
             }}
           >
             <View>
-              <Text style={styles.headerTitle}>Plant Tracking</Text>
-              <Text style={styles.headerSubtitle}>Monitor growth over time</Text>
+              <Text style={styles.headerTitle}>{t.tracking.title}</Text>
+              <Text style={styles.headerSubtitle}>{t.tracking.subtitle}</Text>
             </View>
             <TouchableOpacity style={styles.bellBtn} onPress={() => setAddModalVisible(true)} activeOpacity={0.7}>
               <Feather name="plus" size={24} color="#fff" />
@@ -104,7 +106,7 @@ export default function TrackingScreen() {
             >
               <Feather name="search" size={20} color={colors.textMuted} />
               <TextInput
-                placeholder="Search your plants..."
+                placeholder={t.tracking.searchPlaceholder}
                 style={{
                   flex: 1,
                   fontSize: 16,
@@ -118,7 +120,7 @@ export default function TrackingScreen() {
               />
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterPills}>
-              {["All", "Mango", "Banana", "Guava", "Calamansi"].map((filter) => (
+              {[t.tracking.filterAll, "Mango", "Banana", "Guava", "Calamansi"].map((filter) => (
                 <TouchableOpacity
                   key={filter}
                   style={[
@@ -127,11 +129,11 @@ export default function TrackingScreen() {
                       paddingHorizontal: 16,
                       paddingVertical: 8,
                       borderRadius: 12,
-                      backgroundColor: activeFilter === filter ? colors.primary : colors.background,
+                      backgroundColor: activeFilter === filter || (activeFilter === "All" && filter === t.tracking.filterAll) ? colors.primary : colors.background,
                       borderWidth: 1,
                       borderColor: colors.border,
                     },
-                    activeFilter === filter && {
+                    (activeFilter === filter || (activeFilter === "All" && filter === t.tracking.filterAll)) && {
                       shadowColor: colors.primary,
                       shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: 0.2,
@@ -139,14 +141,14 @@ export default function TrackingScreen() {
                       elevation: 4,
                     },
                   ]}
-                  onPress={() => setActiveFilter(filter)}
+                  onPress={() => setActiveFilter(filter === t.tracking.filterAll ? "All" : filter)}
                   activeOpacity={0.7}
                 >
                   <Text
                     style={{
                       fontSize: 13,
                       fontWeight: "700",
-                      color: activeFilter === filter ? "#fff" : colors.textSecondary,
+                      color: activeFilter === filter || (activeFilter === "All" && filter === t.tracking.filterAll) ? "#fff" : colors.textSecondary,
                     }}
                   >
                     {filter.toUpperCase()}
@@ -170,7 +172,7 @@ export default function TrackingScreen() {
               >
                 <Feather name="search" size={48} color={colors.textMuted} />
               </View>
-              <Text style={{ fontSize: 18, color: colors.text, fontWeight: "800" }}>No Plants Found</Text>
+              <Text style={{ fontSize: 18, color: colors.text, fontWeight: "800" }}>{t.tracking.noPlantsFound}</Text>
               <Text
                 style={{
                   marginTop: 8,
@@ -179,7 +181,7 @@ export default function TrackingScreen() {
                   lineHeight: 20,
                 }}
               >
-                Try adjusting your search or filter.
+                {t.tracking.noPlantsSub}
               </Text>
             </View>
           )}

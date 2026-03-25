@@ -1,9 +1,9 @@
 import * as SQLite from "expo-sqlite";
 import { Plant, ScanResult } from "../components/leafrx/types";
+import { normalizeHealthStatus } from "../constants/health";
 
 const DB_NAME = "leafrx.db";
 
-// Single shared promise — resolves once, reused everywhere
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 
 const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
@@ -38,11 +38,16 @@ const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
         );
     `);
 
+  try {
+    await db.execAsync("ALTER TABLE scans ADD COLUMN status TEXT");
+  } catch {
+    // Column already exists.
+  }
+
   dbInstance = db;
   return db;
 };
 
-// Keep this for your app entry point — it just warms up the singleton
 export const initDatabase = () => getDb();
 
 export const dbService = {
@@ -67,7 +72,7 @@ export const dbService = {
         plant.type,
         plant.health ?? 0,
         plant.lastChecked,
-        plant.status,
+        normalizeHealthStatus(plant.status, plant.health),
         plant.entries ?? 0,
         JSON.stringify(plant.healthTrend || []),
       ]
@@ -79,6 +84,7 @@ export const dbService = {
     const rows = await db.getAllAsync("SELECT * FROM plants ORDER BY lastChecked DESC");
     return rows.map((row: any) => ({
       ...row,
+      status: normalizeHealthStatus(row.status, row.health),
       healthTrend: JSON.parse(row.healthTrend || "[]"),
     }));
   },
@@ -92,7 +98,7 @@ export const dbService = {
   saveScan: async (scan: ScanResult) => {
     const db = await getDb();
     await db.runAsync(
-      "INSERT INTO scans (id, plantId, plantName, disease, severity, date, healthScore, predictions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO scans (id, plantId, plantName, disease, severity, date, healthScore, status, predictions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         scan.id,
         scan.plantId || null,
@@ -101,6 +107,7 @@ export const dbService = {
         scan.severity,
         scan.date,
         scan.healthScore ?? 0,
+        normalizeHealthStatus(scan.status, scan.healthScore),
         JSON.stringify(scan.predictions || []),
       ]
     );
@@ -111,6 +118,7 @@ export const dbService = {
     const rows = await db.getAllAsync("SELECT * FROM scans ORDER BY date DESC");
     return rows.map((row: any) => ({
       ...row,
+      status: normalizeHealthStatus(row.status, row.healthScore),
       predictions: JSON.parse(row.predictions || "[]"),
     }));
   },
