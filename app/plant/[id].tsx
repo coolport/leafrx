@@ -240,37 +240,43 @@ export default function DetailScreen() {
           ]}
         >
           <View style={[styles.detailTop, { paddingHorizontal: 24, marginBottom: 12 }]}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={updateProfilePicture}
-              style={[
-                styles.detailIcon,
-                {
-                  backgroundColor: "rgba(255,255,255,0.25)",
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.3)",
-                  overflow: "hidden",
-                },
-              ]}
-            >
-              {selectedPlant.imageUri ? (
-                <Image source={{ uri: selectedPlant.imageUri }} style={{ width: "100%", height: "100%" }} />
-              ) : (
-                <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
-              )}
-              <View
+            <View>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={updateProfilePicture}
+                style={[
+                  styles.detailIcon,
+                  {
+                    backgroundColor: "rgba(255,255,255,0.25)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.3)",
+                    overflow: "hidden",
+                  },
+                ]}
+              >
+                {selectedPlant.imageUri ? (
+                  <Image source={{ uri: selectedPlant.imageUri }} style={{ width: "100%", height: "100%" }} />
+                ) : (
+                  <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={updateProfilePicture}
                 style={{
                   position: "absolute",
-                  bottom: 0,
-                  right: 0,
+                  bottom: -5,
+                  right: -5,
                   backgroundColor: "rgba(0,0,0,0.3)",
                   padding: 4,
-                  borderTopLeftRadius: 8,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.3)",
                 }}
               >
                 <Feather name="edit-2" size={12} color="#fff" />
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
@@ -567,10 +573,10 @@ export default function DetailScreen() {
 
               <TouchableOpacity
                 activeOpacity={0.8}
-                style={[styles.modalButton, { flex: 1, marginHorizontal: 0 }]}
+                style={[styles.btnSecondary, { flex: 1 }]}
                 onPress={handleRename}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text style={styles.btnSecondaryText}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
