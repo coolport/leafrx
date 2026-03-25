@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { Modal, View, Text, TextInput, TouchableOpacity, Alert, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 
 type AddPlantModalProps = {
   isVisible: boolean;
   onClose: () => void;
-  onSave: (plantName: string, plantType: string) => void;
+  onSave: (plantName: string, plantType: string, imageUri?: string) => void;
   initialPlantType?: string;
 };
 
@@ -36,6 +37,7 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
 
   const [plantName, setPlantName] = useState("");
   const [plantType, setPlantType] = useState(getNormalizedType(initialPlantType));
+  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (isVisible) {
@@ -43,21 +45,42 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
     }
     if (!isVisible) {
       setPlantName("");
+      setImageUri(undefined);
     }
   }, [initialPlantType, isVisible]);
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "Sorry, we need camera roll permissions to make this work!");
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
 
   const handleSave = () => {
     if (!plantName.trim() || !plantType) {
       Alert.alert("Missing Info", "Please provide a name for your plant.");
       return;
     }
-    onSave(plantName.trim(), plantType);
+    onSave(plantName.trim(), plantType, imageUri);
     onClose();
   };
 
   const handleClose = () => {
     setPlantName("");
     setPlantType(initialPlantType || "Mango");
+    setImageUri(undefined);
     onClose();
   };
 
@@ -109,35 +132,64 @@ export function AddPlantModal({ isVisible, onClose, onSave, initialPlantType }: 
             }}
           />
 
-          {/* Plant Name */}
-          <Text style={styles.label}>Plant Name</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: colors.background,
-              borderRadius: 16,
-              borderWidth: 1.5,
-              borderColor: plantName ? colors.primary : colors.border,
-              paddingHorizontal: 14,
-              marginBottom: 20,
-              gap: 10,
-            }}
-          >
-            <Feather name="tag" size={16} color={plantName ? colors.primary : colors.textMuted} />
-            <TextInput
+          <View style={{ flexDirection: "row", gap: 16, marginBottom: 20 }}>
+            {/* Plant Picture Selection */}
+            <TouchableOpacity
+              onPress={handlePickImage}
               style={{
-                flex: 1,
-                height: 50,
-                fontSize: 15,
-                fontWeight: "600",
-                color: colors.text,
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: colors.background,
+                borderWidth: 1.5,
+                borderColor: colors.border,
+                borderStyle: imageUri ? "solid" : "dashed",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
               }}
-              placeholder="e.g. My Backyard Mango"
-              placeholderTextColor={colors.textMuted}
-              value={plantName}
-              onChangeText={setPlantName}
-            />
+            >
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={{ width: "100%", height: "100%" }} />
+              ) : (
+                <View style={{ alignItems: "center" }}>
+                  <Feather name="camera" size={20} color={colors.textMuted} />
+                  <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 4 }}>PHOTO</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <View style={{ flex: 1 }}>
+              {/* Plant Name */}
+              <Text style={styles.label}>Plant Name</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: colors.background,
+                  borderRadius: 16,
+                  borderWidth: 1.5,
+                  borderColor: plantName ? colors.primary : colors.border,
+                  paddingHorizontal: 14,
+                  gap: 10,
+                }}
+              >
+                <Feather name="tag" size={16} color={plantName ? colors.primary : colors.textMuted} />
+                <TextInput
+                  style={{
+                    flex: 1,
+                    height: 50,
+                    fontSize: 15,
+                    fontWeight: "600",
+                    color: colors.text,
+                  }}
+                  placeholder="e.g. My Backyard Mango"
+                  placeholderTextColor={colors.textMuted}
+                  value={plantName}
+                  onChangeText={setPlantName}
+                />
+              </View>
+            </View>
           </View>
 
           {/* Plant Type */}

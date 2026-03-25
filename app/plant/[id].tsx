@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -40,6 +41,7 @@ export default function DetailScreen() {
   const plants = usePlantStore((state) => state.plants);
   const getPlantScans = usePlantStore((state) => state.getPlantScans);
   const deletePlant = usePlantStore((state) => state.deletePlant);
+  const updatePlant = usePlantStore((state) => state.updatePlant);
   const addScan = usePlantStore((state) => state.addScan);
 
   const selectedPlant = plants.find((p) => p.id === plantId);
@@ -50,6 +52,8 @@ export default function DetailScreen() {
 
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [newName, setNewName] = useState(selectedPlant?.name || "");
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
 
@@ -83,6 +87,18 @@ export default function DetailScreen() {
       quality: 0.7,
     });
     if (!result.canceled) processImage(result.assets[0].uri);
+  };
+
+  const updateProfilePicture = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && selectedPlant) {
+      await updatePlant(selectedPlant.id, { imageUri: result.assets[0].uri });
+    }
   };
 
   const takePhoto = async () => {
@@ -136,6 +152,13 @@ export default function DetailScreen() {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const handleRename = async () => {
+    if (newName.trim() && selectedPlant) {
+      await updatePlant(selectedPlant.id, { name: newName.trim() });
+      setShowRenameModal(false);
+    }
   };
 
   const getStatusColor = (status?: string, score?: number) => {
@@ -217,20 +240,47 @@ export default function DetailScreen() {
           ]}
         >
           <View style={[styles.detailTop, { paddingHorizontal: 24, marginBottom: 12 }]}>
-            <View
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={updateProfilePicture}
               style={[
                 styles.detailIcon,
                 {
                   backgroundColor: "rgba(255,255,255,0.25)",
                   borderWidth: 1,
                   borderColor: "rgba(255,255,255,0.3)",
+                  overflow: "hidden",
                 },
               ]}
             >
-              <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
-            </View>
+              {selectedPlant.imageUri ? (
+                <Image source={{ uri: selectedPlant.imageUri }} style={{ width: "100%", height: "100%" }} />
+              ) : (
+                <Text style={{ fontSize: 36 }}>{getPlantEmoji(selectedPlant.type)}</Text>
+              )}
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  padding: 4,
+                  borderTopLeftRadius: 8,
+                }}
+              >
+                <Feather name="edit-2" size={12} color="#fff" />
+              </View>
+            </TouchableOpacity>
             <View style={{ flex: 1 }}>
-              <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={styles.detailTitle}>{selectedPlant.name}</Text>
+                <TouchableOpacity onPress={() => {
+                  setNewName(selectedPlant.name);
+                  setShowRenameModal(true);
+                }}>
+                  <Feather name="edit-2" size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
               <View
                 style={{
                   backgroundColor: "rgba(255,255,255,0.2)",
@@ -474,6 +524,55 @@ export default function DetailScreen() {
             >
               <Text style={styles.btnSecondaryText}>Cancel</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showRenameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRenameModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 16 }]}>Rename Plant</Text>
+
+            <TextInput
+              style={{
+                backgroundColor: colors.background,
+                borderRadius: 12,
+                padding: 16,
+                fontSize: 16,
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.border,
+                marginBottom: 24,
+              }}
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter new name"
+              placeholderTextColor={colors.textMuted}
+              autoFocus
+            />
+
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.btnSecondary, { flex: 1 }]}
+                onPress={() => setShowRenameModal(false)}
+              >
+                <Text style={styles.btnSecondaryText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[styles.modalButton, { flex: 1, marginHorizontal: 0 }]}
+                onPress={handleRename}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

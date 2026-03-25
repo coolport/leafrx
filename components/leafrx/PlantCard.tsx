@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { Plant } from "./types";
@@ -21,8 +21,12 @@ export function PlantCard({ plant }: PlantCardProps) {
   return (
     <Link href={`/plant/${plant.id}`} asChild>
       <TouchableOpacity style={styles.plantCard} activeOpacity={0.7}>
-        <View style={[styles.plantIcon, { backgroundColor: `${healthColor}1A` }]}>
-          <Text style={{ fontSize: 28 }}>{getPlantEmoji(plant.type)}</Text>
+        <View style={[styles.plantIcon, { backgroundColor: `${healthColor}1A`, overflow: "hidden" }]}>
+          {plant.imageUri ? (
+            <Image source={{ uri: plant.imageUri }} style={{ width: "100%", height: "100%" }} />
+          ) : (
+            <Text style={{ fontSize: 28 }}>{getPlantEmoji(plant.type)}</Text>
+          )}
         </View>
 
         <View style={styles.plantInfo}>
@@ -31,7 +35,7 @@ export function PlantCard({ plant }: PlantCardProps) {
           </Text>
           <Text style={styles.plantMeta}>{plant.type.charAt(0).toUpperCase() + plant.type.slice(1)}</Text>
           <View style={styles.lastCheckedContainer}>
-            <Text style={styles.lastChecked}>Last checked: {plant.lastChecked}</Text>
+            <Text style={styles.lastChecked}>Last checked: {new Date(plant.lastChecked).toLocaleDateString()}</Text>
           </View>
         </View>
 

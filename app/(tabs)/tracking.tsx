@@ -21,13 +21,14 @@ export default function TrackingScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
 
-  const handleSaveNewPlant = async (name: string, type: string) => {
+  const handleSaveNewPlant = async (name: string, type: string, imageUri?: string) => {
     await addPlant({
       name,
       type,
       health: 100, // Initial health
       lastChecked: new Date().toISOString(),
       status: "healthy",
+      imageUri,
     });
     setAddModalVisible(false);
   };

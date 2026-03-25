@@ -57,7 +57,8 @@ export function Timeline({ scans = [] }: TimelineProps) {
                   <Text style={[styles.timelineCardScore, { color: statusColor }]}>{t.home[status].toUpperCase()}</Text>
                 </View>
                 <Text style={styles.timelineCardNote}>
-                  Severity: {scan.severity}. Detected {scan.predictions.length} leaf areas.
+                  {scan.severity && scan.severity !== "none" ? `Severity: ${scan.severity.charAt(0).toUpperCase() + scan.severity.slice(1)}. ` : ""}
+                  Detected {scan.predictions.length} leaf areas.
                 </Text>
               </View>
             </View>

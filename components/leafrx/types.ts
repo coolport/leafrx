@@ -9,6 +9,7 @@ export type Plant = {
   status: HealthStatus;
   entries: number;
   healthTrend: number[];
+  imageUri?: string;
 };
 
 export type Prediction = {
