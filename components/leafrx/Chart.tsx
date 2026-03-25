@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, useWindowDimensions } from "react-native";
+import Svg, { Circle, Line, Polyline } from "react-native-svg";
 import { useColors } from "../../hooks/use-colors";
 import { useTranslations } from "../../hooks/use-translations";
 import { getHealthColor, HealthStatus, normalizeHealthStatus } from "../../constants/health";
@@ -9,15 +10,22 @@ type ChartProps = {
   labels: string[];
 };
 
+const LEVEL_ORDER: HealthStatus[] = ["healthy", "warning", "critical"];
+const CHART_HEIGHT = 150;
+const CARD_PADDING = 20;
+const Y_LABEL_WIDTH = 68;
+
 export function Chart({ statuses, labels }: ChartProps) {
   const colors = useColors();
   const { t } = useTranslations();
+  const { width } = useWindowDimensions();
 
   if (statuses.length === 0) return null;
 
   const normalizedStatuses = statuses.map((status) => normalizeHealthStatus(status));
   const latestStatus = normalizedStatuses[normalizedStatuses.length - 1];
   const latestColor = getHealthColor(latestStatus, colors);
+  const chartWidth = Math.max(width - 48 - CARD_PADDING * 2 - Y_LABEL_WIDTH, 180);
   const counts = normalizedStatuses.reduce(
     (acc, status) => {
       acc[status] += 1;
@@ -26,12 +34,33 @@ export function Chart({ statuses, labels }: ChartProps) {
     { healthy: 0, warning: 0, critical: 0 } as Record<HealthStatus, number>
   );
 
+  const yPositions = {
+    healthy: 18,
+    warning: CHART_HEIGHT / 2,
+    critical: CHART_HEIGHT - 18,
+  } satisfies Record<HealthStatus, number>;
+
+  const points = normalizedStatuses.map((status, index) => {
+    const x =
+      normalizedStatuses.length === 1
+        ? chartWidth / 2
+        : (index / (normalizedStatuses.length - 1)) * chartWidth;
+
+    return {
+      x,
+      y: yPositions[status],
+      status,
+    };
+  });
+
+  const polylinePoints = points.map((point) => point.x + "," + point.y).join(" ");
+
   return (
     <View
       style={{
         backgroundColor: colors.card,
         borderRadius: 24,
-        padding: 20,
+        padding: CARD_PADDING,
         marginBottom: 16,
         borderWidth: 1,
         borderColor: colors.border,
@@ -77,12 +106,12 @@ export function Chart({ statuses, labels }: ChartProps) {
 
         <View
           style={{
-            backgroundColor: `${latestColor}18`,
+            backgroundColor: latestColor + "18",
             paddingHorizontal: 12,
             paddingVertical: 8,
             borderRadius: 999,
             borderWidth: 1,
-            borderColor: `${latestColor}30`,
+            borderColor: latestColor + "30",
           }}
         >
           <Text
@@ -98,55 +127,83 @@ export function Chart({ statuses, labels }: ChartProps) {
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        {normalizedStatuses.map((status, index) => {
-          const statusColor = getHealthColor(status, colors);
-
-          return (
-            <View
-              key={`${labels[index] ?? index}-${status}`}
+      <View style={{ flexDirection: "row" }}>
+        <View style={{ width: Y_LABEL_WIDTH, height: CHART_HEIGHT, justifyContent: "space-between", paddingRight: 8 }}>
+          {LEVEL_ORDER.map((status) => (
+            <Text
+              key={status}
               style={{
-                flex: 1,
-                backgroundColor: colors.background,
-                borderRadius: 16,
-                padding: 10,
-                borderWidth: 1,
-                borderColor: colors.border,
+                fontSize: 10,
+                fontWeight: "800",
+                color: getHealthColor(status, colors),
+                textTransform: "uppercase",
               }}
             >
-              <View
-                style={{
-                  height: 8,
-                  borderRadius: 999,
-                  backgroundColor: statusColor,
-                  marginBottom: 10,
-                }}
+              {t.home[status]}
+            </Text>
+          ))}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Svg width={chartWidth} height={CHART_HEIGHT}>
+            {LEVEL_ORDER.map((status) => (
+              <Line
+                key={status}
+                x1={0}
+                y1={yPositions[status]}
+                x2={chartWidth}
+                y2={yPositions[status]}
+                stroke={colors.border}
+                strokeWidth={1}
+                strokeDasharray="4,4"
               />
+            ))}
+
+            {points.length > 1 && (
+              <Polyline
+                points={polylinePoints}
+                fill="none"
+                stroke={latestColor}
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+
+            {points.map((point, index) => {
+              const pointColor = getHealthColor(point.status, colors);
+
+              return (
+                <React.Fragment key={String(index) + point.status}>
+                  <Circle cx={point.x} cy={point.y} r={5} fill={colors.card} stroke={pointColor} strokeWidth={3} />
+                  {index === points.length - 1 && <Circle cx={point.x} cy={point.y} r={9} fill={pointColor} opacity={0.18} />}
+                </React.Fragment>
+              );
+            })}
+          </Svg>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: normalizedStatuses.length === 1 ? "center" : "space-between",
+              marginTop: 12,
+            }}
+          >
+            {labels.map((label, index) => (
               <Text
+                key={String(index) + label}
                 style={{
-                  fontSize: 10,
-                  fontWeight: "800",
-                  color: statusColor,
-                  textTransform: "uppercase",
-                  marginBottom: 6,
-                }}
-                numberOfLines={1}
-              >
-                {t.home[status]}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: "700",
-                  color: colors.textMuted,
+                  color: index === labels.length - 1 ? latestColor : colors.textMuted,
+                  textAlign: "center",
                 }}
-                numberOfLines={1}
               >
-                {labels[index]}
+                {label}
               </Text>
-            </View>
-          );
-        })}
+            ))}
+          </View>
+        </View>
       </View>
 
       <View
@@ -159,7 +216,7 @@ export function Chart({ statuses, labels }: ChartProps) {
           borderTopColor: colors.border,
         }}
       >
-        {(["healthy", "warning", "critical"] as HealthStatus[]).map((status) => {
+        {LEVEL_ORDER.map((status) => {
           const statusColor = getHealthColor(status, colors);
 
           return (
