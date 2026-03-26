@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   ScrollView,
   View,
@@ -62,6 +62,9 @@ export default function ScanScreen() {
     isUpdatingPlant ? params.plantType : undefined
   );
 
+  const resumeResultsFromLibraryRef = useRef(false);
+  const skipAddModalReturnRef = useRef(false);
+
   const mutation = useMutation({
     mutationFn: ({ uri, type }: { uri: string; type?: string }) => apiService.analyzeImage(uri, type),
     onSuccess: (data) => {
@@ -116,20 +119,24 @@ export default function ScanScreen() {
     transform: [{ scale: pulseScale.value }],
   }));
 
+  useEffect(() => {
+    if (params.plantId) {
+      setSelectedPlantClass(params.plantType);
+      return;
+    }
+
+    if (!analysisResult && !selectedImageUri) {
+      setSelectedPlantClass(undefined);
+    }
+  }, [params.plantId, params.plantType, analysisResult, selectedImageUri]);
+
   useFocusEffect(
     useCallback(() => {
-      if (!params.plantId) {
-        setResultsModalVisible(false);
-        setAddPlantModalVisible(false);
-        setAssignPlantModalVisible(false);
-        setSelectedImageUri(null);
-        setAnalysisResult(null);
-        setSelectedPlantClass(undefined);
-        mutation.reset();
-      } else {
-        setSelectedPlantClass(params.plantType);
+      if (resumeResultsFromLibraryRef.current && analysisResult) {
+        setResultsModalVisible(true);
+        resumeResultsFromLibraryRef.current = false;
       }
-    }, [params.plantId, params.plantType])
+    }, [analysisResult])
   );
 
   const processImage = async (uri: string) => {
@@ -165,6 +172,7 @@ export default function ScanScreen() {
   };
 
   const handleSaveAsNewPlant = () => {
+    skipAddModalReturnRef.current = false;
     setResultsModalVisible(false);
     setAddPlantModalVisible(true);
   };
@@ -174,6 +182,27 @@ export default function ScanScreen() {
     setAssignPlantModalVisible(true);
   };
 
+  const handleAddPlantModalClose = () => {
+    setAddPlantModalVisible(false);
+
+    if (skipAddModalReturnRef.current) {
+      skipAddModalReturnRef.current = false;
+      return;
+    }
+
+    if (analysisResult) {
+      setResultsModalVisible(true);
+    }
+  };
+
+  const handleAssignPlantModalClose = () => {
+    setAssignPlantModalVisible(false);
+
+    if (analysisResult) {
+      setResultsModalVisible(true);
+    }
+  };
+
   const handleUpdatePlant = async () => {
     await saveScanToStore(params.plantId);
     setResultsModalVisible(false);
@@ -181,6 +210,7 @@ export default function ScanScreen() {
   };
 
   const onAddPlantSave = async (name: string, type: string) => {
+    skipAddModalReturnRef.current = true;
     if (!analysisResult) return;
     await addPlant({
       name,
@@ -257,6 +287,7 @@ export default function ScanScreen() {
     });
 
     if (targetId) {
+      resumeResultsFromLibraryRef.current = true;
       setResultsModalVisible(false);
       router.push({
         pathname: "/library",
@@ -1117,14 +1148,14 @@ export default function ScanScreen() {
 
       <AddPlantModal
         isVisible={isAddPlantModalVisible}
-        onClose={() => setAddPlantModalVisible(false)}
+        onClose={handleAddPlantModalClose}
         onSave={onAddPlantSave}
         initialPlantType={filterType}
       />
 
       <AssignPlantModal
         isVisible={isAssignPlantModalVisible}
-        onClose={() => setAssignPlantModalVisible(false)}
+        onClose={handleAssignPlantModalClose}
         plants={filteredPlantsForAssignment}
         onSelectPlant={onSelectExistingPlant}
       />
