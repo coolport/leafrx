@@ -169,6 +169,8 @@ export const createStyles = (colors: ThemeColors) =>
       shadowColor: colors.cardShadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.08,
+      borderColor: colors.border,
+      borderWidth: 1,
       shadowRadius: 12,
       elevation: 3,
     },
