@@ -5,14 +5,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
-import { usePlantStore } from "../../store/usePlantStore";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import {
   DISEASE_LIBRARY,
   DiseaseGuide,
   getSeverityColor,
   getSeverityLabel,
   getPlantColor,
+  resolveDiseaseLibraryId,
 } from "../../constants/diseaseLibrary";
 
 const { width: SW, height: SH } = Dimensions.get("window");
@@ -27,21 +27,26 @@ export default function LibraryScreen() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [selected, setSelected] = useState<DiseaseGuide | null>(null);
   const [detailTab, setDetailTab] = useState<"overview" | "symptoms" | "treatment" | "prevention">("overview");
+  const router = useRouter();
+  const { selectedId } = useLocalSearchParams<{ selectedId?: string | string[] }>();
 
-  const pendingLibraryId = usePlantStore((s) => s.pendingLibraryId);
-  const setPendingLibraryId = usePlantStore((s) => s.setPendingLibraryId);
+  const openDetail = useCallback((d: DiseaseGuide) => {
+    setSelected(d);
+    setDetailTab("overview");
+  }, []);
 
-  // Fires every time this tab comes into focus — works even when screen stays mounted in background
   useFocusEffect(
     useCallback(() => {
-      if (pendingLibraryId) {
-        const disease = DISEASE_LIBRARY.find((d) => d.id === pendingLibraryId);
-        if (disease) {
-          openDetail(disease);
-        }
-        setPendingLibraryId(null); // clear after consuming
+      const rawId = Array.isArray(selectedId) ? selectedId[0] : selectedId;
+      const resolvedId = resolveDiseaseLibraryId({ explicitId: rawId });
+      if (!resolvedId) return;
+
+      const disease = DISEASE_LIBRARY.find((d) => d.id === resolvedId);
+      if (disease) {
+        openDetail(disease);
+        router.setParams({ selectedId: undefined });
       }
-    }, [pendingLibraryId])
+    }, [selectedId, openDetail, router])
   );
 
   const filtered = DISEASE_LIBRARY.filter((d) => {
@@ -52,11 +57,6 @@ export default function LibraryScreen() {
       d.tagline.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
-
-  const openDetail = (d: DiseaseGuide) => {
-    setSelected(d);
-    setDetailTab("overview");
-  };
 
   return (
     <View style={styles.container}>

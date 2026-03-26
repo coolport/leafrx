@@ -35,6 +35,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
 import { useTranslations } from "../../hooks/use-translations";
 import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
+import { resolveDiseaseLibraryId } from "../../constants/diseaseLibrary";
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
@@ -239,6 +240,29 @@ export default function ScanScreen() {
 
   const getStatusColor = (status?: string, score?: number) => {
     return getHealthColor(normalizeHealthStatus(status, score), colors);
+  };
+
+  const openDiseaseGuide = () => {
+    if (!analysisResult) return;
+
+    const firstPred = analysisResult.predictions?.[0];
+    const targetId = resolveDiseaseLibraryId({
+      explicitId: analysisResult.primary_disease,
+      plantType: firstPred?.plant_type || analysisResult.primary_disease?.split("_")[0],
+      diseaseName:
+        firstPred?.disease ||
+        (analysisResult.primary_disease?.includes("_")
+          ? analysisResult.primary_disease.split("_").slice(1).join("_")
+          : analysisResult.primary_disease),
+    });
+
+    if (targetId) {
+      setResultsModalVisible(false);
+      router.push({
+        pathname: "/library",
+        params: { selectedId: targetId },
+      });
+    }
   };
 
   const detectedPlantType =
@@ -899,25 +923,7 @@ export default function ScanScreen() {
                   {/* In-depth Info Link */}
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => {
-                      const firstPred = analysisResult?.predictions?.[0];
-                      let targetId = "";
-                      if (firstPred) {
-                        const plant = firstPred.plant_type.toLowerCase();
-                        const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
-                        targetId = `${plant}_${disease}`;
-                      } else if (analysisResult?.primary_disease) {
-                        targetId = analysisResult.primary_disease;
-                      }
-
-                      if (targetId) {
-                        setResultsModalVisible(false);
-                        router.push({
-                          pathname: "/library",
-                          params: { selectedId: targetId },
-                        });
-                      }
-                    }}
+                    onPress={openDiseaseGuide}
                     style={{
                       backgroundColor: colors.card,
                       borderRadius: 20,
@@ -1005,25 +1011,7 @@ export default function ScanScreen() {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={{ flex: 1 }}
-                    onPress={() => {
-                      const firstPred = analysisResult?.predictions?.[0];
-                      let targetId = "";
-                      if (firstPred) {
-                        const plant = firstPred.plant_type.toLowerCase();
-                        const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
-                        targetId = `${plant}_${disease}`;
-                      } else if (analysisResult?.primary_disease) {
-                        targetId = analysisResult.primary_disease;
-                      }
-
-                      if (targetId) {
-                        setResultsModalVisible(false);
-                        router.push({
-                          pathname: "/library",
-                          params: { selectedId: targetId },
-                        });
-                      }
-                    }}
+                    onPress={openDiseaseGuide}
                   >
                     <View
                       style={[
@@ -1056,25 +1044,7 @@ export default function ScanScreen() {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={{ width: "100%", marginBottom: 12 }}
-                    onPress={() => {
-                      const firstPred = analysisResult?.predictions?.[0];
-                      let targetId = "";
-                      if (firstPred) {
-                        const plant = firstPred.plant_type.toLowerCase();
-                        const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
-                        targetId = `${plant}_${disease}`;
-                      } else if (analysisResult?.primary_disease) {
-                        targetId = analysisResult.primary_disease;
-                      }
-
-                      if (targetId) {
-                        setResultsModalVisible(false);
-                        router.push({
-                          pathname: "/library",
-                          params: { selectedId: targetId },
-                        });
-                      }
-                    }}
+                    onPress={openDiseaseGuide}
                   >
                     <View
                       style={[

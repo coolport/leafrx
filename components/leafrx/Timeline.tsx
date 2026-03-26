@@ -9,6 +9,7 @@ import { ScanResult } from "./types";
 import { getHealthColor, normalizeHealthStatus, HealthStatus } from "../../constants/health";
 import { useTranslations } from "../../hooks/use-translations";
 import { useRouter } from "expo-router";
+import { resolveDiseaseLibraryId } from "../../constants/diseaseLibrary";
 
 interface TimelineProps {
   scans?: ScanResult[];
@@ -23,24 +24,19 @@ export function Timeline({ scans = [] }: TimelineProps) {
 
   const handleLibraryNav = () => {
     if (!selectedScan) return;
-    
-    const firstPred = selectedScan.predictions?.[0];
-    let id = "";
-    
-    if (firstPred) {
-      const plant = firstPred.plant_type.toLowerCase();
-      const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
-      id = `${plant}_${disease}`;
-    } else {
-      // Fallback if no predictions, try to construct from disease name if it follows plant_disease
-      id = selectedScan.disease.toLowerCase().replace(/ /g, "_");
-    }
 
-    if (id) {
+    const firstPred = selectedScan.predictions?.[0];
+    const targetId = resolveDiseaseLibraryId({
+      explicitId: selectedScan.primary_disease,
+      plantType: firstPred?.plant_type,
+      diseaseName: firstPred?.disease || selectedScan.disease,
+    });
+
+    if (targetId) {
       setSelectedScan(null);
       router.push({
         pathname: "/library",
-        params: { selectedId: id },
+        params: { selectedId: targetId },
       });
     }
   };
