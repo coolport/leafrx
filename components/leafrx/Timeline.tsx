@@ -72,11 +72,11 @@ export function Timeline({ scans = [] }: TimelineProps) {
                   padding: 14,
                   borderWidth: 1,
                   borderColor: colors.border,
-                  shadowColor: colors.cardShadow,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 6,
-                  elevation: 1,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.01,
+                  shadowRadius: 10,
+                  elevation: 0,
                 }}
               >
                 {/* Status badge + disease name */}
