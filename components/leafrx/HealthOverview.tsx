@@ -1,85 +1,60 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { createStyles } from "../../constants/styles";
-import { useColors } from "../../hooks/use-colors";
-import { usePlantStore } from "../../store/usePlantStore";
 import { useTranslations } from "../../hooks/use-translations";
-import { getHealthColor, getHealthStatus } from "../../constants/health";
+import { usePlantStore } from "../../store/usePlantStore";
 
 export function HealthOverview() {
   const plants = usePlantStore((state) => state.plants);
-  const colors = useColors();
-  const styles = createStyles(colors);
   const { t } = useTranslations();
 
   const totalPlants = plants.length;
   const healthyCount = plants.filter((p) => p.status === "healthy").length;
   const warningCount = plants.filter((p) => p.status === "warning").length;
-  const criticalCount = plants.filter((p) => p.status === "diseased").length;
 
-  const averageHealth = totalPlants > 0 ? Math.round(plants.reduce((acc, p) => acc + p.health, 0) / totalPlants) : 100;
-  const healthStatus = getHealthStatus(averageHealth);
-  const healthColor = getHealthColor(healthStatus, colors);
+  const stats = [
+    { value: totalPlants, label: "Total" },
+    { value: healthyCount, label: t.home.healthy },
+    { value: warningCount, label: t.home.warning },
+  ];
 
   return (
-    <View style={styles.healthOverview}>
-      <View style={styles.healthOverviewTop}>
-        <View>
-          <Text style={styles.healthLabel}>{t.home.farmOverview}</Text>
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-            <Feather name="trending-up" size={14} color="#4ade80" />
-            <Text
-              style={{
-                fontSize: 13,
-                color: "rgba(255,255,255,0.7)",
-                marginLeft: 4,
-                fontWeight: "600",
-              }}
-            >
-              {t.home.keepItUp}
-            </Text>
-          </View>
-        </View>
-        <View style={{ alignItems: "flex-end" }}>
+    <View
+      style={{
+        backgroundColor: "rgba(255,255,255,0.15)",
+        padding: 20,
+        borderRadius: 24,
+        marginHorizontal: 24,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.2)",
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16, gap: 12 }}>
+        {stats.map(({ value, label }) => (
           <View
+            key={label}
             style={{
-              backgroundColor: `${healthColor}22`,
-              borderColor: `${healthColor}30`,
+              flex: 1,
+              backgroundColor: "rgba(255,255,255,0.22)",
+              borderRadius: 16,
+              padding: 14,
+              alignItems: "center",
               borderWidth: 1,
-              borderRadius: 999,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
+              borderColor: "rgba(255,255,255,0.45)",
             }}
           >
-            <Text style={[styles.healthScore, { fontSize: 16, color: "#fff" }]}>
-              {totalPlants > 0 ? t.home[healthStatus].toUpperCase() : "--"}
+            <Text style={{ color: "#fff", fontSize: 24, fontWeight: "800" }}>{value}</Text>
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.75)",
+                fontSize: 11,
+                fontWeight: "600",
+                marginTop: 2,
+              }}
+            >
+              {label}
             </Text>
           </View>
-        </View>
-      </View>
-
-      <View
-        style={{
-          height: 1,
-          backgroundColor: "rgba(255,255,255,0.1)",
-          marginVertical: 16,
-        }}
-      />
-
-      <View style={styles.healthBadges}>
-        <View style={styles.badge}>
-          <View style={[styles.dot, { backgroundColor: colors.success }]} />
-          <Text style={styles.badgeText}>{healthyCount} {t.home.healthy}</Text>
-        </View>
-        <View style={styles.badge}>
-          <View style={[styles.dot, { backgroundColor: colors.warning }]} />
-          <Text style={styles.badgeText}>{warningCount} {t.home.warning}</Text>
-        </View>
-        <View style={styles.badge}>
-          <View style={[styles.dot, { backgroundColor: colors.danger }]} />
-          <Text style={styles.badgeText}>{criticalCount} {t.home.diseased}</Text>
-        </View>
+        ))}
       </View>
     </View>
   );
