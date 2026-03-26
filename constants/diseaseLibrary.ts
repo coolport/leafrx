@@ -1,4 +1,4 @@
-export type Severity = "low" | "moderate" | "high";
+export type Severity = "low" | "moderate" | "high" | "critical";
 
 export interface DiseaseGuide {
   id: string;
@@ -1615,8 +1615,10 @@ export const getSeverityLabel = (severity: Severity): string => {
       return "Moderate";
     case "high":
       return "High Risk";
-    case "high":
-      return "High";
+    case "critical":
+      return "Critical";
+    default:
+      return "Moderate";
   }
 };
 

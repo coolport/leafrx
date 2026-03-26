@@ -976,26 +976,6 @@ export default function ScanScreen() {
                           ).toUpperCase()}
                         </Text>
                       </View>
-                      <View
-                        style={{
-                          backgroundColor: colors.background,
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                          borderRadius: 10,
-                          borderWidth: 1,
-                          borderColor: colors.border,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontWeight: "700",
-                            color: colors.textSecondary,
-                          }}
-                        >
-                          {Math.round(analysisResult?.overall_health_score || 0)}% {t.healthLevels.label}
-                        </Text>
-                      </View>
                     </View>
                   </View>
 

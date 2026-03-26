@@ -273,20 +273,6 @@ export function Timeline({ scans = [] }: TimelineProps) {
                       </Text>
                     </View>
                   )}
-                  <View
-                    style={{
-                      backgroundColor: colors.background,
-                      borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                    }}
-                  >
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textSecondary }}>
-                      {Math.round(selectedScan?.healthScore || 0)}% {t.healthLevels.label}
-                    </Text>
-                  </View>
                 </View>
 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginTop: 2 }}>
