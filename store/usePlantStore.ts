@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Plant, ScanResult } from "../components/leafrx/types";
+import { Plant, ScanResult, PlantJournalEntry } from "../components/leafrx/types";
 import { dbService } from "../services/database";
 import { Language } from "../constants/translations";
 import { normalizeHealthStatus } from "../constants/health";
@@ -7,6 +7,7 @@ import { normalizeHealthStatus } from "../constants/health";
 interface PlantState {
   plants: Plant[];
   scans: ScanResult[];
+  plantEntries: PlantJournalEntry[];
   isHydrated: boolean;
   settings: {
     notifications: boolean;
@@ -18,13 +19,16 @@ interface PlantState {
   updatePlant: (id: string, updates: Partial<Plant>) => Promise<void>;
   deletePlant: (id: string) => Promise<void>;
   addScan: (scan: ScanResult) => Promise<void>;
+  addPlantEntry: (entry: Omit<PlantJournalEntry, "id" | "date">) => Promise<void>;
   getPlantScans: (plantId: string) => ScanResult[];
+  getPlantEntries: (plantId: string) => PlantJournalEntry[];
   updateSettings: (settings: Partial<PlantState["settings"]>) => Promise<void>;
 }
 
 export const usePlantStore = create<PlantState>((set, get) => ({
   plants: [],
   scans: [],
+  plantEntries: [],
   isHydrated: false,
   settings: {
     notifications: true,
@@ -34,9 +38,10 @@ export const usePlantStore = create<PlantState>((set, get) => ({
 
   initialize: async () => {
     try {
-      const [dbPlants, dbScans, notifications, darkMode, language] = await Promise.all([
+      const [dbPlants, dbScans, dbPlantEntries, notifications, darkMode, language] = await Promise.all([
         dbService.getAllPlants(),
         dbService.getAllScans(),
+        dbService.getAllPlantEntries(),
         dbService.getSetting("notifications", true),
         dbService.getSetting("darkMode", false),
         dbService.getSetting("language", "en"),
@@ -44,6 +49,7 @@ export const usePlantStore = create<PlantState>((set, get) => ({
       set({
         plants: dbPlants,
         scans: dbScans,
+        plantEntries: dbPlantEntries,
         settings: { notifications, darkMode, language },
         isHydrated: true,
       });
@@ -106,6 +112,7 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     set((state) => ({
       plants: state.plants.filter((p) => p.id !== id),
       scans: state.scans.filter((s) => s.plantId !== id),
+      plantEntries: state.plantEntries.filter((e) => e.plantId !== id),
     }));
   },
 
@@ -140,7 +147,27 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     });
   },
 
+  addPlantEntry: async (entryData) => {
+    const newEntry: PlantJournalEntry = {
+      id: Math.random().toString(36).substring(7),
+      plantId: entryData.plantId,
+      note: entryData.note,
+      date: new Date().toISOString(),
+      imageUri: entryData.imageUri,
+    };
+
+    await dbService.savePlantEntry(newEntry);
+
+    set((state) => ({
+      plantEntries: [newEntry, ...state.plantEntries],
+    }));
+  },
+
   getPlantScans: (plantId) => {
     return get().scans.filter((s) => s.plantId === plantId);
+  },
+
+  getPlantEntries: (plantId) => {
+    return get().plantEntries.filter((entry) => entry.plantId === plantId);
   },
 }));

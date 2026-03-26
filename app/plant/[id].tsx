@@ -40,12 +40,15 @@ export default function DetailScreen() {
 
   const plants = usePlantStore((state) => state.plants);
   const getPlantScans = usePlantStore((state) => state.getPlantScans);
+  const getPlantEntries = usePlantStore((state) => state.getPlantEntries);
   const deletePlant = usePlantStore((state) => state.deletePlant);
   const updatePlant = usePlantStore((state) => state.updatePlant);
   const addScan = usePlantStore((state) => state.addScan);
+  const addPlantEntry = usePlantStore((state) => state.addPlantEntry);
 
   const selectedPlant = plants.find((p) => p.id === plantId);
   const plantScans = getPlantScans(plantId as string);
+  const plantEntries = getPlantEntries(plantId as string);
 
   const healthStatus = selectedPlant ? normalizeHealthStatus(selectedPlant.status, selectedPlant.health) : "warning";
   const healthColor = getHealthColor(healthStatus, colors);
@@ -53,6 +56,9 @@ export default function DetailScreen() {
   const [isResultsModalVisible, setResultsModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showEntryModal, setShowEntryModal] = useState(false);
+  const [entryNote, setEntryNote] = useState("");
+  const [entryImageUri, setEntryImageUri] = useState<string | null>(null);
   const [newName, setNewName] = useState(selectedPlant?.name || "");
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
@@ -146,6 +152,7 @@ export default function DetailScreen() {
       healthScore: result.overall_health_score || 0,
       status: normalizeHealthStatus(result.status, result.overall_health_score),
       predictions: result.predictions || [],
+      primary_disease: result.primary_disease,
       imageUri: selectedImageUri || undefined,
     };
     await addScan(scanRecord);
@@ -160,6 +167,49 @@ export default function DetailScreen() {
       await updatePlant(selectedPlant.id, { name: newName.trim() });
       setShowRenameModal(false);
     }
+  };
+
+  const handleSaveEntry = async () => {
+    if (!entryNote.trim()) {
+      Alert.alert("Error", "Please enter a note for your entry.");
+      return;
+    }
+
+    if (selectedPlant) {
+      await addPlantEntry({
+        plantId: selectedPlant.id,
+        note: entryNote.trim(),
+        imageUri: entryImageUri || undefined,
+      });
+      setShowEntryModal(false);
+      setEntryNote("");
+      setEntryImageUri(null);
+    }
+  };
+
+  const pickEntryImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+    });
+    if (!result.canceled) setEntryImageUri(result.assets[0].uri);
+  };
+
+  const takeEntryPhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "Camera permission is required.");
+      return;
+    }
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+    });
+    if (!result.canceled) setEntryImageUri(result.assets[0].uri);
   };
 
   const getStatusColor = (status?: string, score?: number) => {
@@ -371,7 +421,7 @@ export default function DetailScreen() {
             </View>
           </View>
 
-          <Timeline scans={plantScans} />
+          <Timeline scans={plantScans} entries={plantEntries} />
 
           <View style={{ flexDirection: "row", gap: 12, marginTop: 32 }}>
             <TouchableOpacity
@@ -479,6 +529,40 @@ export default function DetailScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={{
+              marginTop: 16,
+              backgroundColor: colors.card,
+              borderRadius: 24,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 1,
+              borderColor: colors.border,
+              gap: 12,
+            }}
+            onPress={() => {
+              setEntryNote("");
+              setEntryImageUri(null);
+              setShowEntryModal(true);
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: `${colors.primary}1A`,
+                padding: 10,
+                borderRadius: 12,
+              }}
+            >
+              <Feather name="edit-3" size={20} color={colors.primary} />
+            </View>
+            <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
+              Add Journal Entry
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -596,6 +680,132 @@ export default function DetailScreen() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      <Modal
+        visible={showEntryModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowEntryModal(false)}
+      >
+        <BlurView intensity={30} tint={colors.card === "#ffffff" ? "light" : "dark"} style={styles.modalContainer}>
+          <View style={[styles.bottomSheetContent, { minHeight: 400 }]}>
+            <View style={styles.bottomSheetHandle} />
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 24,
+                paddingVertical: 16,
+              }}
+            >
+              <Text style={[styles.modalTitle, { textAlign: "left", marginBottom: 0 }]}>New Journal Entry</Text>
+              <TouchableOpacity onPress={() => setShowEntryModal(false)}>
+                <View style={{ backgroundColor: colors.background, padding: 8, borderRadius: 20 }}>
+                  <Feather name="x" size={20} color={colors.textSecondary} />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}>
+              <TextInput
+                style={{
+                  backgroundColor: colors.background,
+                  borderRadius: 20,
+                  padding: 16,
+                  fontSize: 16,
+                  color: colors.text,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  minHeight: 120,
+                  textAlignVertical: "top",
+                  marginBottom: 20,
+                }}
+                value={entryNote}
+                onChangeText={setEntryNote}
+                placeholder="How is your plant doing today?"
+                placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={4}
+              />
+
+              <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    borderRadius: 16,
+                    padding: 12,
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                  onPress={takeEntryPhoto}
+                >
+                  <Feather name="camera" size={18} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontWeight: "700" }}>Camera</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    borderRadius: 16,
+                    padding: 12,
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                  onPress={pickEntryImage}
+                >
+                  <Feather name="image" size={18} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontWeight: "700" }}>Gallery</Text>
+                </TouchableOpacity>
+              </View>
+
+              {entryImageUri && (
+                <View style={{ marginBottom: 20, position: "relative" }}>
+                  <Image
+                    source={{ uri: entryImageUri }}
+                    style={{ width: "100%", height: 200, borderRadius: 20 }}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setEntryImageUri(null)}
+                    style={{
+                      position: "absolute",
+                      top: 10,
+                      right: 10,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      padding: 8,
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Feather name="trash-2" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <TouchableOpacity activeOpacity={0.8} style={{ width: "100%" }} onPress={handleSaveEntry}>
+                <LinearGradient
+                  colors={[colors.primaryDark, colors.primary] as any}
+                  style={[styles.modalButton, { marginHorizontal: 0 }]}
+                >
+                  <Text style={styles.modalButtonText}>Save Entry</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </BlurView>
       </Modal>
 
       {/* Results Modal for Direct Analysis */}

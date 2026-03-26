@@ -120,7 +120,7 @@ export default function TrackingScreen() {
                 onChangeText={setSearchQuery}
               />
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterPills}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll}>
               {[t.tracking.filterAll, "Mango", "Banana", "Guava", "Calamansi"].map((filter) => (
                 <TouchableOpacity
                   key={filter}

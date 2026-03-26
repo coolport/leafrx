@@ -1,7 +1,8 @@
 import React from "react";
 import { ScrollView, View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { styles } from "../../constants/styles";
+import { createStyles } from "../../constants/styles";
+import { useColors } from "../../hooks/use-colors";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { apiService } from "../../services/api";
@@ -9,6 +10,8 @@ import { apiService } from "../../services/api";
 export default function DiseaseDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const colors = useColors();
+  const styles = createStyles(colors);
   const { name } = useLocalSearchParams();
   const diseaseId = Array.isArray(name) ? name[0] : name;
 
@@ -63,8 +66,8 @@ export default function DiseaseDetailScreen() {
           <Text style={{ color: "#6b7280" }}>
             The requested disease could not be found or there was a network error.
           </Text>
-          <TouchableOpacity style={[styles.primaryButton, { marginTop: 20 }]} onPress={() => router.back()}>
-            <Text style={styles.primaryButtonText}>Go Back</Text>
+          <TouchableOpacity style={[styles.btnPrimary, { marginTop: 20 }]} onPress={() => router.back()}>
+            <Text style={styles.btnPrimaryText}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

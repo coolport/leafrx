@@ -53,9 +53,18 @@ export type ScanResult = {
   healthScore: number;
   status: HealthStatus;
   predictions: Prediction[];
+  primary_disease?: string;
   imageUri?: string;
 };
 
+
+export type PlantJournalEntry = {
+  id: string;
+  plantId: string;
+  note: string;
+  date: string;
+  imageUri?: string;
+};
 export type TimelineEntry = {
   date: string;
   time: string;
