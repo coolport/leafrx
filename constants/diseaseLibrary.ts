@@ -1519,6 +1519,81 @@ export const DISEASE_LIBRARY: DiseaseGuide[] = [
 
 export const getDiseaseById = (id: string): DiseaseGuide | undefined => DISEASE_LIBRARY.find((d) => d.id === id);
 
+const normalizeLibraryKey = (value?: string): string =>
+  (value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+export const resolveDiseaseLibraryId = ({
+  explicitId,
+  plantType,
+  diseaseName,
+}: {
+  explicitId?: string;
+  plantType?: string;
+  diseaseName?: string;
+}): string | null => {
+  const normalizedToId = new Map(
+    DISEASE_LIBRARY.map((entry) => [normalizeLibraryKey(entry.id), entry.id] as const)
+  );
+
+  const resolveCandidate = (candidate?: string): string | null => {
+    const normalized = normalizeLibraryKey(candidate);
+    if (!normalized) return null;
+    return normalizedToId.get(normalized) ?? null;
+  };
+
+  const explicitMatch = resolveCandidate(explicitId);
+  if (explicitMatch) return explicitMatch;
+
+  const plant = normalizeLibraryKey(plantType);
+  let disease = normalizeLibraryKey(diseaseName);
+  if (plant && disease.startsWith(`${plant}_`)) {
+    disease = disease.slice(plant.length + 1);
+  }
+
+  const directCandidates = [
+    plant && disease ? `${plant}_${disease}` : "",
+    plant && disease ? `${plant}_${disease.replace(/_disease$/, "")}` : "",
+    plant && disease ? `${plant}_${disease.replace(/_spot$/, "spot")}` : "",
+    plant && disease ? `${plant}_${disease.replace(/_mold$/, "_mould")}` : "",
+    disease,
+  ];
+
+  for (const candidate of directCandidates) {
+    const resolved = resolveCandidate(candidate);
+    if (resolved) return resolved;
+  }
+
+  if (!disease) return null;
+
+  const diseaseNoUnderscore = disease.replace(/_/g, "");
+  const fallbackPool = DISEASE_LIBRARY.filter((entry) => {
+    if (!plant) return true;
+    return entry.id.startsWith(`${plant}_`);
+  });
+
+  for (const entry of fallbackPool) {
+    const entryId = normalizeLibraryKey(entry.id);
+    const entryDisplay = normalizeLibraryKey(entry.display_name);
+    const entryIdNoUnderscore = entryId.replace(/_/g, "");
+
+    if (
+      entryId.includes(disease) ||
+      disease.includes(entryId) ||
+      entryDisplay.includes(disease) ||
+      disease.includes(entryDisplay) ||
+      entryIdNoUnderscore.includes(diseaseNoUnderscore)
+    ) {
+      return entry.id;
+    }
+  }
+
+  return null;
+};
+
 export const getSeverityColor = (severity: Severity): string => {
   switch (severity) {
     case "low":
