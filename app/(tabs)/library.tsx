@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ScrollView, View, Text, TextInput, StatusBar, TouchableOpacity, Image, Dimensions, Modal } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { createStyles } from "../../constants/styles";
 import { useColors } from "../../hooks/use-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
+import { usePlantStore } from "../../store/usePlantStore";
 import {
   DISEASE_LIBRARY,
   DiseaseGuide,
@@ -25,6 +27,22 @@ export default function LibraryScreen() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [selected, setSelected] = useState<DiseaseGuide | null>(null);
   const [detailTab, setDetailTab] = useState<"overview" | "symptoms" | "treatment" | "prevention">("overview");
+
+  const pendingLibraryId = usePlantStore((s) => s.pendingLibraryId);
+  const setPendingLibraryId = usePlantStore((s) => s.setPendingLibraryId);
+
+  // Fires every time this tab comes into focus — works even when screen stays mounted in background
+  useFocusEffect(
+    useCallback(() => {
+      if (pendingLibraryId) {
+        const disease = DISEASE_LIBRARY.find((d) => d.id === pendingLibraryId);
+        if (disease) {
+          openDetail(disease);
+        }
+        setPendingLibraryId(null); // clear after consuming
+      }
+    }, [pendingLibraryId])
+  );
 
   const filtered = DISEASE_LIBRARY.filter((d) => {
     const matchesFilter = activeFilter === "All" || d.plant.toLowerCase() === activeFilter.toLowerCase();
@@ -63,13 +81,12 @@ export default function LibraryScreen() {
         >
           <View style={{ paddingHorizontal: 24 }}>
             <Text style={styles.headerTitle}>Disease Library</Text>
-            {/* <Text style={styles.headerSubtitle}>{DISEASE_LIBRARY.length} entries · Mango, Banana, Guava, Calamansi</Text> */}
             <Text style={styles.headerSubtitle}>16 entries · Mango, Banana, Guava, Calamansi</Text>
           </View>
         </LinearGradient>
 
         <View style={[styles.section, { marginTop: -20 }]}>
-          {/* ── Search + Filter card — same visual as TrackingScreen ── */}
+          {/* ── Search + Filter card ── */}
           <View
             style={{
               backgroundColor: colors.card,

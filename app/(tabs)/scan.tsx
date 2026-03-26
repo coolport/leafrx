@@ -896,6 +896,52 @@ export default function ScanScreen() {
                     </View>
                   </View>
 
+                  {/* In-depth Info Link */}
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      const firstPred = analysisResult?.predictions?.[0];
+                      let targetId = "";
+                      if (firstPred) {
+                        const plant = firstPred.plant_type.toLowerCase();
+                        const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
+                        targetId = `${plant}_${disease}`;
+                      } else if (analysisResult?.primary_disease) {
+                        targetId = analysisResult.primary_disease;
+                      }
+
+                      if (targetId) {
+                        setResultsModalVisible(false);
+                        router.push({
+                          pathname: "/library",
+                          params: { selectedId: targetId },
+                        });
+                      }
+                    }}
+                    style={{
+                      backgroundColor: colors.card,
+                      borderRadius: 20,
+                      padding: 16,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                      <View style={{ backgroundColor: `${colors.primary}15`, padding: 8, borderRadius: 12 }}>
+                        <Feather name="book-open" size={18} color={colors.primary} />
+                      </View>
+                      <View>
+                        <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>In-depth Info</Text>
+                        <Text style={{ fontSize: 12, color: colors.textMuted }}>View full library guide</Text>
+                      </View>
+                    </View>
+                    <Feather name="chevron-right" size={20} color={colors.textMuted} />
+                  </TouchableOpacity>
+
                   {/* Recommendations */}
                   {analysisResult?.predictions?.[0]?.recommendations && (
                     <View style={{ marginBottom: 8 }}>
@@ -950,24 +996,35 @@ export default function ScanScreen() {
                 paddingHorizontal: 24,
                 paddingTop: 12,
                 paddingBottom: 40,
-                flexDirection: "row",
-                gap: 12,
                 borderTopWidth: 1,
                 borderTopColor: colors.border,
               }}
             >
               {isUpdatingPlant ? (
-                <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleUpdatePlant}>
-                  <LinearGradient
-                    colors={[colors.primaryDark, colors.primary] as any}
-                    style={[styles.modalButton, { marginHorizontal: 0 }]}
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={{ flex: 1 }}
+                    onPress={() => {
+                      const firstPred = analysisResult?.predictions?.[0];
+                      let targetId = "";
+                      if (firstPred) {
+                        const plant = firstPred.plant_type.toLowerCase();
+                        const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
+                        targetId = `${plant}_${disease}`;
+                      } else if (analysisResult?.primary_disease) {
+                        targetId = analysisResult.primary_disease;
+                      }
+
+                      if (targetId) {
+                        setResultsModalVisible(false);
+                        router.push({
+                          pathname: "/library",
+                          params: { selectedId: targetId },
+                        });
+                      }
+                    }}
                   >
-                    <Text style={styles.modalButtonText}>{t.scan.updateInfo}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ) : (
-                <>
-                  <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleAssignToPlant}>
                     <View
                       style={[
                         styles.modalButton,
@@ -976,20 +1033,91 @@ export default function ScanScreen() {
                           marginHorizontal: 0,
                           borderWidth: 1,
                           borderColor: colors.border,
+                          flexDirection: "row",
+                          gap: 8,
                         },
                       ]}
                     >
-                      <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>{t.scan.assignExisting}</Text>
+                      <Feather name="book-open" size={16} color={colors.textSecondary} />
+                      <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Guide</Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleSaveAsNewPlant}>
+                  <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleUpdatePlant}>
                     <LinearGradient
                       colors={[colors.primaryDark, colors.primary] as any}
                       style={[styles.modalButton, { marginHorizontal: 0 }]}
                     >
-                      <Text style={styles.modalButtonText}>{t.scan.saveAsNew}</Text>
+                      <Text style={styles.modalButtonText}>{t.scan.updateInfo}</Text>
                     </LinearGradient>
                   </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={{ width: "100%", marginBottom: 12 }}
+                    onPress={() => {
+                      const firstPred = analysisResult?.predictions?.[0];
+                      let targetId = "";
+                      if (firstPred) {
+                        const plant = firstPred.plant_type.toLowerCase();
+                        const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
+                        targetId = `${plant}_${disease}`;
+                      } else if (analysisResult?.primary_disease) {
+                        targetId = analysisResult.primary_disease;
+                      }
+
+                      if (targetId) {
+                        setResultsModalVisible(false);
+                        router.push({
+                          pathname: "/library",
+                          params: { selectedId: targetId },
+                        });
+                      }
+                    }}
+                  >
+                    <View
+                      style={[
+                        styles.modalButton,
+                        {
+                          backgroundColor: colors.background,
+                          marginHorizontal: 0,
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                          flexDirection: "row",
+                          gap: 8,
+                        },
+                      ]}
+                    >
+                      <Feather name="book-open" size={18} color={colors.textSecondary} />
+                      <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Disease Guide</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <View style={{ flexDirection: "row", gap: 12 }}>
+                    <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleAssignToPlant}>
+                      <View
+                        style={[
+                          styles.modalButton,
+                          {
+                            backgroundColor: colors.background,
+                            marginHorizontal: 0,
+                            borderWidth: 1,
+                            borderColor: colors.border,
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>{t.scan.assignExisting}</Text>
+                      </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleSaveAsNewPlant}>
+                      <LinearGradient
+                        colors={[colors.primaryDark, colors.primary] as any}
+                        style={[styles.modalButton, { marginHorizontal: 0 }]}
+                      >
+                        <Text style={styles.modalButtonText}>{t.scan.saveAsNew}</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
                 </>
               )}
             </View>

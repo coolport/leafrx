@@ -8,16 +8,42 @@ import { useColors } from "../../hooks/use-colors";
 import { ScanResult } from "./types";
 import { getHealthColor, normalizeHealthStatus, HealthStatus } from "../../constants/health";
 import { useTranslations } from "../../hooks/use-translations";
+import { useRouter } from "expo-router";
 
 interface TimelineProps {
   scans?: ScanResult[];
 }
 
 export function Timeline({ scans = [] }: TimelineProps) {
+  const router = useRouter();
   const colors = useColors();
   const styles = createStyles(colors);
   const { t } = useTranslations();
   const [selectedScan, setSelectedScan] = useState<ScanResult | null>(null);
+
+  const handleLibraryNav = () => {
+    if (!selectedScan) return;
+    
+    const firstPred = selectedScan.predictions?.[0];
+    let id = "";
+    
+    if (firstPred) {
+      const plant = firstPred.plant_type.toLowerCase();
+      const disease = firstPred.disease.toLowerCase().replace(/ /g, "_");
+      id = `${plant}_${disease}`;
+    } else {
+      // Fallback if no predictions, try to construct from disease name if it follows plant_disease
+      id = selectedScan.disease.toLowerCase().replace(/ /g, "_");
+    }
+
+    if (id) {
+      setSelectedScan(null);
+      router.push({
+        pathname: "/library",
+        params: { selectedId: id },
+      });
+    }
+  };
 
   if (scans.length === 0) {
     return (
@@ -292,11 +318,36 @@ export function Timeline({ scans = [] }: TimelineProps) {
                 paddingHorizontal: 24,
                 paddingTop: 16,
                 paddingBottom: 40,
+                flexDirection: "row",
+                gap: 12,
               }}
             >
               <TouchableOpacity
                 activeOpacity={0.8}
-                style={{ width: "100%" }}
+                style={{ flex: 1 }}
+                onPress={handleLibraryNav}
+              >
+                <View
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor: colors.background,
+                      marginHorizontal: 0,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      flexDirection: "row",
+                      gap: 8,
+                    },
+                  ]}
+                >
+                  <Feather name="book-open" size={16} color={colors.textSecondary} />
+                  <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Guide</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={{ flex: 1 }}
                 onPress={() => setSelectedScan(null)}
               >
                 <LinearGradient
