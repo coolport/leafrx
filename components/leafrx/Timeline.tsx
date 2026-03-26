@@ -184,12 +184,17 @@ export function Timeline({ scans = [] }: TimelineProps) {
 
               <View
                 style={{
-                  backgroundColor: getHealthColor(normalizeHealthStatus(selectedScan?.status || "warning", selectedScan?.healthScore), colors) + "15",
+                  backgroundColor: colors.card,
                   borderRadius: 24,
-                  padding: 20,
+                  padding: 18,
                   marginBottom: 20,
-                  borderLeftWidth: 6,
-                  borderLeftColor: getHealthColor(normalizeHealthStatus(selectedScan?.status || "warning", selectedScan?.healthScore), colors),
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  shadowColor: colors.cardShadow,
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 14,
+                  elevation: 3,
                 }}
               >
                 <View
@@ -197,77 +202,104 @@ export function Timeline({ scans = [] }: TimelineProps) {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    marginBottom: 12,
                   }}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 13,
-                        fontWeight: "700",
-                        color: colors.textSecondary,
-                        marginBottom: 4,
-                      }}
-                    >
-                      Detection
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 22,
-                        fontWeight: "800",
-                        color: colors.text,
-                      }}
-                    >
-                      {(selectedScan?.disease || "Healthy").toUpperCase()}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: colors.textMuted,
-                        marginTop: 4,
-                        fontWeight: "600"
-                      }}
-                    >
-                      {selectedScan ? new Date(selectedScan.date).toLocaleString() : ""}
-                    </Text>
-                  </View>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "800",
+                      color: colors.textMuted,
+                      letterSpacing: 1.1,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Detection
+                  </Text>
                   <View
                     style={{
-                      width: 100,
-                      height: 80,
-                      borderRadius: 20,
-                      backgroundColor: colors.card,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      shadowColor: colors.cardShadow,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 10,
-                      elevation: 5,
-                      paddingHorizontal: 8,
+                      backgroundColor:
+                        getHealthColor(
+                          normalizeHealthStatus(selectedScan?.status || "warning", selectedScan?.healthScore),
+                          colors
+                        ) + "18",
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 10,
                     }}
                   >
                     <Text
                       style={{
-                        fontSize: 14,
-                        fontWeight: "900",
-                        color: getHealthColor(normalizeHealthStatus(selectedScan?.status || "warning", selectedScan?.healthScore), colors),
+                        fontSize: 11,
+                        fontWeight: "800",
+                        color: getHealthColor(
+                          normalizeHealthStatus(selectedScan?.status || "warning", selectedScan?.healthScore),
+                          colors
+                        ),
                         textTransform: "uppercase",
-                        textAlign: "center",
                       }}
                     >
                       {selectedScan ? t.home[normalizeHealthStatus(selectedScan.status, selectedScan.healthScore)] : ""}
                     </Text>
-                    <Text
+                  </View>
+                </View>
+
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: "800",
+                    color: colors.text,
+                    marginBottom: 12,
+                    letterSpacing: -0.4,
+                  }}
+                >
+                  {(selectedScan?.disease || "Healthy").toUpperCase()}
+                </Text>
+
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  {!!selectedScan?.predictions?.[0]?.plant_type && (
+                    <View
                       style={{
-                        fontSize: 10,
-                        fontWeight: "700",
-                        color: colors.textMuted,
-                        marginTop: 2,
+                        backgroundColor: colors.background,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
                       }}
                     >
-                      {t.healthLevels.label.toUpperCase()}
+                      <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textSecondary }}>
+                        {selectedScan.predictions[0].plant_type.toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  <View
+                    style={{
+                      backgroundColor: colors.background,
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                    }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textSecondary }}>
+                      {Math.round(selectedScan?.healthScore || 0)}% {t.healthLevels.label}
                     </Text>
                   </View>
+                </View>
+
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginTop: 2 }}>
+                  <Feather name="clock" size={13} color={colors.textMuted} />
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: colors.textMuted,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {selectedScan ? new Date(selectedScan.date).toLocaleString() : ""}
+                  </Text>
                 </View>
               </View>
 

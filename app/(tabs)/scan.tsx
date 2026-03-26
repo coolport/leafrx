@@ -848,32 +848,67 @@ export default function ScanScreen() {
                   {/* Primary finding card */}
                   <View
                     style={{
-                      backgroundColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "12",
+                      backgroundColor: colors.card,
                       borderRadius: 24,
-                      padding: 20,
+                      padding: 18,
                       marginBottom: 16,
                       borderWidth: 1,
-                      borderColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "30",
+                      borderColor: colors.border,
+                      shadowColor: colors.cardShadow,
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 14,
+                      elevation: 3,
                     }}
                   >
-                    <Text
+                    <View
                       style={{
-                        fontSize: 11,
-                        fontWeight: "800",
-                        color: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
-                        letterSpacing: 1.5,
-                        marginBottom: 6,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 10,
                       }}
                     >
-                      {t.scan.primaryFinding}
-                    </Text>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "800",
+                          color: colors.textMuted,
+                          letterSpacing: 1.3,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {t.scan.primaryFinding}
+                      </Text>
+                      <View
+                        style={{
+                          backgroundColor:
+                            getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "18",
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          borderRadius: 10,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "800",
+                            color: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {t.home[normalizeHealthStatus(analysisResult?.status, analysisResult?.overall_health_score)]}
+                        </Text>
+                      </View>
+                    </View>
+
                     <Text
                       style={{
                         fontSize: 26,
                         fontWeight: "800",
                         color: colors.text,
                         letterSpacing: -0.5,
-                        marginBottom: 10,
+                        marginBottom: 12,
                       }}
                     >
                       {(
@@ -885,17 +920,10 @@ export default function ScanScreen() {
                       ).toUpperCase()}
                     </Text>
 
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      {/* Plant type tag */}
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                       <View
                         style={{
-                          backgroundColor: colors.card,
+                          backgroundColor: colors.background,
                           paddingHorizontal: 10,
                           paddingVertical: 4,
                           borderRadius: 10,
@@ -917,36 +945,28 @@ export default function ScanScreen() {
                           ).toUpperCase()}
                         </Text>
                       </View>
+                      <View
+                        style={{
+                          backgroundColor: colors.background,
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: "700",
+                            color: colors.textSecondary,
+                          }}
+                        >
+                          {Math.round(analysisResult?.overall_health_score || 0)}% {t.healthLevels.label}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-
-                  {/* In-depth Info Link */}
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={openDiseaseGuide}
-                    style={{
-                      backgroundColor: colors.card,
-                      borderRadius: 20,
-                      padding: 16,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      marginBottom: 16,
-                    }}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                      <View style={{ backgroundColor: `${colors.primary}15`, padding: 8, borderRadius: 12 }}>
-                        <Feather name="book-open" size={18} color={colors.primary} />
-                      </View>
-                      <View>
-                        <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>In-depth Info</Text>
-                        <Text style={{ fontSize: 12, color: colors.textMuted }}>View full library guide</Text>
-                      </View>
-                    </View>
-                    <Feather name="chevron-right" size={20} color={colors.textMuted} />
-                  </TouchableOpacity>
 
                   {/* Recommendations */}
                   {analysisResult?.predictions?.[0]?.recommendations && (
