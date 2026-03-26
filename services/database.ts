@@ -46,6 +46,12 @@ const getDb = async (): Promise<SQLite.SQLiteDatabase> => {
   }
 
   try {
+    await db.execAsync("ALTER TABLE scans ADD COLUMN imageUri TEXT");
+  } catch {
+    // Column already exists.
+  }
+
+  try {
     await db.execAsync("ALTER TABLE plants ADD COLUMN imageUri TEXT");
   } catch {
     // Column already exists.
@@ -107,7 +113,7 @@ export const dbService = {
   saveScan: async (scan: ScanResult) => {
     const db = await getDb();
     await db.runAsync(
-      "INSERT INTO scans (id, plantId, plantName, disease, severity, date, healthScore, status, predictions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO scans (id, plantId, plantName, disease, severity, date, healthScore, status, predictions, imageUri) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         scan.id,
         scan.plantId || null,
@@ -118,6 +124,7 @@ export const dbService = {
         scan.healthScore ?? 0,
         normalizeHealthStatus(scan.status, scan.healthScore),
         JSON.stringify(scan.predictions || []),
+        scan.imageUri || null,
       ]
     );
   },
@@ -129,6 +136,7 @@ export const dbService = {
       ...row,
       status: normalizeHealthStatus(row.status, row.healthScore),
       predictions: JSON.parse(row.predictions || "[]"),
+      imageUri: row.imageUri || undefined,
     }));
   },
 };
