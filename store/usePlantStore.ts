@@ -19,6 +19,8 @@ interface PlantState {
   addPlant: (plant: Omit<Plant, "id" | "entries" | "healthTrend">) => Promise<void>;
   updatePlant: (id: string, updates: Partial<Plant>) => Promise<void>;
   deletePlant: (id: string) => Promise<void>;
+  deleteScan: (id: string) => Promise<void>;
+  deletePlantEntry: (id: string) => Promise<void>;
   addScan: (scan: ScanResult) => Promise<void>;
   addPlantEntry: (entry: Omit<PlantJournalEntry, "id" | "date">) => Promise<void>;
   getPlantScans: (plantId: string) => ScanResult[];
@@ -119,6 +121,41 @@ export const usePlantStore = create<PlantState>((set, get) => ({
       plants: state.plants.filter((p) => p.id !== id),
       scans: state.scans.filter((s) => s.plantId !== id),
       plantEntries: state.plantEntries.filter((e) => e.plantId !== id),
+    }));
+  },
+
+  deleteScan: async (id) => {
+    await dbService.deleteScan(id);
+    set((state) => {
+      const scan = state.scans.find((s) => s.id === id);
+      const updatedScans = state.scans.filter((s) => s.id !== id);
+
+      if (scan?.plantId) {
+        const updatedPlants = state.plants.map((p) => {
+          if (p.id === scan.plantId) {
+            return {
+              ...p,
+              entries: Math.max(0, p.entries - 1),
+            };
+          }
+          return p;
+        });
+        // We don't strictly need to save plant here unless we want to persist the entry count change
+        // but it's probably better to keep it consistent.
+        const plantToSave = updatedPlants.find((p) => p.id === scan.plantId);
+        if (plantToSave) dbService.savePlant(plantToSave);
+
+        return { scans: updatedScans, plants: updatedPlants };
+      }
+
+      return { scans: updatedScans };
+    });
+  },
+
+  deletePlantEntry: async (id) => {
+    await dbService.deletePlantEntry(id);
+    set((state) => ({
+      plantEntries: state.plantEntries.filter((e) => e.id !== id),
     }));
   },
 
