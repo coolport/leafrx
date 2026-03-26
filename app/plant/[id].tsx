@@ -28,6 +28,7 @@ import { apiService } from "../../services/api";
 import { AnalysisResponse, ScanResult } from "../../components/leafrx/types";
 import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
 import { useTranslations } from "../../hooks/use-translations";
+import { resolveDiseaseLibraryId } from "../../constants/diseaseLibrary";
 
 export default function DetailScreen() {
   const insets = useSafeAreaInsets();
@@ -214,6 +215,32 @@ export default function DetailScreen() {
 
   const getStatusColor = (status?: string, score?: number) => {
     return getHealthColor(normalizeHealthStatus(status, score), colors);
+  };
+
+  const analysisPrediction = analysisResult?.predictions?.[0];
+  const analysisDisease =
+    analysisPrediction?.disease ||
+    (analysisResult?.primary_disease?.includes("_") ? analysisResult.primary_disease.split("_")[1] : analysisResult?.primary_disease) ||
+    "Healthy";
+  const analysisPlantType =
+    analysisPrediction?.plant_type || analysisResult?.primary_disease?.split("_")[0] || selectedPlant?.type || "";
+
+  const handleAnalysisLibraryNav = () => {
+    if (!analysisResult) return;
+
+    const targetId = resolveDiseaseLibraryId({
+      explicitId: analysisResult.primary_disease,
+      plantType: analysisPrediction?.plant_type,
+      diseaseName: analysisPrediction?.disease || analysisDisease,
+    });
+
+    if (targetId) {
+      setResultsModalVisible(false);
+      router.push({
+        pathname: "/library",
+        params: { selectedId: targetId },
+      });
+    }
   };
 
   if (!selectedPlant) {
@@ -836,12 +863,17 @@ export default function DetailScreen() {
 
               <View
                 style={{
-                  backgroundColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score) + "15",
+                  backgroundColor: colors.card,
                   borderRadius: 24,
-                  padding: 20,
+                  padding: 18,
                   marginBottom: 20,
-                  borderLeftWidth: 6,
-                  borderLeftColor: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  shadowColor: colors.cardShadow,
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 14,
+                  elevation: 3,
                 }}
               >
                 <View
@@ -849,110 +881,90 @@ export default function DetailScreen() {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    marginBottom: 12,
                   }}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 13,
-                        fontWeight: "700",
-                        color: colors.textSecondary,
-                        marginBottom: 4,
-                      }}
-                    >
-                      Primary Finding
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 22,
-                        fontWeight: "800",
-                        color: colors.text,
-                      }}
-                    >
-                      {(
-                        analysisResult?.predictions?.[0]?.disease ||
-                        (analysisResult?.primary_disease?.includes("_")
-                          ? analysisResult.primary_disease.split("_")[1]
-                          : analysisResult?.primary_disease) ||
-                        "Healthy"
-                      ).toUpperCase()}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: 6,
-                      }}
-                    >
-                      <View
-                        style={{
-                          backgroundColor: colors.card,
-                          paddingHorizontal: 8,
-                          paddingVertical: 2,
-                          borderRadius: 8,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontWeight: "700",
-                            color: colors.text,
-                          }}
-                        >
-                          {(
-                            analysisResult?.predictions?.[0]?.plant_type ||
-                            analysisResult?.primary_disease?.split("_")[0] ||
-                            selectedPlant.type
-                          ).toUpperCase()}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "800",
+                      color: colors.textMuted,
+                      letterSpacing: 1.1,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Detection
+                  </Text>
                   <View
                     style={{
-                      width: 100,
-                      height: 80,
-                      borderRadius: 20,
-                      backgroundColor: colors.card,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      shadowColor: colors.cardShadow,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 10,
-                      elevation: 5,
-                      paddingHorizontal: 8,
+                      backgroundColor: getStatusColor(analysisResult?.status || "warning", analysisResult?.overall_health_score) + "18",
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 10,
                     }}
                   >
                     <Text
                       style={{
-                        fontSize: 14,
-                        fontWeight: "900",
-                        color: getStatusColor(analysisResult?.status, analysisResult?.overall_health_score),
+                        fontSize: 11,
+                        fontWeight: "800",
+                        color: getStatusColor(analysisResult?.status || "warning", analysisResult?.overall_health_score),
                         textTransform: "uppercase",
-                        textAlign: "center",
                       }}
                     >
-                      {t.home[normalizeHealthStatus(analysisResult?.status, analysisResult?.overall_health_score)]}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        fontWeight: "700",
-                        color: colors.textMuted,
-                        marginTop: 2,
-                      }}
-                    >
-                      {t.healthLevels.label.toUpperCase()}
+                      {analysisResult ? t.home[normalizeHealthStatus(analysisResult.status, analysisResult.overall_health_score)] : ""}
                     </Text>
                   </View>
                 </View>
+
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: "800",
+                    color: colors.text,
+                    marginBottom: 12,
+                    letterSpacing: -0.4,
+                  }}
+                >
+                  {analysisDisease.toUpperCase()}
+                </Text>
+
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  {!!analysisPlantType && (
+                    <View
+                      style={{
+                        backgroundColor: colors.background,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textSecondary }}>
+                        {analysisPlantType.toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginTop: 2 }}>
+                  <Feather name="clock" size={13} color={colors.textMuted} />
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: colors.textMuted,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {new Date(analysisResult?.timestamp || Date.now()).toLocaleString()}
+                  </Text>
+                </View>
               </View>
 
-              {analysisResult?.predictions?.[0]?.recommendations && (
+              {analysisPrediction?.recommendations && analysisPrediction.recommendations.length > 0 && (
                 <View style={{ marginBottom: 20 }}>
                   <Text style={styles.label}>Recommendations</Text>
-                  {analysisResult.predictions[0].recommendations.map((rec, i) => (
+                  {analysisPrediction.recommendations.map((rec, i) => (
                     <View
                       key={i}
                       style={{
@@ -992,18 +1004,32 @@ export default function DetailScreen() {
                 paddingHorizontal: 24,
                 paddingTop: 16,
                 paddingBottom: 40,
+                flexDirection: "row",
+                gap: 12,
               }}
             >
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={{ width: "100%" }}
-                onPress={() => setResultsModalVisible(false)}
-              >
-                <LinearGradient
-                  colors={[colors.primaryDark, colors.primary] as any}
-                  style={[styles.modalButton, { marginHorizontal: 0 }]}
+              <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={handleAnalysisLibraryNav}>
+                <View
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor: colors.background,
+                      marginHorizontal: 0,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      flexDirection: "row",
+                      gap: 8,
+                    },
+                  ]}
                 >
-                  <Text style={styles.modalButtonText}>Close & Update Stats</Text>
+                  <Feather name="book-open" size={16} color={colors.textSecondary} />
+                  <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Guide</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={() => setResultsModalVisible(false)}>
+                <LinearGradient colors={[colors.primaryDark, colors.primary] as any} style={[styles.modalButton, { marginHorizontal: 0 }]}> 
+                  <Text style={styles.modalButtonText}>Close & Update</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
