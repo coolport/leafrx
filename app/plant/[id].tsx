@@ -372,7 +372,7 @@ export default function DetailScreen() {
             <View style={{ alignItems: "flex-end", justifyContent: "center" }}>
               <View style={{ flexDirection: "row", alignItems: "baseline", gap: 4 }}>
                 <Text style={{ color: "#fff", fontWeight: "900", fontSize: 24, lineHeight: 28 }}>
-                  {selectedPlant.entries}
+                  {Math.max(0, selectedPlant.entries - 1)}
                 </Text>
                 <Text style={{ color: "rgba(255,255,255,0.8)", fontWeight: "800", fontSize: 11, textTransform: "uppercase" }}>
                   Scans
@@ -407,7 +407,7 @@ export default function DetailScreen() {
               <StatCard
                 icon="clipboard"
                 label="Scans"
-                value={selectedPlant.entries.toString()}
+                value={Math.max(0, selectedPlant.entries - 1).toString()}
                 color={colors.success}
               />
             </View>
