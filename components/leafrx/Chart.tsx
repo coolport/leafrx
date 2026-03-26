@@ -92,38 +92,6 @@ export function Chart({ statuses, labels }: ChartProps) {
           >
             Health History
           </Text>
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "900",
-              color: colors.text,
-              textTransform: "uppercase",
-            }}
-          >
-            {t.home[latestStatus]}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            backgroundColor: latestColor + "18",
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: latestColor + "30",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 12,
-              fontWeight: "800",
-              color: latestColor,
-              textTransform: "uppercase",
-            }}
-          >
-            {t.healthLevels.label}
-          </Text>
         </View>
       </View>
 

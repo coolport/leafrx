@@ -301,25 +301,6 @@ export default function DetailScreen() {
                 </Text>
               </View>
             </View>
-            <View style={{ alignItems: "flex-end" }}>
-              {mutation.isPending ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <View
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.2)",
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 12,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16, textTransform: "uppercase" }}>
-                    {t.home[healthStatus]}
-                  </Text>
-                </View>
-              )}
-              <Text style={[styles.detailLabel, { fontWeight: "700", marginTop: 4 }]}>{t.healthLevels.label}</Text>
-            </View>
           </View>
         </LinearGradient>
 
