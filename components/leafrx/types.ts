@@ -53,6 +53,7 @@ export type ScanResult = {
   healthScore: number;
   status: HealthStatus;
   predictions: Prediction[];
+  imageUri?: string;
 };
 
 export type TimelineEntry = {

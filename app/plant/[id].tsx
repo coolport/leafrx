@@ -146,6 +146,7 @@ export default function DetailScreen() {
       healthScore: result.overall_health_score || 0,
       status: normalizeHealthStatus(result.status, result.overall_health_score),
       predictions: result.predictions || [],
+      imageUri: selectedImageUri || undefined,
     };
     await addScan(scanRecord);
   };
