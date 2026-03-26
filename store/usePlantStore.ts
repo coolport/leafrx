@@ -32,7 +32,7 @@ export const usePlantStore = create<PlantState>((set, get) => ({
   isHydrated: false,
   settings: {
     notifications: true,
-    darkMode: false,
+    darkMode: true,
     language: "en",
   },
 
@@ -43,7 +43,7 @@ export const usePlantStore = create<PlantState>((set, get) => ({
         dbService.getAllScans(),
         dbService.getAllPlantEntries(),
         dbService.getSetting("notifications", true),
-        dbService.getSetting("darkMode", false),
+        dbService.getSetting("darkMode", true),
         dbService.getSetting("language", "en"),
       ]);
       set({
