@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ScrollView,
   View,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
@@ -62,7 +62,6 @@ export default function ScanScreen() {
     isUpdatingPlant ? params.plantType : undefined
   );
 
-  const resumeResultsFromLibraryRef = useRef(false);
   const skipAddModalReturnRef = useRef(false);
 
   const mutation = useMutation({
@@ -130,15 +129,6 @@ export default function ScanScreen() {
     }
   }, [params.plantId, params.plantType, analysisResult, selectedImageUri]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (resumeResultsFromLibraryRef.current && analysisResult) {
-        setResultsModalVisible(true);
-        resumeResultsFromLibraryRef.current = false;
-      }
-    }, [analysisResult])
-  );
-
   const processImage = async (uri: string) => {
     setSelectedImageUri(uri);
     mutation.mutate({ uri, type: selectedPlantClass });
@@ -203,9 +193,15 @@ export default function ScanScreen() {
     }
   };
 
+  const resetScanFlow = () => {
+    setResultsModalVisible(false);
+    setAnalysisResult(null);
+    setSelectedImageUri(null);
+  };
+
   const handleUpdatePlant = async () => {
     await saveScanToStore(params.plantId);
-    setResultsModalVisible(false);
+    resetScanFlow();
     router.back();
   };
 
@@ -224,6 +220,7 @@ export default function ScanScreen() {
     if (newPlant) {
       await saveScanToStore(newPlant.id);
       setAddPlantModalVisible(false);
+      resetScanFlow();
       router.push(`/plant/${newPlant.id}`);
     }
   };
@@ -231,6 +228,7 @@ export default function ScanScreen() {
   const onSelectExistingPlant = async (plant: Plant) => {
     await saveScanToStore(plant.id);
     setAssignPlantModalVisible(false);
+    resetScanFlow();
     router.push(`/plant/${plant.id}`);
   };
 
@@ -287,8 +285,6 @@ export default function ScanScreen() {
     });
 
     if (targetId) {
-      resumeResultsFromLibraryRef.current = true;
-      setResultsModalVisible(false);
       router.push({
         pathname: "/library",
         params: { selectedId: targetId },

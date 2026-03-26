@@ -66,7 +66,6 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
     });
 
     if (targetId) {
-      setSelectedScan(null);
       router.push({
         pathname: "/library",
         params: { selectedId: targetId },

@@ -235,7 +235,6 @@ export default function DetailScreen() {
     });
 
     if (targetId) {
-      setResultsModalVisible(false);
       router.push({
         pathname: "/library",
         params: { selectedId: targetId },
