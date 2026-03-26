@@ -22,13 +22,10 @@ export default function RootLayout() {
         await initDatabase();
         await initializeStore();
 
-        // After hydration, check if notifications are enabled and schedule them
+        // After hydration, check if notifications are enabled and ensure permissions
         const state = usePlantStore.getState();
         if (state.settings.notifications) {
-          const granted = await notificationService.requestPermissions();
-          if (granted) {
-            await notificationService.scheduleReminders();
-          }
+          await notificationService.requestPermissions();
         }
       } catch (error) {
         console.error("Initialization error:", error);
