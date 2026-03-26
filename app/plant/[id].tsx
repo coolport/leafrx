@@ -216,6 +216,22 @@ export default function DetailScreen() {
 
   const statusColors = getStatusColors(normalizeHealthStatus(selectedPlant.status, selectedPlant.health));
 
+  const getRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffMs = now.getTime() - past.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 60) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return "Yesterday";
+    return `${diffDays}d ago`;
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -301,6 +317,23 @@ export default function DetailScreen() {
                 </Text>
               </View>
             </View>
+
+            <View style={{ alignItems: "flex-end", justifyContent: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "baseline", gap: 4 }}>
+                <Text style={{ color: "#fff", fontWeight: "900", fontSize: 24, lineHeight: 28 }}>
+                  {selectedPlant.entries}
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.8)", fontWeight: "800", fontSize: 11, textTransform: "uppercase" }}>
+                  Scans
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+                <Feather name="clock" size={10} color="rgba(255,255,255,0.6)" />
+                <Text style={{ color: "rgba(255,255,255,0.6)", fontWeight: "700", fontSize: 10, textTransform: "uppercase" }}>
+                  {getRelativeTime(selectedPlant.lastChecked)}
+                </Text>
+              </View>
+            </View>
           </View>
         </LinearGradient>
 
@@ -371,7 +404,7 @@ export default function DetailScreen() {
                     fontSize: 13,
                   }}
                 >
-                  SCAN LEAF
+                  Scan Leaf
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -407,7 +440,7 @@ export default function DetailScreen() {
                   fontSize: 11,
                 }}
               >
-                UPLOAD
+                Upload
               </Text>
             </TouchableOpacity>
 

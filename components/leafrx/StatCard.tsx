@@ -49,7 +49,6 @@ export function StatCard({ icon, label, value, color }: StatCardProps) {
           {
             fontSize: 10,
             fontWeight: "700",
-            textTransform: "uppercase",
             color: colors.textMuted,
             marginTop: 4,
           },
