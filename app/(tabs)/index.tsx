@@ -76,34 +76,42 @@ export default function HomeScreen() {
         >
           <View style={styles.headerTop}>
             <View>
-              <Text style={styles.headerTitle}>LeafRx</Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 4,
-                }}
-              >
-                <Text style={styles.headerSubtitle}>{t.home.subtitle}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Text style={styles.headerTitle}>LeafRx</Text>
                 <View
                   style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: isApiOnline ? "#4ade80" : "#f87171",
-                    marginLeft: 8,
-                    marginRight: 4,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: "rgba(255,255,255,0.7)",
-                    fontWeight: "600",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "rgba(255,255,255,0.12)",
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.15)",
+                    marginTop: 6, // Slight offset to feel like a subscript
                   }}
                 >
-                  {isApiOnline ? t.home.apiOnline : t.home.apiOffline}
-                </Text>
+                  <View
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: 2,
+                      backgroundColor: isApiOnline ? "#4ade80" : "#f87171",
+                      marginRight: 4,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 8,
+                      color: "rgba(255,255,255,0.9)",
+                      fontWeight: "900",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {isApiOnline ? "Online" : "Offline"}
+                  </Text>
+                </View>
               </View>
             </View>
             <TouchableOpacity style={styles.bellBtn} activeOpacity={0.7} onPress={toggleNotifications}>

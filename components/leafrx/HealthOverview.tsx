@@ -28,7 +28,19 @@ export function HealthOverview() {
         borderColor: "rgba(255,255,255,0.2)",
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16, gap: 12 }}>
+      <Text
+        style={{
+          color: "rgba(255,255,255,0.9)",
+          fontSize: 13,
+          fontWeight: "800",
+          marginBottom: 16,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        }}
+      >
+        {t.home.subtitle}
+      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 0, gap: 12 }}>
         {stats.map(({ value, label }) => (
           <View
             key={label}
