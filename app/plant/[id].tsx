@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   ScrollView,
   View,
@@ -39,16 +39,16 @@ export default function DetailScreen() {
   const plantId = Array.isArray(id) ? id[0] : id;
 
   const plants = usePlantStore((state) => state.plants);
-  const getPlantScans = usePlantStore((state) => state.getPlantScans);
-  const getPlantEntries = usePlantStore((state) => state.getPlantEntries);
+  const allScans = usePlantStore((state) => state.scans);
+  const allEntries = usePlantStore((state) => state.plantEntries);
   const deletePlant = usePlantStore((state) => state.deletePlant);
   const updatePlant = usePlantStore((state) => state.updatePlant);
   const addScan = usePlantStore((state) => state.addScan);
   const addPlantEntry = usePlantStore((state) => state.addPlantEntry);
 
-  const selectedPlant = plants.find((p) => p.id === plantId);
-  const plantScans = getPlantScans(plantId as string);
-  const plantEntries = getPlantEntries(plantId as string);
+  const selectedPlant = useMemo(() => plants.find((p) => p.id === plantId), [plants, plantId]);
+  const plantScans = useMemo(() => allScans.filter((s) => s.plantId === plantId), [allScans, plantId]);
+  const plantEntries = useMemo(() => allEntries.filter((e) => e.plantId === plantId), [allEntries, plantId]);
 
   const healthStatus = selectedPlant ? normalizeHealthStatus(selectedPlant.status, selectedPlant.health) : "warning";
   const healthColor = getHealthColor(healthStatus, colors);
