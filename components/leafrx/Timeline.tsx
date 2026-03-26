@@ -14,21 +14,23 @@ import { resolveDiseaseLibraryId } from "../../constants/diseaseLibrary";
 interface TimelineProps {
   scans?: ScanResult[];
   entries?: PlantJournalEntry[];
+  initialLimit?: number;
 }
 
 type TimelineItem =
   | { id: string; type: "scan"; date: string; scan: ScanResult }
   | { id: string; type: "entry"; date: string; entry: PlantJournalEntry };
 
-export function Timeline({ scans = [], entries = [] }: TimelineProps) {
+export function Timeline({ scans = [], entries = [], initialLimit = 4 }: TimelineProps) {
   const router = useRouter();
   const colors = useColors();
   const styles = createStyles(colors);
   const { t } = useTranslations();
   const [selectedScan, setSelectedScan] = useState<ScanResult | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<PlantJournalEntry | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
-  const timelineItems = useMemo<TimelineItem[]>(() => {
+  const allItems = useMemo<TimelineItem[]>(() => {
     const scanItems: TimelineItem[] = scans.map((scan) => ({
       id: `scan-${scan.id}`,
       type: "scan",
@@ -45,6 +47,11 @@ export function Timeline({ scans = [], entries = [] }: TimelineProps) {
 
     return [...scanItems, ...entryItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [entries, scans]);
+
+  const timelineItems = useMemo(() => {
+    if (showAll) return allItems;
+    return allItems.slice(0, initialLimit);
+  }, [allItems, showAll, initialLimit]);
 
   const handleLibraryNav = () => {
     if (!selectedScan) return;
@@ -184,6 +191,43 @@ export function Timeline({ scans = [], entries = [] }: TimelineProps) {
           </View>
         );
       })}
+
+      {!showAll && allItems.length > initialLimit && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => setShowAll(true)}
+          style={{
+            marginTop: 12,
+            alignItems: "center",
+            paddingVertical: 12,
+            backgroundColor: `${colors.primary}0D`,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderStyle: "dashed",
+            borderColor: `${colors.primary}33`,
+          }}
+        >
+          <Text style={{ color: colors.primary, fontWeight: "700", fontSize: 13 }}>
+            Show {allItems.length - initialLimit} more entries...
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {showAll && allItems.length > initialLimit && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => setShowAll(false)}
+          style={{
+            marginTop: 12,
+            alignItems: "center",
+            paddingVertical: 12,
+          }}
+        >
+          <Text style={{ color: colors.textSecondary, fontWeight: "700", fontSize: 13 }}>
+            Show Less
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <Modal animationType="slide" transparent={true} visible={!!selectedScan} onRequestClose={() => setSelectedScan(null)}>
         <BlurView intensity={30} tint={colors.card === "#ffffff" ? "light" : "dark"} style={styles.modalContainer}>

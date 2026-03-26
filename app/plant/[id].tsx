@@ -291,7 +291,7 @@ export default function DetailScreen() {
       <ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 60 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       >
         <LinearGradient
           colors={statusColors}
@@ -423,148 +423,120 @@ export default function DetailScreen() {
 
           <Timeline scans={plantScans} entries={plantEntries} />
 
-          <View style={{ flexDirection: "row", gap: 12, marginTop: 32 }}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={{ flex: 1.5 }}
-              onPress={takePhoto}
-              disabled={mutation.isPending}
-            >
-              <LinearGradient
-                colors={statusColors.slice(0, 2) as any}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{
-                  height: 100,
-                  borderRadius: 24,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  shadowColor: statusColors[0],
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 10,
-                  elevation: 6,
-                }}
-              >
-                <Feather name="camera" size={28} color="#fff" />
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "800",
-                    marginTop: 8,
-                    fontSize: 13,
-                  }}
-                >
-                  Scan Leaf
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
+          <View style={{ marginTop: 32, paddingBottom: 20 }}>
             <TouchableOpacity
               activeOpacity={0.7}
               style={{
-                flex: 1,
-                backgroundColor: colors.card,
-                borderRadius: 24,
+                flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-              onPress={pickImage}
-              disabled={mutation.isPending}
-            >
-              <View
-                style={{
-                  backgroundColor: colors.background,
-                  padding: 12,
-                  borderRadius: 16,
-                }}
-              >
-                <Feather name="image" size={24} color={colors.textSecondary} />
-              </View>
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  fontWeight: "700",
-                  marginTop: 6,
-                  fontSize: 11,
-                }}
-              >
-                Upload
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flex: 1,
-                backgroundColor: colors.card,
-                borderRadius: 24,
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: `${colors.danger}33`,
+                gap: 8,
+                paddingVertical: 12,
               }}
               onPress={() => setShowDeleteModal(true)}
             >
-              <View
-                style={{
-                  backgroundColor: `${colors.danger}1A`,
-                  padding: 12,
-                  borderRadius: 16,
-                }}
-              >
-                <Feather name="trash-2" size={24} color={colors.danger} />
-              </View>
-              <Text
-                style={{
-                  color: colors.danger,
-                  fontWeight: "700",
-                  marginTop: 6,
-                  fontSize: 11,
-                }}
-              >
-                DELETE
+              <Feather name="trash-2" size={14} color={`${colors.danger}80`} />
+              <Text style={{ color: colors.danger, fontWeight: "600", fontSize: 13, opacity: 0.5 }}>
+                Delete Plant Profile
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </ScrollView>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
+      {/* Sticky Bottom Bar */}
+      <BlurView
+        intensity={80}
+        tint={colors.card === "#ffffff" ? "light" : "dark"}
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingBottom: insets.bottom + 12,
+          paddingTop: 12,
+          paddingHorizontal: 20,
+          borderTopWidth: 1,
+          borderColor: colors.border,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={{
+            width: 52,
+            height: 52,
+            backgroundColor: colors.card,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+          onPress={() => {
+            setEntryNote("");
+            setEntryImageUri(null);
+            setShowEntryModal(true);
+          }}
+        >
+          <Feather name="edit-3" size={20} color={colors.primary} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={{ flex: 1 }}
+          onPress={takePhoto}
+          disabled={mutation.isPending}
+        >
+          <LinearGradient
+            colors={statusColors.slice(0, 2) as any}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={{
-              marginTop: 16,
-              backgroundColor: colors.card,
-              borderRadius: 24,
-              padding: 16,
+              height: 52,
+              borderRadius: 18,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              borderWidth: 1,
-              borderColor: colors.border,
-              gap: 12,
-            }}
-            onPress={() => {
-              setEntryNote("");
-              setEntryImageUri(null);
-              setShowEntryModal(true);
+              gap: 10,
+              shadowColor: statusColors[0],
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 4,
             }}
           >
-            <View
-              style={{
-                backgroundColor: `${colors.primary}1A`,
-                padding: 10,
-                borderRadius: 12,
-              }}
-            >
-              <Feather name="edit-3" size={20} color={colors.primary} />
-            </View>
-            <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
-              Add Journal Entry
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            {mutation.isPending ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <Feather name="camera" size={20} color="#fff" />
+                <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>Scan Leaf</Text>
+              </>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={{
+            width: 52,
+            height: 52,
+            backgroundColor: colors.card,
+            borderRadius: 18,
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+          onPress={pickImage}
+          disabled={mutation.isPending}
+        >
+          <Feather name="image" size={20} color={colors.textSecondary} />
+        </TouchableOpacity>
+      </BlurView>
 
       <Modal
         visible={showDeleteModal}
