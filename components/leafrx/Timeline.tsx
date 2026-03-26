@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, TouchableOpacity, Modal, ScrollView, Image } from "react-native";
+import { View, Text, TouchableOpacity, Modal, ScrollView, Image, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
@@ -27,10 +27,20 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
   const colors = useColors();
   const styles = createStyles(colors);
   const { t } = useTranslations();
+  const deleteScan = usePlantStore((state) => state.deleteScan);
+  const deletePlantEntry = usePlantStore((state) => state.deletePlantEntry);
   const showTimelineImages = usePlantStore((state) => state.settings.showTimelineImages);
   const [selectedScan, setSelectedScan] = useState<ScanResult | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<PlantJournalEntry | null>(null);
   const [showAll, setShowAll] = useState(false);
+
+  // Delete confirmation modal state
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteConfig, setDeleteConfig] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   const allItems = useMemo<TimelineItem[]>(() => {
     const scanItems: TimelineItem[] = scans.map((scan) => ({
@@ -70,6 +80,40 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
         pathname: "/library",
         params: { selectedId: targetId },
       });
+    }
+  };
+
+  const handleDeleteScan = () => {
+    if (!selectedScan) return;
+    setDeleteConfig({
+      title: "Delete Scan",
+      description: "Are you sure you want to delete this scan from history? This action cannot be undone.",
+      onConfirm: async () => {
+        await deleteScan(selectedScan.id);
+        setSelectedScan(null);
+      },
+    });
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteEntry = () => {
+    if (!selectedEntry) return;
+    setDeleteConfig({
+      title: "Delete Entry",
+      description: "Are you sure you want to delete this journal entry? This action cannot be undone.",
+      onConfirm: async () => {
+        await deletePlantEntry(selectedEntry.id);
+        setSelectedEntry(null);
+      },
+    });
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteConfig?.onConfirm) {
+      await deleteConfig.onConfirm();
+      setDeleteModalVisible(false);
+      setDeleteConfig(null);
     }
   };
 
@@ -273,17 +317,30 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
               }}
             >
               <Text style={[styles.modalTitle, { textAlign: "left", marginBottom: 0 }]}>Scan Details</Text>
-              <TouchableOpacity onPress={() => setSelectedScan(null)}>
-                <View
-                  style={{
-                    backgroundColor: colors.background,
-                    padding: 8,
-                    borderRadius: 20,
-                  }}
-                >
-                  <Feather name="x" size={20} color={colors.textSecondary} />
-                </View>
-              </TouchableOpacity>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <TouchableOpacity onPress={handleDeleteScan}>
+                  <View
+                    style={{
+                      backgroundColor: `${colors.error}15`,
+                      padding: 8,
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Feather name="trash-2" size={20} color={colors.error} />
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setSelectedScan(null)}>
+                  <View
+                    style={{
+                      backgroundColor: colors.background,
+                      padding: 8,
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Feather name="x" size={20} color={colors.textSecondary} />
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <ScrollView
@@ -509,17 +566,30 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
               }}
             >
               <Text style={[styles.modalTitle, { textAlign: "left", marginBottom: 0 }]}>Timeline Entry</Text>
-              <TouchableOpacity onPress={() => setSelectedEntry(null)}>
-                <View
-                  style={{
-                    backgroundColor: colors.background,
-                    padding: 8,
-                    borderRadius: 20,
-                  }}
-                >
-                  <Feather name="x" size={20} color={colors.textSecondary} />
-                </View>
-              </TouchableOpacity>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <TouchableOpacity onPress={handleDeleteEntry}>
+                  <View
+                    style={{
+                      backgroundColor: `${colors.error}15`,
+                      padding: 8,
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Feather name="trash-2" size={20} color={colors.error} />
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setSelectedEntry(null)}>
+                  <View
+                    style={{
+                      backgroundColor: colors.background,
+                      padding: 8,
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Feather name="x" size={20} color={colors.textSecondary} />
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <ScrollView
@@ -579,6 +649,79 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
               <TouchableOpacity activeOpacity={0.8} style={{ width: "100%" }} onPress={() => setSelectedEntry(null)}>
                 <LinearGradient colors={[colors.primaryDark, colors.primary] as any} style={[styles.modalButton, { marginHorizontal: 0 }]}>
                   <Text style={styles.modalButtonText}>Close</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BlurView>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <BlurView intensity={20} tint={colors.card === "#ffffff" ? "light" : "dark"} style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: "rgba(148, 163, 184, 0.15)",
+                alignItems: "center",
+                justifyContent: "center",
+                alignSelf: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Feather name="alert-triangle" size={30} color="#64748b" />
+            </View>
+
+            <Text style={[styles.modalTitle, { textAlign: "center", marginBottom: 12 }]}>
+              {deleteConfig?.title || "Confirm Delete"}
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 15,
+                color: colors.textSecondary,
+                textAlign: "center",
+                lineHeight: 22,
+                marginBottom: 24,
+              }}
+            >
+              {deleteConfig?.description}
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={{ flex: 1 }}
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                  setDeleteConfig(null);
+                }}
+              >
+                <View
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor: colors.background,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={confirmDelete}>
+                <LinearGradient colors={["#64748b", "#475569"] as any} style={styles.modalButton}>
+                  <Text style={styles.modalButtonText}>Delete</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
