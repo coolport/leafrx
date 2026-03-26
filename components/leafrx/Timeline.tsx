@@ -10,6 +10,7 @@ import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
 import { useTranslations } from "../../hooks/use-translations";
 import { useRouter } from "expo-router";
 import { resolveDiseaseLibraryId } from "../../constants/diseaseLibrary";
+import { usePlantStore } from "../../store/usePlantStore";
 
 interface TimelineProps {
   scans?: ScanResult[];
@@ -26,6 +27,7 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
   const colors = useColors();
   const styles = createStyles(colors);
   const { t } = useTranslations();
+  const showTimelineImages = usePlantStore((state) => state.settings.showTimelineImages);
   const [selectedScan, setSelectedScan] = useState<ScanResult | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<PlantJournalEntry | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -134,25 +136,40 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
                 }}
               >
                 {item.type === "scan" ? (
-                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                    <Text
-                      style={{ color: colors.text, fontSize: 14, fontWeight: "700", flex: 1, marginRight: 8 }}
-                      numberOfLines={1}
-                    >
-                      {isHealthy ? "No disease detected" : displayDisease}
-                    </Text>
-                    <View
-                      style={{
-                        backgroundColor: `${statusColor}18`,
-                        paddingHorizontal: 8,
-                        paddingVertical: 3,
-                        borderRadius: 8,
-                      }}
-                    >
-                      <Text style={{ color: statusColor, fontSize: 10, fontWeight: "700" }}>
-                        {t.home[normalizeHealthStatus(item.scan.status, item.scan.healthScore)].toUpperCase()}
+                  <View>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                      <Text
+                        style={{ color: colors.text, fontSize: 14, fontWeight: "700", flex: 1, marginRight: 8 }}
+                        numberOfLines={1}
+                      >
+                        {isHealthy ? "No disease detected" : displayDisease}
                       </Text>
+                      <View
+                        style={{
+                          backgroundColor: `${statusColor}18`,
+                          paddingHorizontal: 8,
+                          paddingVertical: 3,
+                          borderRadius: 8,
+                        }}
+                      >
+                        <Text style={{ color: statusColor, fontSize: 10, fontWeight: "700" }}>
+                          {t.home[normalizeHealthStatus(item.scan.status, item.scan.healthScore)].toUpperCase()}
+                        </Text>
+                      </View>
                     </View>
+                    {showTimelineImages && item.scan.imageUri && (
+                      <Image
+                        source={{ uri: item.scan.imageUri }}
+                        style={{
+                          width: "100%",
+                          height: 150,
+                          borderRadius: 12,
+                          marginTop: 10,
+                          backgroundColor: colors.background,
+                        }}
+                        resizeMode="cover"
+                      />
+                    )}
                   </View>
                 ) : (
                   <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
@@ -170,9 +187,22 @@ export function Timeline({ scans = [], entries = [], initialLimit = 4 }: Timelin
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: colors.text, fontSize: 14, fontWeight: "700", marginBottom: 3 }}>Journal Entry</Text>
-                      <Text style={{ color: colors.textSecondary, fontSize: 13 }} numberOfLines={2}>
+                      <Text style={{ color: colors.textSecondary, fontSize: 13 }} numberOfLines={3}>
                         {item.entry.note}
                       </Text>
+                      {showTimelineImages && item.entry.imageUri && (
+                        <Image
+                          source={{ uri: item.entry.imageUri }}
+                          style={{
+                            width: "100%",
+                            height: 150,
+                            borderRadius: 12,
+                            marginTop: 10,
+                            backgroundColor: colors.background,
+                          }}
+                          resizeMode="cover"
+                        />
+                      )}
                     </View>
                     <View
                       style={{
