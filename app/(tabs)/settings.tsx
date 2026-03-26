@@ -43,6 +43,10 @@ export default function SettingsScreen() {
     updateSettings({ darkMode: value });
   };
 
+  const toggleTimelineImages = (value: boolean) => {
+    updateSettings({ showTimelineImages: value });
+  };
+
   const handleLanguageSelect = (lang: "en" | "fil") => {
     updateSettings({ language: lang });
     setLanguageModalVisible(false);
@@ -93,6 +97,20 @@ export default function SettingsScreen() {
                 thumbColor={"#fff"}
                 onValueChange={toggleDarkMode}
                 value={settings.darkMode}
+              />
+            </View>
+            <View style={[styles.settingsRow, styles.settingsRowNotLast]}>
+              <View style={styles.settingsRowInfo}>
+                <View style={[styles.settingsIconContainer, { backgroundColor: "#fef9c3" }]}>
+                  <Feather name="image" size={20} color="#ca8a04" />
+                </View>
+                <Text style={styles.settingsLabel}>{t.settings.showTimelineImages}</Text>
+              </View>
+              <Switch
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={"#fff"}
+                onValueChange={toggleTimelineImages}
+                value={settings.showTimelineImages}
               />
             </View>
             <TouchableOpacity style={styles.settingsRow} onPress={() => setLanguageModalVisible(true)}>

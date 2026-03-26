@@ -13,6 +13,7 @@ interface PlantState {
     notifications: boolean;
     darkMode: boolean;
     language: Language;
+    showTimelineImages: boolean;
   };
   initialize: () => Promise<void>;
   addPlant: (plant: Omit<Plant, "id" | "entries" | "healthTrend">) => Promise<void>;
@@ -34,23 +35,25 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     notifications: true,
     darkMode: true,
     language: "en",
+    showTimelineImages: false,
   },
 
   initialize: async () => {
     try {
-      const [dbPlants, dbScans, dbPlantEntries, notifications, darkMode, language] = await Promise.all([
+      const [dbPlants, dbScans, dbPlantEntries, notifications, darkMode, language, showTimelineImages] = await Promise.all([
         dbService.getAllPlants(),
         dbService.getAllScans(),
         dbService.getAllPlantEntries(),
         dbService.getSetting("notifications", true),
         dbService.getSetting("darkMode", true),
         dbService.getSetting("language", "en"),
+        dbService.getSetting("showTimelineImages", false),
       ]);
       set({
         plants: dbPlants,
         scans: dbScans,
         plantEntries: dbPlantEntries,
-        settings: { notifications, darkMode, language },
+        settings: { notifications, darkMode, language, showTimelineImages },
         isHydrated: true,
       });
     } catch (error) {
@@ -73,6 +76,9 @@ export const usePlantStore = create<PlantState>((set, get) => ({
     }
     if (newSettings.language !== undefined) {
       await dbService.saveSetting("language", newSettings.language);
+    }
+    if (newSettings.showTimelineImages !== undefined) {
+      await dbService.saveSetting("showTimelineImages", newSettings.showTimelineImages);
     }
   },
 
