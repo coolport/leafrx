@@ -33,7 +33,7 @@ export const translations = {
       settings: "Settings",
     },
     home: {
-      subtitle: "Monitor your tree's health",
+      subtitle: "Farm health overview",
       quickActions: "Quick Actions",
       myPlants: "My Plants",
       recentScans: "Recent Scans",
@@ -42,7 +42,7 @@ export const translations = {
       noScans: "No scans performed yet.",
       apiOnline: "API Online",
       apiOffline: "API Offline",
-      farmOverview: "Farm Health Overview",
+      farmOverview: "Recap",
       keepItUp: "Keep it up!",
       healthy: "Healthy",
       warning: "Warning",
@@ -131,7 +131,7 @@ export const translations = {
       settings: "Settings",
     },
     home: {
-      subtitle: "Subaybayan ang kalusugan ng iyong puno",
+      subtitle: "Kalusugan ng Pananim",
       quickActions: "Mabilis na Aksyon",
       myPlants: "Aking mga Halaman",
       recentScans: "Mga Kamakailang Scan",
@@ -177,8 +177,8 @@ export const translations = {
       updateInfo: "I-update ang Info",
     },
     tracking: {
-      title: "Pagsubaybay sa Halaman",
-      subtitle: "Subaybayan ang paglaki",
+      title: "Aking Mga Halaman",
+      subtitle: "Subaybayan ang kalusugan",
       searchPlaceholder: "Maghanap ng halaman...",
       filterAll: "LAHAT",
       noPlantsFound: "Walang Halamaang Nahanap",
