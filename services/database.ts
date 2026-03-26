@@ -125,6 +125,16 @@ export const dbService = {
     await db.runAsync("DELETE FROM plant_entries WHERE plantId = ?", [id]);
   },
 
+  deleteScan: async (id: string) => {
+    const db = await getDb();
+    await db.runAsync("DELETE FROM scans WHERE id = ?", [id]);
+  },
+
+  deletePlantEntry: async (id: string) => {
+    const db = await getDb();
+    await db.runAsync("DELETE FROM plant_entries WHERE id = ?", [id]);
+  },
+
   saveScan: async (scan: ScanResult) => {
     const db = await getDb();
     await db.runAsync(
