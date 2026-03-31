@@ -293,6 +293,72 @@ export default function DetailScreen() {
 
   const statusColors = getStatusColors(normalizeHealthStatus(selectedPlant.status, selectedPlant.health));
 
+  const growthVigor = useMemo(() => {
+    // We use the last 3 scans for analysis
+    // plantScans is sorted DESC (latest first)
+    if (plantScans.length < 1) {
+      return {
+        label: "Establishing Baseline",
+        sub: "More scans needed for analysis",
+        color: colors.textMuted,
+        icon: "target",
+      };
+    }
+
+    const latestStatus = normalizeHealthStatus(plantScans[0].status, plantScans[0].healthScore);
+
+    // 1. Declining Vigor: Last 2 Scans = Warning OR Critical (Diseased)
+    if (plantScans.length >= 2) {
+      const prevStatus = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
+      const isLatestStressed = latestStatus === "warning" || latestStatus === "diseased";
+      const isPrevStressed = prevStatus === "warning" || prevStatus === "diseased";
+
+      if (isLatestStressed && isPrevStressed) {
+        return {
+          label: "Declining Vigor",
+          sub: "Persistent stress detected",
+          color: colors.danger,
+          icon: "trending-down",
+        };
+      }
+    }
+
+    // 2. Optimal Growth: Current = Healthy AND (Previous = Warning OR Critical)
+    if (plantScans.length >= 2 && latestStatus === "healthy") {
+      const prevStatus = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
+      if (prevStatus === "warning" || prevStatus === "diseased") {
+        return {
+          label: "Optimal Growth",
+          sub: "Vigor recovery in progress",
+          color: colors.primary,
+          icon: "trending-up",
+        };
+      }
+    }
+
+    // 3. Maintained Growth: Last 3 Scans = Healthy
+    if (plantScans.length >= 3) {
+      const s1 = latestStatus;
+      const s2 = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
+      const s3 = normalizeHealthStatus(plantScans[2].status, plantScans[2].healthScore);
+      if (s1 === "healthy" && s2 === "healthy" && s3 === "healthy") {
+        return {
+          label: "Maintained Growth",
+          sub: "Sustained physiological vigor",
+          color: colors.success,
+          icon: "activity",
+        };
+      }
+    }
+
+    return {
+      label: "Establishing Baseline",
+      sub: "Analyzing growth patterns",
+      color: colors.textSecondary,
+      icon: "target",
+    };
+  }, [plantScans, colors]);
+
   const getRelativeTime = (dateString: string) => {
     const now = new Date();
     const past = new Date(dateString);
@@ -440,10 +506,70 @@ export default function DetailScreen() {
             <View style={{ flex: 1 }}>
               <StatCard
                 icon="alert-triangle"
-                label="Status"
+                label="Latest"
                 value={t.home[healthStatus]}
                 color={healthColor}
               />
+            </View>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 24,
+              padding: 16,
+              marginBottom: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 16,
+              shadowColor: colors.cardShadow,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 10,
+              elevation: 2,
+            }}
+          >
+            <View
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 18,
+                backgroundColor: `${growthVigor.color}15`,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Feather name={growthVigor.icon as any} size={24} color={growthVigor.color} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: "800",
+                    color: colors.textMuted,
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Growth Analysis
+                </Text>
+                <Feather name="info" size={10} color={colors.textMuted} />
+              </View>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "800",
+                  color: colors.text,
+                  letterSpacing: -0.5,
+                  marginBottom: 1,
+                }}
+              >
+                {growthVigor.label}
+              </Text>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: "500" }}>{growthVigor.sub}</Text>
             </View>
           </View>
 
