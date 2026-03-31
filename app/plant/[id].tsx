@@ -51,6 +51,70 @@ export default function DetailScreen() {
   const plantScans = useMemo(() => allScans.filter((s) => s.plantId === plantId), [allScans, plantId]);
   const plantEntries = useMemo(() => allEntries.filter((e) => e.plantId === plantId), [allEntries, plantId]);
 
+  const growthVigor = useMemo(() => {
+    if (plantScans.length < 1) {
+      return {
+        label: t.vigor.baseline,
+        sub: t.vigor.baselineSub,
+        color: colors.textMuted,
+        icon: "target",
+      };
+    }
+
+    const latestStatus = normalizeHealthStatus(plantScans[0].status, plantScans[0].healthScore);
+
+    // 1. Declining Vigor: Last 2 Scans = Warning OR Critical (Diseased)
+    if (plantScans.length >= 2) {
+      const prevStatus = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
+      const isLatestStressed = latestStatus === "warning" || latestStatus === "diseased";
+      const isPrevStressed = prevStatus === "warning" || prevStatus === "diseased";
+
+      if (isLatestStressed && isPrevStressed) {
+        return {
+          label: t.vigor.declining,
+          sub: t.vigor.decliningSub,
+          color: colors.danger,
+          icon: "trending-down",
+        };
+      }
+    }
+
+    // 2. Optimal Growth: Current = Healthy AND (Previous = Warning OR Critical)
+    if (plantScans.length >= 2 && latestStatus === "healthy") {
+      const prevStatus = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
+      if (prevStatus === "warning" || prevStatus === "diseased") {
+        return {
+          label: t.vigor.optimal,
+          sub: t.vigor.optimalSub,
+          color: colors.primary,
+          icon: "trending-up",
+        };
+      }
+    }
+
+    // 3. Maintained Growth: Last 3 Scans = Healthy
+    if (plantScans.length >= 3) {
+      const s1 = latestStatus;
+      const s2 = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
+      const s3 = normalizeHealthStatus(plantScans[2].status, plantScans[2].healthScore);
+      if (s1 === "healthy" && s2 === "healthy" && s3 === "healthy") {
+        return {
+          label: t.vigor.maintained,
+          sub: t.vigor.maintainedSub,
+          color: colors.success,
+          icon: "activity",
+        };
+      }
+    }
+
+    return {
+      label: t.vigor.baseline,
+      sub: t.vigor.baselineSub,
+      color: colors.textSecondary,
+      icon: "target",
+    };
+  }, [plantScans, colors, t]);
+
   const healthStatus = selectedPlant ? normalizeHealthStatus(selectedPlant.status, selectedPlant.health) : "warning";
   const healthColor = getHealthColor(healthStatus, colors);
 
@@ -292,72 +356,6 @@ export default function DetailScreen() {
   };
 
   const statusColors = getStatusColors(normalizeHealthStatus(selectedPlant.status, selectedPlant.health));
-
-  const growthVigor = useMemo(() => {
-    // We use the last 3 scans for analysis
-    // plantScans is sorted DESC (latest first)
-    if (plantScans.length < 1) {
-      return {
-        label: "Establishing Baseline",
-        sub: "More scans needed for analysis",
-        color: colors.textMuted,
-        icon: "target",
-      };
-    }
-
-    const latestStatus = normalizeHealthStatus(plantScans[0].status, plantScans[0].healthScore);
-
-    // 1. Declining Vigor: Last 2 Scans = Warning OR Critical (Diseased)
-    if (plantScans.length >= 2) {
-      const prevStatus = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
-      const isLatestStressed = latestStatus === "warning" || latestStatus === "diseased";
-      const isPrevStressed = prevStatus === "warning" || prevStatus === "diseased";
-
-      if (isLatestStressed && isPrevStressed) {
-        return {
-          label: "Declining Vigor",
-          sub: "Persistent stress detected",
-          color: colors.danger,
-          icon: "trending-down",
-        };
-      }
-    }
-
-    // 2. Optimal Growth: Current = Healthy AND (Previous = Warning OR Critical)
-    if (plantScans.length >= 2 && latestStatus === "healthy") {
-      const prevStatus = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
-      if (prevStatus === "warning" || prevStatus === "diseased") {
-        return {
-          label: "Optimal Growth",
-          sub: "Vigor recovery in progress",
-          color: colors.primary,
-          icon: "trending-up",
-        };
-      }
-    }
-
-    // 3. Maintained Growth: Last 3 Scans = Healthy
-    if (plantScans.length >= 3) {
-      const s1 = latestStatus;
-      const s2 = normalizeHealthStatus(plantScans[1].status, plantScans[1].healthScore);
-      const s3 = normalizeHealthStatus(plantScans[2].status, plantScans[2].healthScore);
-      if (s1 === "healthy" && s2 === "healthy" && s3 === "healthy") {
-        return {
-          label: "Maintained Growth",
-          sub: "Sustained physiological vigor",
-          color: colors.success,
-          icon: "activity",
-        };
-      }
-    }
-
-    return {
-      label: "Establishing Baseline",
-      sub: "Analyzing growth patterns",
-      color: colors.textSecondary,
-      icon: "target",
-    };
-  }, [plantScans, colors]);
 
   const getRelativeTime = (dateString: string) => {
     const now = new Date();
