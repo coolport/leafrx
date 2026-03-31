@@ -504,7 +504,7 @@ export default function DetailScreen() {
             <View style={{ flex: 1 }}>
               <StatCard
                 icon="alert-triangle"
-                label="Latest"
+                label={t.home.farmOverview}
                 value={t.home[healthStatus]}
                 color={healthColor}
               />
@@ -552,7 +552,7 @@ export default function DetailScreen() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Growth Analysis
+                  {t.vigor.analysis}
                 </Text>
                 <Feather name="info" size={10} color={colors.textMuted} />
               </View>
