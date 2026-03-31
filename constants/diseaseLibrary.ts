@@ -45,6 +45,7 @@ const calamansi_greening_thumbnail = require("../assets/library/calamansi_greeni
 const calamansi_healthy_thumbnail = require("../assets/library/calamansi_healthy.jpg");
 const guava_anthracnose_thumbnail = require("../assets/library/guava_anthracnose.jpg");
 const guava_healthy_thumbnail = require("../assets/library/guava_healthy.jpg");
+const guava_blight_thumbnail = require("../assets/library/guava_healthy.jpg");
 const guava_rust_thumbnail = require("../assets/library/guava_rust.jpg");
 const mango_anthracnose_thumbnail = require("../assets/library/mango_anthracnose.jpg");
 const mango_healthy_thumbnail = require("../assets/library/mango_healthy.jpg");
@@ -937,6 +938,108 @@ export const DISEASE_LIBRARY: DiseaseGuide[] = [
     fun_fact:
       "Guava fruit has one of the highest Vitamin C contents of any common fruit — 228 mg per 100g, which is 4 times higher than a standard orange. Anthracnose-infected guava loses this nutritional value rapidly as the rot degrades the fruit's antioxidant compounds.",
   },
+  {
+    id: "guava_blight",
+    display_name: "Guava Bacterial Leaf Blight",
+    plant: "Guava",
+    plant_emoji: "🍈",
+    severity: "moderate",
+    thumbnail: guava_blight_thumbnail,
+    tagline: "Water-soaked lesions that spread fast in warm, wet weather",
+    overview:
+    "Guava bacterial leaf blight, caused by Erwinia psidii (and in some regions Pseudomonas syringae pv. psidii), is a significant foliar and shoot disease of guava in tropical and subtropical production areas. The disease thrives during warm, rainy periods and can cause rapid defoliation, shoot dieback, and in severe cases, decline of young trees. While less economically damaging than post-harvest diseases, heavy outbreaks reduce photosynthetic capacity, weaken trees, and can compromise fruit set in the following flush.",
+    scientific_name: "Erwinia psidii",
+    pathogen_type: "Bacterial",
+    pathogen_detail:
+    "Gram-negative bacterium that enters leaf tissue through natural openings (stomata, hydathodes) and wounds. Spreads systemically within young shoots during active growth flushes. Survives in infected plant debris and on the surface of symptomless host tissue between flushes. Does not form persistent spores — populations decline rapidly in dry conditions.",
+    affected_parts: ["Leaves (primary)", "Young shoots and stem tips", "Petioles", "Occasionally young fruit skin"],
+    symptoms: {
+      early: [
+        "Small, water-soaked, irregular spots on leaf margins and tips — appear translucent when held to light",
+        "Spots turn pale yellow-green within 2–3 days of infection",
+        "Lesions surrounded by a diffuse yellow halo, particularly visible on young expanding leaves",
+        "Infected shoot tips may appear wilted or water-soaked before visible necrosis develops",
+      ],
+      advanced: [
+        "Lesions turn brown to dark brown with irregular, angular margins often bounded by leaf veins",
+        "Large necrotic patches coalesce across entire leaf blade, leading to premature leaf drop",
+        "Shoot tip blight — terminal 5–10 cm of young shoots turn brown and collapse, giving a shepherd's crook appearance",
+        "Bacterial exudate (sticky, yellowish ooze) may be visible on lesion surfaces under high humidity in the early morning",
+        "Severely affected trees show scorched, tattered canopy with multiple dead shoot tips across the entire crown",
+      ],
+      distinguishing:
+      "Angular lesions bounded by leaf veins and the presence of bacterial ooze on lesion surfaces are key bacterial indicators. Distinguishable from fungal blights by the absence of visible spore masses or fruiting bodies. Lesion margins remain water-soaked longer than typical fungal lesions, which tend to dry out and form concentric rings.",
+    },
+    conditions: {
+      temperature: "25–32°C optimal; disease activity slows below 20°C and above 35°C",
+      humidity: "Free moisture on leaf surfaces required for infection; >80% RH sustains epidemic spread",
+      season: "Most severe during active growth flushes coinciding with rainy season; can recur with each new flush",
+      spread_method: "Rain splash, windblown water, contaminated pruning tools, insect feeding wounds",
+    },
+    economic_impact:
+    "Repeated severe outbreaks cause progressive tree weakening, reduced fruit set, and increased susceptibility to secondary pathogens. Particularly damaging in nurseries and on young orchard trees where canopy development is critical.",
+    look_alikes: [
+      "Guava anthracnose (fungal — produces salmon-pink spore masses, more circular lesions)",
+      "Guava rust (fungal — produces powdery orange-yellow pustules on leaf undersides)",
+      "Pesticide phytotoxicity (irregular marginal burn without ooze or progressive spread)",
+      "Nutrient deficiency scorch (interveinal or tip burn without water-soaked margins)",
+    ],
+    treatment: {
+      immediate: [
+        "Prune and remove all visibly blighted shoots at least 10–15 cm below the last visible lesion",
+        "Disinfect pruning tools between cuts with 70% ethanol or 10% bleach solution",
+        "Apply copper-based bactericide immediately after pruning to protect fresh wounds and surrounding tissue",
+        "Avoid overhead irrigation and activities that splash water during active outbreak",
+      ],
+      chemical: [
+        {
+          product: "Copper hydroxide 77% WP",
+        rate: "2–3 g/L water",
+        frequency: "Every 7–10 days during rainy season or active growth flush; reduce to every 14–21 days in dry season",
+      },
+      {
+        product: "Copper oxychloride 50% WP",
+        rate: "2.5 g/L water",
+        frequency: "Every 10–14 days; apply before expected rain events for best protection",
+      },
+      {
+        product: "Streptomycin sulfate 20% SP (where registered)",
+        rate: "0.5–1 g/L water",
+        frequency: "Every 7 days during severe outbreak; alternate with copper to reduce resistance risk",
+      },
+    ],
+    organic: [
+      "Copper-based Bordeaux mixture (1:1:100 — copper sulfate:lime:water) as a traditional bactericide",
+      "Neem oil extract spray (5 mL/L) — reduces bacterial surface populations and suppresses secondary fungal infection",
+      "Bacillus subtilis-based biocontrol products — apply preventively at flush emergence",
+      "Avoid excess nitrogen fertilization — lush, soft growth flushes are most susceptible",
+    ],
+    cultural: [
+      "Time heavy pruning to avoid coinciding with the onset of the rainy season",
+      "Improve canopy airflow by thinning dense interior branches to reduce leaf wetness duration",
+      "Avoid working in the orchard when foliage is wet — disease spreads readily on hands and clothing",
+      "Dispose of pruned blighted material away from the orchard — do not compost infected shoots",
+      "Use drip irrigation instead of overhead sprinklers to keep foliage dry",
+    ],
+  },
+  prevention: [
+    "Begin protective copper sprays at the first signs of new flush emergence, before lesions appear",
+    "Maintain balanced fertilization — avoid excess nitrogen that promotes overly succulent, disease-prone growth",
+    "Source nursery planting material only from certified, disease-free sources",
+    "Establish windbreaks around orchards to reduce wind-driven rain splash between trees",
+    "Monitor weather forecasts and apply bactericides preventively ahead of prolonged wet periods",
+  ],
+  monitoring_tips: [
+    "Scout the orchard at every new flush emergence — young expanding leaves are the most vulnerable stage",
+    "After rain events exceeding 20mm, inspect shoot tips and young leaves within 48–72 hours for early water-soaked lesions",
+    "Mark and track 10–15 sentinel trees across the orchard to detect outbreak hotspots early",
+  ],
+  recovery_timeline:
+    "With aggressive pruning and bactericide application, new growth flush can emerge symptom-free within 3–4 weeks. Full canopy recovery in moderately affected trees typically takes 6–8 weeks across two to three new growth flushes.",
+  fun_fact:
+    "Guava is one of the most copper-tolerant fruit trees in tropical horticulture — a trait that makes repeated copper bactericide applications more practical on guava than on many other crops, where copper phytotoxicity at effective rates would be a limiting factor.",
+},
+
 
   {
     id: "guava_rust",
