@@ -39,14 +39,17 @@ const banana_cordana_thumbnail = require("../assets/library/banana_cordana.jpg")
 const banana_healthy_thumbnail = require("../assets/library/banana_healthy.jpg");
 const banana_panama_thumbnail = require("../assets/library/banana_panama.jpg");
 const banana_sigatoka_thumbnail = require("../assets/library/banana_sigatoka.jpg");
+
 const calamansi_blackspot_thumbnail = require("../assets/library/calamansi_blackspot.jpg");
 const calamansi_canker_thumbnail = require("../assets/library/calamansi_canker.jpg");
 const calamansi_greening_thumbnail = require("../assets/library/calamansi_greening.jpg");
 const calamansi_healthy_thumbnail = require("../assets/library/calamansi_healthy.jpg");
+
 const guava_anthracnose_thumbnail = require("../assets/library/guava_anthracnose.jpg");
 const guava_healthy_thumbnail = require("../assets/library/guava_healthy.jpg");
-const guava_blight_thumbnail = require("../assets/library/guava_healthy.jpg");
+const guava_sootymould_thumbnail = require("../assets/library/guava_sootymould.jpg");
 const guava_rust_thumbnail = require("../assets/library/guava_rust.jpg");
+
 const mango_anthracnose_thumbnail = require("../assets/library/mango_anthracnose.jpg");
 const mango_healthy_thumbnail = require("../assets/library/mango_healthy.jpg");
 const mango_pmildew_thumbnail = require("../assets/library/mango_pmildew.jpg");
@@ -938,108 +941,113 @@ export const DISEASE_LIBRARY: DiseaseGuide[] = [
     fun_fact:
       "Guava fruit has one of the highest Vitamin C contents of any common fruit — 228 mg per 100g, which is 4 times higher than a standard orange. Anthracnose-infected guava loses this nutritional value rapidly as the rot degrades the fruit's antioxidant compounds.",
   },
+
   {
-    id: "guava_blight",
-    display_name: "Guava Bacterial Leaf Blight",
+    id: "guava_sootymould",
+    display_name: "Guava Sooty Mould",
     plant: "Guava",
     plant_emoji: "🍈",
-    severity: "moderate",
-    thumbnail: guava_blight_thumbnail,
-    tagline: "Water-soaked lesions that spread fast in warm, wet weather",
+    severity: "mild",
+    thumbnail: guava_sootymould_thumbnail,
+    tagline: "Black fungal coating that follows insect infestations",
     overview:
-    "Guava bacterial leaf blight, caused by Erwinia psidii (and in some regions Pseudomonas syringae pv. psidii), is a significant foliar and shoot disease of guava in tropical and subtropical production areas. The disease thrives during warm, rainy periods and can cause rapid defoliation, shoot dieback, and in severe cases, decline of young trees. While less economically damaging than post-harvest diseases, heavy outbreaks reduce photosynthetic capacity, weaken trees, and can compromise fruit set in the following flush.",
-    scientific_name: "Erwinia psidii",
-    pathogen_type: "Bacterial",
+      "Guava sooty mould is a secondary fungal condition caused by several saprophytic fungi — primarily Capnodium, Meliola, and Scorias species — that colonize the honeydew excreted by sap-sucking insects such as whiteflies, mealybugs, scale insects, and aphids. The fungi do not infect plant tissue directly; instead, they grow on the sugary honeydew coating as a food source. While sooty mould rarely kills guava trees outright, heavy infestations block sunlight from leaf surfaces, reduce photosynthesis, and significantly downgrade fruit appearance and marketability.",
+    scientific_name: "Capnodium mangiferum / Meliola psidii",
+    pathogen_type: "Fungal",
     pathogen_detail:
-    "Gram-negative bacterium that enters leaf tissue through natural openings (stomata, hydathodes) and wounds. Spreads systemically within young shoots during active growth flushes. Survives in infected plant debris and on the surface of symptomless host tissue between flushes. Does not form persistent spores — populations decline rapidly in dry conditions.",
-    affected_parts: ["Leaves (primary)", "Young shoots and stem tips", "Petioles", "Occasionally young fruit skin"],
+      "A complex of saprophytic ascomycete fungi that do not penetrate or parasitize plant tissue. Growth is entirely dependent on the availability of insect honeydew as a carbon source. Spores are airborne and ubiquitous — sooty mould develops wherever honeydew-producing insects are present and unmanaged. Colony growth accelerates under humid, shaded canopy conditions.",
+    affected_parts: [
+      "Leaves (upper surface primarily)",
+      "Fruit surface",
+      "Young stems and shoots",
+      "Branches beneath insect colonies",
+    ],
     symptoms: {
       early: [
-        "Small, water-soaked, irregular spots on leaf margins and tips — appear translucent when held to light",
-        "Spots turn pale yellow-green within 2–3 days of infection",
-        "Lesions surrounded by a diffuse yellow halo, particularly visible on young expanding leaves",
-        "Infected shoot tips may appear wilted or water-soaked before visible necrosis develops",
+        "Thin, powdery, dark grey to black coating appearing in patches on upper leaf surfaces",
+        "Sticky residue (honeydew) on leaves and fruit beneath active insect colonies",
+        "Small clusters of whiteflies, mealybugs, scale, or aphids visible on shoot tips and leaf undersides",
+        "Ants actively foraging on shoots and branches — a reliable early indicator of honeydew-producing insect presence",
       ],
       advanced: [
-        "Lesions turn brown to dark brown with irregular, angular margins often bounded by leaf veins",
-        "Large necrotic patches coalesce across entire leaf blade, leading to premature leaf drop",
-        "Shoot tip blight — terminal 5–10 cm of young shoots turn brown and collapse, giving a shepherd's crook appearance",
-        "Bacterial exudate (sticky, yellowish ooze) may be visible on lesion surfaces under high humidity in the early morning",
-        "Severely affected trees show scorched, tattered canopy with multiple dead shoot tips across the entire crown",
+        "Dense, continuous black mould layer covering entire upper leaf surface and fruit skin",
+        "Affected leaves appear dull and blackened; in heavy infestations the canopy takes on an overall dark, sooty appearance from a distance",
+        "Mould layer can be rubbed off to reveal green tissue beneath — distinguishing it from necrotic diseases",
+        "Fruit covered in sooty mould is unsaleable despite sound internal flesh",
+        "Prolonged heavy coverage causes yellowing and premature drop of shaded leaves due to photosynthesis reduction",
       ],
       distinguishing:
-      "Angular lesions bounded by leaf veins and the presence of bacterial ooze on lesion surfaces are key bacterial indicators. Distinguishable from fungal blights by the absence of visible spore masses or fruiting bodies. Lesion margins remain water-soaked longer than typical fungal lesions, which tend to dry out and form concentric rings.",
+        "The powdery, superficial black coating that wipes cleanly off the leaf surface to reveal healthy green tissue is the key diagnostic feature. Always associated with visible insect colonies (whiteflies, mealybugs, scale, or aphids) on or above the affected surfaces. Unlike fungal leaf spots or blights, sooty mould has no defined lesion margins and does not cause tissue necrosis.",
     },
     conditions: {
-      temperature: "25–32°C optimal; disease activity slows below 20°C and above 35°C",
-      humidity: "Free moisture on leaf surfaces required for infection; >80% RH sustains epidemic spread",
-      season: "Most severe during active growth flushes coinciding with rainy season; can recur with each new flush",
-      spread_method: "Rain splash, windblown water, contaminated pruning tools, insect feeding wounds",
+      temperature: "22–32°C; warm and humid conditions accelerate both insect populations and mould growth",
+      humidity: "High humidity and poor canopy airflow strongly favor mould establishment and spread",
+      season: "Year-round in humid tropical climates; peaks during rainy season when insect populations surge",
+      spread_method:
+        "Airborne spores colonize wherever honeydew is deposited; insect vectors spread indirectly by expanding honeydew coverage",
     },
     economic_impact:
-    "Repeated severe outbreaks cause progressive tree weakening, reduced fruit set, and increased susceptibility to secondary pathogens. Particularly damaging in nurseries and on young orchard trees where canopy development is critical.",
+      "Primarily a cosmetic and marketability issue — heavily coated fruit is rejected at fresh markets even when internally sound. Chronic infestations reduce tree vigor over time through photosynthesis suppression. Increases post-harvest cleaning costs and labor.",
     look_alikes: [
-      "Guava anthracnose (fungal — produces salmon-pink spore masses, more circular lesions)",
-      "Guava rust (fungal — produces powdery orange-yellow pustules on leaf undersides)",
-      "Pesticide phytotoxicity (irregular marginal burn without ooze or progressive spread)",
-      "Nutrient deficiency scorch (interveinal or tip burn without water-soaked margins)",
+      "Guava anthracnose (distinct sunken lesions on fruit with spore masses — not a wipe-off coating)",
+      "Chemical residue buildup from repeated spray applications (no insect association)",
+      "Mango sooty mould (same mechanism, different host — identical management approach)",
     ],
     treatment: {
       immediate: [
-        "Prune and remove all visibly blighted shoots at least 10–15 cm below the last visible lesion",
-        "Disinfect pruning tools between cuts with 70% ethanol or 10% bleach solution",
-        "Apply copper-based bactericide immediately after pruning to protect fresh wounds and surrounding tissue",
-        "Avoid overhead irrigation and activities that splash water during active outbreak",
+        "Identify and control the honeydew-producing insect infestation first — mould will not resolve until its food source is eliminated",
+        "Apply insecticide or insecticidal soap targeting the specific pest species present (whitefly, mealybug, scale, or aphid)",
+        "Wash affected fruit and foliage with a mild soap solution (5 mL dish soap per liter) to physically remove mould coating",
+        "Prune heavily infested shoot tips where insect colonies are densest to reduce pest load rapidly",
       ],
       chemical: [
         {
-          product: "Copper hydroxide 77% WP",
-        rate: "2–3 g/L water",
-        frequency: "Every 7–10 days during rainy season or active growth flush; reduce to every 14–21 days in dry season",
-      },
-      {
-        product: "Copper oxychloride 50% WP",
-        rate: "2.5 g/L water",
-        frequency: "Every 10–14 days; apply before expected rain events for best protection",
-      },
-      {
-        product: "Streptomycin sulfate 20% SP (where registered)",
-        rate: "0.5–1 g/L water",
-        frequency: "Every 7 days during severe outbreak; alternate with copper to reduce resistance risk",
-      },
+          product: "Imidacloprid 200 SL (systemic insecticide for whitefly/aphid/mealybug)",
+          rate: "0.5 mL/L water",
+          frequency: "Single drench or foliar application; repeat after 21 days if reinfestation occurs",
+        },
+        {
+          product: "White mineral oil (horticultural spray oil)",
+          rate: "10–15 mL/L water",
+          frequency: "Every 14 days; suffocates soft-bodied insects and helps loosen mould coating simultaneously",
+        },
+        {
+          product: "Chlorpyrifos 48% EC (for scale and mealybug on bark)",
+          rate: "2 mL/L water",
+          frequency: "Apply to trunk and major branches where scale colonies are established; repeat after 30 days",
+        },
+      ],
+      organic: [
+        "Insecticidal soap spray (potassium soap 2–3%) — targets soft-bodied insects without residue concerns",
+        "Neem oil (5 mL/L) with emulsifier — disrupts insect feeding and reproduction while loosening mould",
+        "Release or conserve natural predators: ladybird beetles, lacewings, and parasitic wasps that suppress aphid and whitefly populations",
+        "Kaolin clay spray on fruit — physical barrier that reduces whitefly and mealybug settling on fruit surface",
+      ],
+      cultural: [
+        "Prune to open the canopy and improve light penetration and air circulation — reduces humidity favorable to mould",
+        "Remove ant colonies from trees using sticky trunk barriers (tanglefoot bands) — ants protect honeydew insects from natural predators",
+        "Avoid excessive nitrogen fertilization — lush soft growth attracts higher populations of sap-sucking insects",
+        "Clean harvested fruit with a soft cloth dampened with dilute soap solution before packing",
+        "Dispose of heavily mould-covered prunings away from the orchard",
+      ],
+    },
+    prevention: [
+      "Monitor for honeydew-producing insects at every growth flush — early insect control prevents mould establishment entirely",
+      "Install sticky yellow traps throughout the orchard to monitor and suppress whitefly populations",
+      "Maintain ant exclusion barriers on tree trunks year-round — disrupting ant-insect mutualism allows natural predators to suppress pest populations",
+      "Apply reflective mulch under trees to disorient whiteflies and reduce canopy infestation",
+      "Conduct canopy thinning pruning annually after harvest to maintain open structure and reduce pest-favorable microclimates",
     ],
-    organic: [
-      "Copper-based Bordeaux mixture (1:1:100 — copper sulfate:lime:water) as a traditional bactericide",
-      "Neem oil extract spray (5 mL/L) — reduces bacterial surface populations and suppresses secondary fungal infection",
-      "Bacillus subtilis-based biocontrol products — apply preventively at flush emergence",
-      "Avoid excess nitrogen fertilization — lush, soft growth flushes are most susceptible",
+    monitoring_tips: [
+      "Check the undersides of young leaves weekly for early colonies of whiteflies, mealybugs, or scale — act before honeydew accumulates",
+      "Use yellow sticky traps and inspect counts every 7 days to track whitefly population trends",
+      "Watch for ant trails moving up and down tree trunks as an early proxy indicator of active honeydew insect colonies in the canopy",
     ],
-    cultural: [
-      "Time heavy pruning to avoid coinciding with the onset of the rainy season",
-      "Improve canopy airflow by thinning dense interior branches to reduce leaf wetness duration",
-      "Avoid working in the orchard when foliage is wet — disease spreads readily on hands and clothing",
-      "Dispose of pruned blighted material away from the orchard — do not compost infected shoots",
-      "Use drip irrigation instead of overhead sprinklers to keep foliage dry",
-    ],
+    recovery_timeline:
+      "Once the insect infestation is controlled, new foliage emerges clean within 2–3 weeks. Existing mould on leaves weathers off gradually over 4–6 weeks or can be accelerated by washing. Fruit affected at harvest cannot be recovered for fresh market — prevention before fruit development is essential.",
+    fun_fact:
+      "Sooty mould fungi are not actually harming the plant at all — they are essentially freeloaders living off insect waste. A healthy tree with no insect pressure will never develop sooty mould, no matter how many spores land on it. The mould is always a symptom of an insect problem, never the root cause.",
   },
-  prevention: [
-    "Begin protective copper sprays at the first signs of new flush emergence, before lesions appear",
-    "Maintain balanced fertilization — avoid excess nitrogen that promotes overly succulent, disease-prone growth",
-    "Source nursery planting material only from certified, disease-free sources",
-    "Establish windbreaks around orchards to reduce wind-driven rain splash between trees",
-    "Monitor weather forecasts and apply bactericides preventively ahead of prolonged wet periods",
-  ],
-  monitoring_tips: [
-    "Scout the orchard at every new flush emergence — young expanding leaves are the most vulnerable stage",
-    "After rain events exceeding 20mm, inspect shoot tips and young leaves within 48–72 hours for early water-soaked lesions",
-    "Mark and track 10–15 sentinel trees across the orchard to detect outbreak hotspots early",
-  ],
-  recovery_timeline:
-    "With aggressive pruning and bactericide application, new growth flush can emerge symptom-free within 3–4 weeks. Full canopy recovery in moderately affected trees typically takes 6–8 weeks across two to three new growth flushes.",
-  fun_fact:
-    "Guava is one of the most copper-tolerant fruit trees in tropical horticulture — a trait that makes repeated copper bactericide applications more practical on guava than on many other crops, where copper phytotoxicity at effective rates would be a limiting factor.",
-},
-
 
   {
     id: "guava_rust",
@@ -1229,110 +1237,114 @@ export const DISEASE_LIBRARY: DiseaseGuide[] = [
 
   {
     id: "calamansi_blackspot",
-    display_name: "Citrus Black Spot",
+    display_name: "Calamansi Black Spot",
     plant: "Calamansi",
-    plant_emoji: "🍊",
+    plant_emoji: "🍋",
     severity: "moderate",
     thumbnail: calamansi_blackspot_thumbnail,
-    tagline: "Fruit-blemishing fungal spots that destroy market value",
+    tagline: "Regulated fungal disease that marks fruit rind with distinct dark lesions",
     overview:
-      "Citrus black spot (CBS), caused by Phyllosticta citricarpa, is a fungal disease that primarily attacks maturing citrus fruit, producing distinctive black spots and blemishes that make fruit commercially unmarketable. While the disease rarely causes significant tree damage, it is a major economic concern due to its impact on fruit appearance and quality. CBS is a quarantine pest in several countries including the USA and Europe, severely restricting export of Philippine calamansi to these markets. It thrives in warm, humid conditions during the fruit development period.",
+      "Calamansi black spot, caused by Phyllosticta citricarpa (formerly Guignardia citricarpa), is a significant fungal disease of calamansi and other citrus varieties that primarily affects fruit rind. The pathogen is a regulated quarantine pest in many countries — including the United States and European Union — making it a major barrier to citrus export from affected regions. In the Philippines, where calamansi is grown extensively for both domestic consumption and processing, black spot reduces fresh fruit marketability and can cause premature fruit drop under severe infection pressure. The fungus infects fruit early in development but symptoms typically remain latent until fruit approaches maturity, making early detection particularly challenging.",
     scientific_name: "Phyllosticta citricarpa",
     pathogen_type: "Fungal",
     pathogen_detail:
-      "Ascomycete fungus that infects fruit through the skin (pericarp) and can remain quiescent (latent) for months before symptoms appear as fruit matures. Produces pycnidia (flask-shaped fruiting bodies) in lesion centers visible as small black dots. Spores are dispersed by rain splash from infected fallen fruit and dead leaves.",
-    affected_parts: ["Fruit surface (primary)", "Mature leaves (secondary, minor)", "Occasionally twigs"],
+      "Ascomycete fungus with both sexual (ascospores via Guignardia citricarpa stage) and asexual (pycnidiospores) reproductive stages. Ascospores produced in leaf litter are the primary inoculum source and are wind-dispersed — the dominant infection pathway for fruit. Pycnidiospores produced on fruit lesions are rain-splash dispersed and contribute to secondary spread. The fungus infects young fruit but establishes a long latent period — lesions may not appear until fruit color break or maturity, months after the initial infection event. Survives primarily in fallen infected leaves on the orchard floor.",
+    affected_parts: [
+      "Fruit rind (primary and most economically significant)",
+      "Mature leaves (latent, rarely symptomatic)",
+      "Fruit peduncle in severe cases",
+    ],
     symptoms: {
       early: [
-        "Small, slightly sunken spots with red-brown centers on green maturing fruit",
-        'Spots surrounded by a yellow halo on green fruit — "freckle spot" early form',
-        'Lesions may appear as raised, corky tan spots without clear margins — "false melanose" early form',
-        "Symptoms often invisible on green fruit; become apparent as fruit approaches maturity",
+        "Small, reddish-brown to tan circular spots (2–3mm) on green fruit surface — often overlooked at this stage",
+        "Spots may have a slightly sunken center surrounded by a darker brown ring",
+        "No visible symptoms on young leaves despite possible latent infection",
+        "Early lesions may resemble superficial blemishes or insect feeding marks — difficult to distinguish without close inspection",
       ],
       advanced: [
-        "Hard spot: sunken, circular, tan/gray center with dark brown to black margin and yellow halo — the classic CBS lesion",
-        "Virulent spot: large (1–3cm) irregular tan/brown lesions with no clear margin; entire fruit may appear blighted",
-        "Freckle spot: small, numerous raised brown spots coalescing to give fruit a speckled appearance",
-        "Cracked spot: sunken lesions that crack and expose tissue; pathway for secondary rot organisms",
-        "Multiple lesion types may appear on a single fruit simultaneously",
-        "Severely affected fruit drops prematurely",
+        "Hard spot type: well-defined circular lesions with a tan to grey center, dark brown to black border, and yellow halo on ripe fruit — the most recognizable CBS symptom",
+        "Freckle spot type: numerous small, irregular, raised reddish-brown to black specks scattered across the fruit surface, common on immature or early-maturing fruit",
+        "Virulent spot type: large, dark brown to black sunken lesions that can coalesce and cover significant portions of the fruit rind — most damaging form",
+        "Cracked spot type: lesions with a cracked, irregular surface and dark margins — typically on fruit approaching over-maturity",
+        "Premature fruit drop — heavily infected fruit abscises before reaching full maturity, causing direct yield loss",
       ],
       distinguishing:
-        'The four distinct lesion types (hard spot, virulent spot, freckle spot, cracked spot) are all caused by the same pathogen and may co-occur on one fruit. The sunken center with dark margin and yellow halo on "hard spot" lesions is the most recognizable. Distinguished from citrus canker (raised corky lesions with oily margins) and from melanose (tiny raised dots without the defined halo).',
+        "The multiple lesion types of CBS can cause confusion, but the hard spot type with its classic tan center, dark border, and yellow halo on mature fruit rind is highly characteristic. Unlike scab (raised corky tissue), CBS lesions are flat to slightly sunken and do not produce raised wart-like outgrowths. Unlike canker (Xanthomonas), CBS lesions lack the pronounced water-soaked oily halo and affect only the rind surface without penetrating into the fruit flesh.",
     },
     conditions: {
-      temperature: "20–28°C optimal; infection requires warm temperatures during fruit development",
-      humidity: "Rain splash required for spore dispersal; >3 hours leaf/fruit wetness needed for infection",
-      season: "Most critical during the 4–6 month fruit development period; worst in wet seasons",
-      spread_method: "Rain splash from infected fallen fruit and dead leaves; wind-driven rain events",
+      temperature: "20–28°C optimal for ascospore release and infection; disease development slows above 30°C",
+      humidity:
+        "Prolonged leaf and fruit wetness of 4+ hours required for successful infection; ascospore release triggered by rainfall on infected leaf litter",
+      season:
+        "Infection occurs during fruit set and early fruit development coinciding with the rainy season; symptoms appear months later as fruit matures",
+      spread_method:
+        "Wind-dispersed ascospores from decomposing infected leaf litter (primary); rain-splash of pycnidiospores from fruit lesions (secondary)",
     },
     economic_impact:
-      "Quarantine pest status in USA and EU effectively bars Philippine calamansi exports to these markets. On domestic market, heavily spotted fruit sells at 40–60% discount. Post-harvest losses from secondary rots entering through cracked spots can reach 20–30%.",
+      "Primarily a market access and cosmetic disease — internally the fruit flesh remains sound and fully edible. However, affected fruit is rejected for fresh retail and export markets. CBS is a quarantine-regulated pathogen in the EU, USA, and other major markets, meaning detection in exported fruit can result in shipment rejection and loss of market access. Premature fruit drop under heavy infection causes direct yield loss.",
     look_alikes: [
-      "Citrus canker (raised corky lesions with oily water-soaked margins; affects leaves too)",
-      "Melanose (tiny uniform raised dots; no yellow halo; all uniform size)",
-      "Physical insect damage (puncture wounds without halo pattern)",
-      "Greasy spot (yellow-brown blotches on leaves; no defined lesion structure on fruit)",
+      "Citrus scab (Elsinoë fawcettii — raised corky warty lesions, not flat or sunken; affects young tissue only)",
+      "Citrus canker (Xanthomonas citri — raised lesions with pronounced oily water-soaked halo; affects leaves, stems, and fruit)",
+      "Wind scar damage (irregular linear abrasion marks, no defined margins or yellow halo)",
+      "Melanose (Diaporthe citri — mudcake or tear-stain patterns of tiny dark specks; lesions follow water drip patterns on fruit)",
+      "Insect feeding scars (irregular distribution, no defined lesion border or halo)",
     ],
     treatment: {
       immediate: [
-        "Remove and destroy all infected fallen fruit from the orchard floor — these are the primary spore source",
-        "Apply fungicide immediately at first sign of spots appearing on fruit",
-        "Do NOT leave infected fruit on the ground — collect and bury or burn daily during wet periods",
-        "Reduce canopy density through pruning to decrease humidity and leaf wetness duration",
+        "Apply protective fungicide immediately at petal fall and fruit set — this is the critical protection window before latent infections are established",
+        "Remove and destroy all fallen leaves from the orchard floor promptly — leaf litter is the primary ascospore source",
+        "Avoid disturbing leaf litter during rainy periods when ascospore release is at its peak",
+        "Flag and isolate heavily affected trees to prioritize spray coverage and limit spread to neighboring trees",
       ],
       chemical: [
         {
           product: "Copper hydroxide 77% WP",
-          rate: "2.5 g/L water",
-          frequency: "Every 14 days during fruit development; primary protectant",
-        },
-        {
-          product: "Carbendazim 50% WP",
-          rate: "1 g/L water",
-          frequency: "Every 14 days; systemic activity against Phyllosticta",
-        },
-        {
-          product: "Azoxystrobin 25% SC",
-          rate: "1 mL/L water",
-          frequency: "Every 21 days; rotate with copper-based products",
+          rate: "2–3 g/L water",
+          frequency:
+            "Every 21 days from petal fall through fruit development; most critical during the first 3 months after fruit set",
         },
         {
           product: "Mancozeb 80% WP",
           rate: "2 g/L water",
-          frequency: "Every 10–14 days; protective coverage during rainy periods",
+          frequency: "Every 14–21 days from petal fall; alternate with copper products to reduce resistance risk",
+        },
+        {
+          product: "Azoxystrobin 25% SC (strobilurin fungicide)",
+          rate: "1 mL/L water",
+          frequency:
+            "Every 21 days during critical fruit development period; highly effective against CBS but rotate with non-strobilurin products",
         },
       ],
       organic: [
-        "Bordeaux mixture (1:1:100) as copper-based protectant during fruit development",
-        "Neem oil (2%) every 7–10 days as suppressive spray on developing fruit",
-        "Biocontrol: Bacillus subtilis foliar spray weekly during wet season as preventive measure",
+        "Bordeaux mixture (1:1:100) — protective copper-lime spray applied from petal fall through early fruit development",
+        "Accelerated leaf litter decomposition using urea spray (5–10 g/L) on orchard floor — destroys leaf litter inoculum source more rapidly",
+        "Kaolin clay particle film on fruit — physical barrier that reduces spore deposition and germination on fruit surface",
+        "Mulching and turning orchard floor material to bury infected leaves and interrupt ascospore release",
       ],
       cultural: [
-        "Collect all fallen fruit and leaves weekly without exception — ground debris is the primary inoculum source",
-        "Prune to maintain open canopy and reduce fruit-to-fruit contact",
-        "Avoid overhead irrigation during fruit development — drip irrigation eliminates splash dispersal",
-        "Wax-coat harvested fruit to reduce post-harvest losses from secondary infection through cracks",
-        "Harvest at appropriate maturity before symptoms intensify at full ripeness",
+        "Collect and remove fallen leaves from the orchard floor every 1–2 weeks during the rainy season — do not allow leaf litter to accumulate",
+        "Prune the canopy to improve airflow and reduce the duration of fruit and leaf wetness after rain",
+        "Avoid using leaf litter from affected orchards as mulch — compost only at high temperatures or dispose of off-site",
+        "Time irrigation to minimize prolonged wetness on fruit during early fruit development",
+        "Mark symptomatic trees clearly and prioritize spray coverage on these trees and their immediate neighbors",
       ],
     },
     prevention: [
-      "Begin copper spray program from petal fall (fruitlet stage) and continue throughout fruit development",
-      "Maintain aggressive orchard floor sanitation — fallen fruit and leaves year-round",
-      "Prune annually after harvest to open canopy and reduce humidity",
-      "Plant windbreaks to reduce rain-splash dispersal between trees during wet season",
-      "Use copper + oil sprays during first 2 months of fruit development — most critical protection window",
+      "Begin protective fungicide program at petal fall without waiting for symptoms — CBS infection occurs months before lesions are visible, making reactive treatment ineffective",
+      "Implement a strict orchard floor sanitation program before the rainy season begins — reduce leaf litter inoculum before ascospore season peaks",
+      "Source nursery planting material only from certified CBS-free stock — the pathogen can be introduced on symptomless nursery trees",
+      "Maintain detailed spray and scouting records to identify recurring hotspot trees and areas within the orchard",
+      "If exporting fruit, familiarize with importing country CBS regulations and maintain phytosanitary spray records from petal fall onward",
     ],
     monitoring_tips: [
-      "Inspect 20 random fruit per tree monthly from fruit set through pre-harvest",
-      "Check fallen fruit as a disease severity indicator — high fallen fruit infection = high on-tree risk",
-      "Record the percentage of fruit with lesions to track whether spray program is adequate",
-      "Increase inspection frequency during and after prolonged wet weather periods",
+      "Inspect fruit surfaces every 14 days from petal fall onward — early freckle spot lesions on green fruit are the first visible indicator of active infection pressure",
+      "Monitor fallen leaf accumulation on the orchard floor weekly — high litter loads during wet weather signal peak ascospore release risk",
+      "At harvest, inspect a random sample of 50–100 fruit per tree for lesion presence and lesion type to assess seasonal infection severity and adjust the following season's spray program",
     ],
     recovery_timeline:
-      "Existing lesions on fruit are permanent and cannot be reversed. New fruit protected by timely fungicide program from petal fall will have significantly fewer blemishes. Full tree management results visible in following season.",
+      "Existing lesions on fruit rind are permanent and do not resolve. Fruit that develops under a well-timed protective fungicide program from petal fall will emerge clean. Orchard-level reduction in disease pressure requires at least one full season of consistent leaf litter removal and protective spraying to draw down the inoculum reservoir in the orchard floor.",
     fun_fact:
-      "Citrus black spot was first described from South Africa in 1895 and spread globally through infected planting material during the 20th century. Its current quarantine pest status in over 30 countries makes it one of the most economically impactful citrus pathogens from a trade restriction perspective, even though the disease itself does not threaten tree survival.",
+      "Phyllosticta citricarpa is considered one of the most strategically significant citrus pathogens in global trade — not because it kills trees or destroys harvests outright, but because its quarantine status in major importing countries means that a single detected lesion on an export shipment can shut down an entire country's citrus trade access. It is as much a regulatory and diplomatic problem as it is an agronomic one.",
   },
 
   {
@@ -1638,9 +1650,7 @@ export const resolveDiseaseLibraryId = ({
   plantType?: string;
   diseaseName?: string;
 }): string | null => {
-  const normalizedToId = new Map(
-    DISEASE_LIBRARY.map((entry) => [normalizeLibraryKey(entry.id), entry.id] as const)
-  );
+  const normalizedToId = new Map(DISEASE_LIBRARY.map((entry) => [normalizeLibraryKey(entry.id), entry.id] as const));
 
   const resolveCandidate = (candidate?: string): string | null => {
     const normalized = normalizeLibraryKey(candidate);
