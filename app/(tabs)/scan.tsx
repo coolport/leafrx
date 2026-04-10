@@ -37,13 +37,6 @@ import { useTranslations } from "../../hooks/use-translations";
 import { getHealthColor, normalizeHealthStatus } from "../../constants/health";
 import { resolveDiseaseLibraryId } from "../../constants/diseaseLibrary";
 
-const plantSelectorOptions = [
-  { type: "Mango", icon: "🥭" },
-  { type: "Banana", icon: "🍌" },
-  { type: "Guava", icon: "🍐" },
-  { type: "Calamansi", icon: "🫒" },
-] as const;
-
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -66,7 +59,7 @@ export default function ScanScreen() {
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
   const [selectedPlantClass, setSelectedPlantClass] = useState<string | undefined>(
-    isUpdatingPlant ? params.plantType : plantTypes[0]
+    isUpdatingPlant ? params.plantType : undefined
   );
 
   const skipAddModalReturnRef = useRef(false);
@@ -132,7 +125,7 @@ export default function ScanScreen() {
     }
 
     if (!analysisResult && !selectedImageUri) {
-      setSelectedPlantClass(plantTypes[0]);
+      setSelectedPlantClass(undefined);
     }
   }, [params.plantId, params.plantType, analysisResult, selectedImageUri]);
 
@@ -386,72 +379,32 @@ export default function ScanScreen() {
             {!isUpdatingPlant && (
               <View style={{ marginBottom: 20 }}>
                 <Text style={styles.label}>{t.scan.plantType}</Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    marginTop: 4,
-                    borderRadius: 20,
-                    overflow: "hidden",
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    backgroundColor: colors.background,
-                    shadowColor: colors.cardShadow,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.04,
-                    shadowRadius: 10,
-                    elevation: 2,
-                  }}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 10, paddingRight: 8 }}
+                  style={styles.chipsScroll}
                 >
-                  {plantSelectorOptions.map(({ type, icon }, index) => (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={!selectedPlantClass ? styles.chipSelected : styles.chip}
+                    onPress={() => setSelectedPlantClass(undefined)}
+                  >
+                    <Text style={!selectedPlantClass ? styles.chipTextSelected : styles.chipText}>✦ {t.scan.auto}</Text>
+                  </TouchableOpacity>
+                  {plantTypes.map((type) => (
                     <TouchableOpacity
                       key={type}
                       activeOpacity={0.7}
-                      style={[
-                        {
-                          flex: 1,
-                          minHeight: 84,
-                          justifyContent: "center",
-                          alignItems: "center",
-                          paddingVertical: 12,
-                          paddingHorizontal: 6,
-                          backgroundColor: selectedPlantClass === type ? colors.primary : "transparent",
-                        },
-                        index < plantSelectorOptions.length - 1 && {
-                          borderRightWidth: 1,
-                          borderRightColor:
-                            selectedPlantClass === type || selectedPlantClass === plantSelectorOptions[index + 1]?.type
-                              ? "rgba(255,255,255,0.14)"
-                              : colors.border,
-                        },
-                      ]}
+                      style={selectedPlantClass === type ? styles.chipSelected : styles.chip}
                       onPress={() => setSelectedPlantClass(type)}
                     >
-                      <View style={{ alignItems: "center", gap: 8 }}>
-                        <View
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: 11,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor:
-                              selectedPlantClass === type ? "rgba(255,255,255,0.22)" : `${colors.primary}12`,
-                          }}
-                        >
-                          <Text style={{ fontSize: 17 }}>{icon}</Text>
-                        </View>
-                        <Text
-                          style={[
-                            selectedPlantClass === type ? styles.chipTextSelected : styles.chipText,
-                            { fontSize: 11, textAlign: "center" },
-                          ]}
-                        >
-                          {type}
-                        </Text>
-                      </View>
+                      <Text style={selectedPlantClass === type ? styles.chipTextSelected : styles.chipText}>
+                        {type}
+                      </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               </View>
             )}
 
